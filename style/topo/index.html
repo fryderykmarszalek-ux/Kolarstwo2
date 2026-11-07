@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pl" data-styl="topo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Topo · Kolarstwo</title>
+  <meta name="theme-color" content="#0B1411">
+  <meta name="color-scheme" content="dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fira+Sans+Condensed:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <header class="gora">
+    <a class="marka" href="#mapa-sezonu" aria-label="Kolarstwo Topo — na górę">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11.5" fill="none" stroke="currentColor" stroke-opacity=".35"/><path d="M5 17c3-1 4-5 8-5s5 3 8 2" fill="none" stroke="#FF7A3D" stroke-width="1.6" stroke-linecap="round"/><path d="M6 11c2-.6 3.6-3 7-3s4.6 2 7 1.6" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"/></svg>
+      <span><b>Kolarstwo</b> Topo</span>
+    </a>
+    <nav class="nawigacja" aria-label="Sekcje">
+      <a href="#mapa-sezonu">Mapa</a><a href="#jazda">Ostatnia jazda</a><a href="#forma">Krajobraz formy</a><a href="#objetosc">Objętość</a><a href="#segmenty">Szlaki</a><a href="#kalendarz">Kalendarz</a><a href="#szczyty">Szczyty</a>
+    </nav>
+    <span class="wsp" id="wsp" aria-hidden="true">— · —</span>
+  </header>
+
+  <section class="hero" id="mapa-sezonu" aria-label="Mapa sezonu">
+    <div class="hero-mapa" id="hero-mapa"></div>
+    <div class="hero-tytul">
+      <p class="etykieta">Arkusz · Konstancin-Jeziorna</p>
+      <h1>Mapa sezonu <span id="rok-h">2026</span></h1>
+      <p class="hero-opis">Każda droga świeci tym mocniej, im częściej nią jechałeś. Najedź na drogę, żeby zobaczyć, ile razy.</p>
+      <dl class="hero-liczby" id="hero-liczby"></dl>
+    </div>
+    <div class="hero-legenda" id="hero-legenda"></div>
+  </section>
+
+  <main class="kol">
+    <section class="sekcja" id="jazda" aria-labelledby="t-jazda">
+      <header class="sek-g">
+        <p class="etykieta"><span class="znak"></span>Ostatnia jazda</p>
+        <h2 id="t-jazda"></h2>
+        <p class="sek-opis" id="jazda-opis"></p>
+      </header>
+      <div class="jazda-uklad">
+        <div class="karta karta-mapa"><div class="mapa" id="mapa"></div></div>
+        <div class="karta">
+          <div class="odczyty" id="odczyty"></div>
+          <div class="przekroj"><div class="mini-tytul"><span>Przekrój trasy</span><span id="przekroj-info">wysokość m n.p.m.</span></div><div id="profil"></div></div>
+          <div class="strumienie">
+            <div><div class="mini-tytul"><span><i class="kl kl-v"></i>Prędkość</span><span>km/h</span></div><div id="s-v"></div></div>
+            <div><div class="mini-tytul"><span><i class="kl kl-hr"></i>Tętno</span><span>bpm</span></div><div id="s-hr"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="forma" aria-labelledby="t-forma">
+      <header class="sek-g">
+        <p class="etykieta"><span class="znak"></span>Krajobraz formy</p>
+        <h2 id="t-forma">Forma to teren, na który się wspinasz</h2>
+        <p class="sek-opis">Wysokość „góry" to forma (CTL) — każda warstwica to 10 punktów. Pomarańczowa linia to zmęczenie: gdy jest nad terenem, płacisz za trening; gdy pod nim, jesteś świeży.</p>
+      </header>
+      <div class="forma-uklad">
+        <div class="karta">
+          <div class="karta-nag"><div class="legenda" id="forma-legenda"></div><button class="btn-t" type="button" id="forma-tab">Tabela</button></div>
+          <div id="krajobraz"></div>
+        </div>
+        <div class="karta forma-boczna">
+          <dl class="forma-liczby" id="forma-liczby"></dl>
+          <div class="stan" id="stan"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="objetosc" aria-labelledby="t-obj">
+      <header class="sek-g">
+        <p class="etykieta"><span class="znak"></span>Objętość</p>
+        <h2 id="t-obj">Tydzień po tygodniu</h2>
+        <p class="sek-opis">Szosa i Zwift w jednym słupku. Najjaśniejszy — ten tydzień.</p>
+      </header>
+      <div class="obj-uklad">
+        <div class="karta">
+          <div class="karta-nag"><div class="legenda" id="obj-legenda"></div><div class="przelacz" role="group" aria-label="Okres" id="okresy"></div></div>
+          <div class="obj-liczby" id="obj-liczby"></div>
+          <div id="obj"></div>
+        </div>
+        <div class="karta cel-karta">
+          <p class="mini-tytul"><span>Cel 2026</span><span id="cel-proc"></span></p>
+          <div id="cel"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="segmenty" aria-labelledby="t-seg">
+      <header class="sek-g">
+        <p class="etykieta"><span class="znak"></span>Szlaki</p>
+        <h2 id="t-seg">Segmenty jak szlaki w przewodniku</h2>
+        <p class="sek-opis">Kształt z mapy, przekrój z modelu terenu, czasy ze Stravy. Pomarańczowy punkt na przebiegu — rekord.</p>
+      </header>
+      <div class="szlaki" id="szlaki"></div>
+    </section>
+
+    <section class="sekcja dwie" aria-label="Kalendarz i moc">
+      <div id="kalendarz">
+        <header class="sek-g">
+          <p class="etykieta"><span class="znak"></span>Kalendarz</p>
+          <h2>Rok w kratkach</h2>
+        </header>
+        <div class="karta"><div id="kal"></div><div class="kal-stopka" id="kal-stopka"></div></div>
+        <div class="karta strefy-karta"><p class="mini-tytul"><span>Strefy tętna · 90 dni</span><span>czas w strefie</span></p><div id="strefy"></div></div>
+      </div>
+      <div id="moc">
+        <header class="sek-g">
+          <p class="etykieta"><span class="znak"></span>Zwift</p>
+          <h2>Krzywa mocy</h2>
+        </header>
+        <div class="karta">
+          <div class="karta-nag"><div class="legenda" id="moc-legenda"></div></div>
+          <div id="krzywa"></div>
+          <p class="przypis">Moc tylko z trenażera. Na szosie nie ma miernika, więc mapa nie pokazuje watów.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="szczyty" aria-labelledby="t-szczyty">
+      <header class="sek-g">
+        <p class="etykieta"><span class="znak"></span>Szczyty</p>
+        <h2 id="t-szczyty">Najwyższe punkty sezonu</h2>
+      </header>
+      <ol class="szczyty" id="szczyty-lista"></ol>
+    </section>
+
+    <section class="sekcja" aria-labelledby="t-dziennik">
+      <header class="sek-g">
+        <p class="etykieta"><span class="znak"></span>Dziennik</p>
+        <h2 id="t-dziennik">Ostatnie wyjazdy w teren</h2>
+      </header>
+      <div class="karta karta-tabela"><div id="dziennik"></div></div>
+    </section>
+
+    <footer class="stopka">
+      <span>Kolarstwo · Topo</span>
+      <span>Mapa poglądowa: miejscowości prawdziwe, położenie przybliżone, rzeźba z modelu terenu</span>
+      <span>Dane przykładowe · segmenty i rekordy ze starej strony</span>
+    </footer>
+  </main>
+
+  <script src="../../wspolne/dane.js?v=3"></script>
+  <script src="../../wspolne/wykresy.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+  <script src="../../wspolne/przelacznik.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pl" data-styl="raster">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Raster · Kolarstwo</title>
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="color-scheme" content="light">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <div class="nakladka" id="nakladka" aria-hidden="true"><div class="r12"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+
+  <header class="naglowek r12">
+    <div class="c-3">
+      <a class="logo" href="#sezon">Kolarstwo</a>
+      <span class="sz">Raport treningowy</span>
+    </div>
+    <div class="c-3 ukryj-m">
+      <span>Fryderyk Marszałek</span>
+      <span class="sz">Konstancin-Jeziorna</span>
+    </div>
+    <div class="c-3 ukryj-m">
+      <span id="data"></span>
+      <span class="sz" id="tydz"></span>
+    </div>
+    <div class="c-3 prawo">
+      <button class="siatka-btn" type="button" id="siatka-btn" aria-pressed="false">Siatka <kbd>G</kbd></button>
+    </div>
+  </header>
+
+  <nav class="spis" aria-label="Spis treści">
+    <div class="r12">
+      <ol class="c-12">
+        <li><a href="#sezon"><span>01</span>Sezon</a></li>
+        <li><a href="#okres"><span>02</span>Okres</a></li>
+        <li><a href="#forma"><span>03</span>Forma</a></li>
+        <li><a href="#jazda"><span>04</span>Ostatnia jazda</a></li>
+        <li><a href="#objetosc"><span>05</span>Objętość</a></li>
+        <li><a href="#segmenty"><span>06</span>Segmenty</a></li>
+        <li><a href="#moc"><span>07</span>Moc</a></li>
+        <li><a href="#kalendarz"><span>08</span>Kalendarz</a></li>
+        <li><a href="#rekordy"><span>09</span>Rekordy</a></li>
+        <li><a href="#jazdy"><span>10</span>Jazdy</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main>
+    <section class="sekcja hero" id="sezon" aria-labelledby="t-sezon">
+      <div class="r12">
+        <h1 class="c-12 hero-liczba" id="t-sezon"><span id="hero-km">0</span><span class="hero-jedn">km</span></h1>
+        <p class="c-3 hero-opis"><b>przejechane w 2026 roku</b><span id="hero-1"></span></p>
+        <p class="c-3 hero-opis"><b id="hero-2t"></b><span id="hero-2"></span></p>
+        <p class="c-3 hero-opis"><b id="hero-3t"></b><span id="hero-3"></span></p>
+        <p class="c-3 hero-opis"><b id="hero-4t"></b><span id="hero-4"></span></p>
+        <div class="c-12 linia-celu" id="linia-celu" role="img"></div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="okres" aria-labelledby="t-okres">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">02</span>
+          <h2 id="t-okres">Okres</h2>
+          <div class="tekstowe" role="group" aria-label="Okres podsumowania" id="okresy"></div>
+        </header>
+        <div class="c-9 liczby" id="kpi"></div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="forma" aria-labelledby="t-forma">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">03</span>
+          <h2 id="t-forma">Forma</h2>
+          <p>Model obciążenia 42/7 dni. Forma rośnie powoli, zmęczenie szybko. Świeżość to różnica między nimi.</p>
+        </header>
+        <div class="c-9">
+          <div class="forma-liczby" id="forma-liczby"></div>
+          <div class="stan" id="stan"></div>
+          <div class="wykres-nag"><h3>Forma i zmęczenie · 180 dni</h3><div class="legenda" id="pmc-legenda"></div><button class="link" type="button" id="pmc-tab">Tabela</button></div>
+          <div id="pmc"></div>
+          <div class="wykres-nag maly"><h3>Świeżość</h3><div class="legenda" id="tsb-legenda"></div></div>
+          <div id="tsb"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="jazda" aria-labelledby="t-jazda">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">04</span>
+          <h2 id="t-jazda">Ostatnia jazda</h2>
+          <p id="jazda-meta"></p>
+        </header>
+        <div class="c-9">
+          <h3 class="jazda-tytul" id="jazda-tytul"></h3>
+          <div class="jazda-uklad">
+            <div class="mapa" id="mapa"></div>
+            <dl class="odczyty" id="odczyty"></dl>
+          </div>
+          <div class="strumienie">
+            <div class="strumien"><div class="s-nag"><span>Wysokość</span><span>m n.p.m.</span></div><div id="s-wys"></div></div>
+            <div class="strumien"><div class="s-nag"><span>Prędkość</span><span>km/h</span></div><div id="s-v"></div></div>
+            <div class="strumien"><div class="s-nag"><span>Tętno</span><span>bpm</span></div><div id="s-hr"></div></div>
+          </div>
+          <div class="podzial">
+            <div><h3 class="h-maly">Odcinki co 5 km</h3><div id="odcinki"></div></div>
+            <div><h3 class="h-maly">Segmenty na trasie</h3><div id="seg-dzis"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="objetosc" aria-labelledby="t-obj">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">05</span>
+          <h2 id="t-obj">Objętość</h2>
+          <p>53 tygodnie. Czarne — szosa, szare — Zwift. Czerwony — ten tydzień.</p>
+          <div class="tekstowe" role="group" aria-label="Miara" id="obj-miara"></div>
+        </header>
+        <div class="c-9">
+          <div class="wykres-nag"><h3 id="obj-tytul">Kilometry tygodniowo</h3><div class="legenda" id="obj-legenda"></div><button class="link" type="button" id="obj-tab">Tabela</button></div>
+          <div id="obj"></div>
+          <div class="miesiace" id="miesiace"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="segmenty" aria-labelledby="t-seg">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">06</span>
+          <h2 id="t-seg">Segmenty</h2>
+          <p>Najczęściej przejeżdżane. Trend: każda kreska to jedna próba, wyżej znaczy szybciej. Czerwony punkt — rekord.</p>
+          <div class="tekstowe" role="group" aria-label="Rodzaj" id="seg-filtr"></div>
+        </header>
+        <div class="c-9"><div class="tabela-wrap" id="tab-seg"></div></div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="moc" aria-labelledby="t-moc">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">07</span>
+          <h2 id="t-moc">Moc</h2>
+          <p>Wyłącznie z trenażera. Na szosie nie ma miernika mocy, więc nie podajemy tam watów — nawet szacunkowo.</p>
+        </header>
+        <div class="c-9 moc-uklad">
+          <div>
+            <div class="wykres-nag"><h3>Krzywa mocy · Zwift</h3><div class="legenda" id="moc-legenda"></div></div>
+            <div id="krzywa"></div>
+          </div>
+          <dl class="moc-liczby" id="moc-liczby"></dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="kalendarz" aria-labelledby="t-kal">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">08</span>
+          <h2 id="t-kal">Kalendarz</h2>
+          <p>Każdy kwadrat to jeden dzień. Im ciemniej, tym więcej kilometrów.</p>
+        </header>
+        <div class="c-9">
+          <div id="kal"></div>
+          <div class="kal-stopka" id="kal-stopka"></div>
+          <div class="wykres-nag strefy-nag"><h3>Strefy tętna · ostatnie 90 dni</h3></div>
+          <div class="strefy" id="strefy"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="rekordy" aria-labelledby="t-rek">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">09</span>
+          <h2 id="t-rek">Rekordy</h2>
+          <p>Od 1 sierpnia 2025.</p>
+        </header>
+        <div class="c-9 rekordy" id="rek"></div>
+      </div>
+    </section>
+
+    <section class="sekcja" id="jazdy" aria-labelledby="t-jazdy">
+      <div class="r12">
+        <header class="sek-g c-3">
+          <span class="sek-nr" aria-hidden="true">10</span>
+          <h2 id="t-jazdy">Jazdy</h2>
+          <p id="jazdy-opis"></p>
+        </header>
+        <div class="c-9"><div class="tabela-wrap" id="tab-jazdy"></div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="kolofon">
+    <div class="r12">
+      <p class="c-3"><b>Kolarstwo</b> Raport treningowy<br>Fryderyk Marszałek</p>
+      <p class="c-3">Skład: Helvetica Neue<br>Siatka: 12 kolumn, 24 px</p>
+      <p class="c-3">Kolor: czerń, biel,<br>czerwień #E3000F</p>
+      <p class="c-3">Dane przykładowe.<br>Segmenty i rekordy ze starej strony.</p>
+    </div>
+  </footer>
+
+  <script src="../../wspolne/dane.js?v=3"></script>
+  <script src="../../wspolne/wykresy.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+  <script src="../../wspolne/przelacznik.js?v=3"></script>
+</body>
+</html>
