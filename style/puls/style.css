@@ -1,0 +1,205 @@
+/* PULS — ciemna, natywna jak iOS: pierścienie, trendy, nagrody. Systemowa czcionka (SF na iPhonie). */
+:root {
+  color-scheme: dark;
+  --tlo: #000000;
+  --karta: #1C1C1E;
+  --karta-2: #2C2C2E;
+  --linia: #38383A;
+  --tekst: #FFFFFF;
+  --tekst-2: rgba(235, 235, 245, .62);
+  --tekst-3: rgba(235, 235, 245, .32);
+  --koral: #FF375F;
+  --koral-2: #FF7A95;
+  --lime: #A6F23C;
+  --lime-2: #D7FF7A;
+  --niebo: #3BC4FA;
+  --niebo-2: #8BE3FF;
+  --zloto: #FFC83D;
+  --zwift: #8B7CFF;
+  --poza: #0B0B0C;
+  --f: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
+  --zaok: 22px;
+}
+body { font: 400 15px/1.35 var(--f); color: var(--tekst); background: var(--tlo); letter-spacing: -.01em; }
+@media (min-width: 720px) { body { background: radial-gradient(900px 500px at 50% 0%, #17171A, #050505); } .apka { box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .9), 0 0 0 1px rgba(255, 255, 255, .08); } }
+.apka { background: var(--tlo); }
+:focus-visible { outline: 2.5px solid var(--lime); outline-offset: 2px; }
+
+.pasek-zakladek { left: 0; right: 0; bottom: 0; height: calc(var(--pasek-h) + env(safe-area-inset-bottom)); padding: 6px 8px env(safe-area-inset-bottom); background: rgba(22, 22, 24, .82); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: 0 -.5px 0 rgba(255, 255, 255, .14); }
+.pasek-zakladek button { color: rgba(235, 235, 245, .45); padding-bottom: 12px; }
+.pasek-zakladek button.aktywna { color: var(--lime); }
+.zak-ikona { font-size: 26px; height: 28px; display: grid; place-items: center; }
+.zak-ikona .akt { display: none; }
+.pasek-zakladek button.aktywna .akt { display: block; } .pasek-zakladek button.aktywna .nieakt { display: none; }
+.zak-nazwa { font: 500 10.5px/1 var(--f); letter-spacing: .01em; }
+
+.duzy-tytul { display: flex; justify-content: space-between; align-items: flex-end; padding: 20px 18px 10px; }
+.duzy-tytul small { display: block; font: 600 13px/1 var(--f); color: var(--tekst-2); text-transform: uppercase; letter-spacing: .02em; }
+.duzy-tytul h1 { margin-top: 6px; font: 700 34px/1.05 var(--f); letter-spacing: -.025em; }
+.awatar { all: unset; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #5E5CE6, #BF5AF2); font: 600 14px/1 var(--f); }
+.awatar:focus-visible { outline: 2.5px solid var(--lime); outline-offset: 2px; }
+
+.zaw { padding: 4px 16px 0; display: flex; flex-direction: column; gap: 12px; }
+.karta { background: var(--karta); border-radius: var(--zaok); padding: 16px; position: relative; overflow: hidden; }
+.karta-t { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 600 17px/1.2 var(--f); letter-spacing: -.02em; }
+.karta-t > span:last-child { font: 400 15px/1 var(--f); color: var(--tekst-3); display: inline-flex; align-items: center; gap: 2px; }
+.sekcja-t { padding: 14px 4px 0; font: 700 22px/1 var(--f); letter-spacing: -.02em; display: flex; justify-content: space-between; align-items: baseline; }
+.sekcja-t span { font: 400 15px/1 var(--f); color: var(--lime); }
+
+.pierscienie-uklad { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin-top: 10px; }
+.wartosci { display: flex; flex-direction: column; gap: 12px; }
+.wartosci div small { display: block; font: 600 15px/1.2 var(--f); }
+.wartosci div b { font: 600 24px/1.1 var(--f); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.wartosci div b em { font-style: normal; font-size: 15px; color: var(--tekst-2); font-weight: 600; }
+.wartosci .k small { color: var(--koral); } .wartosci .l small { color: var(--lime); } .wartosci .n small { color: var(--niebo); }
+.pierscien-tor { stroke-opacity: .22; }
+.pierscien-tor.k { stroke: var(--koral); } .pierscien-tor.l { stroke: var(--lime); } .pierscien-tor.n { stroke: var(--niebo); } .pierscien-tor.z { stroke: var(--zloto); } .pierscien-tor.g { stroke: #fff; stroke-opacity: .1; }
+.pierscien { transition: stroke-dasharray 1.4s cubic-bezier(.2, .8, .2, 1); filter: drop-shadow(0 0 6px rgba(0, 0, 0, .5)); }
+
+.dwie { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kafel { min-height: 168px; display: flex; flex-direction: column; }
+.kafel .t { display: flex; align-items: center; gap: 6px; font: 600 15px/1.2 var(--f); }
+.kafel .t i { font-size: 17px; }
+.kafel .v { margin-top: auto; font: 600 40px/1 var(--f); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.kafel .v small { font-size: 16px; color: var(--tekst-2); margin-left: 2px; letter-spacing: 0; }
+.kafel .pod { margin-top: 6px; font: 500 13px/1.25 var(--f); color: var(--tekst-2); }
+.kafel .pod b { color: var(--lime); font-weight: 600; }
+.kafel .wyk { margin: 10px -4px 0; }
+.l-txt { color: var(--lime); } .k-txt { color: var(--koral); } .n-txt { color: var(--niebo); } .z-txt { color: var(--zloto); }
+.polkole { position: relative; margin-top: 8px; height: 76px; }
+.polkole svg { display: block; margin: 0 auto; }
+.polkole b { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font: 600 30px/1 var(--f); letter-spacing: -.03em; }
+
+.trend { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; }
+.trend + .trend { border-top: .5px solid var(--linia); }
+.trend .ik { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; }
+.trend .ik.wzrost { background: rgba(166, 242, 60, .15); color: var(--lime); }
+.trend .ik.spadek { background: rgba(59, 196, 250, .15); color: var(--niebo); }
+.trend b { display: block; font: 600 15px/1.25 var(--f); }
+.trend small { display: block; font: 400 13px/1.3 var(--f); color: var(--tekst-2); }
+.trend .v { text-align: right; font: 600 17px/1 var(--f); font-variant-numeric: tabular-nums; }
+.trend .v small { font-size: 12px; margin-top: 3px; }
+
+.ostatnia .mapa-mini { height: 150px; margin: 12px -16px 0; position: relative; background: #0C0C0D; }
+.ostatnia .mapa-mini svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mapka-droga { fill: none; stroke: #2A2A2D; stroke-width: 1; }
+.mapka-trasa { fill: none; stroke: var(--koral); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.mapka-cien { fill: none; stroke: rgba(255, 55, 95, .25); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.mapka-start { fill: #fff; stroke: #000; stroke-width: 2; }
+.staty-rz { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.staty-rz small { display: block; font: 500 13px/1 var(--f); color: var(--tekst-2); }
+.staty-rz b { display: block; margin-top: 5px; font: 600 22px/1 var(--f); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.staty-rz b em { font-style: normal; font-size: 13px; color: var(--tekst-2); }
+
+.nagrody { margin: 0 -16px; padding: 0 16px 4px; scroll-padding: 16px; }
+.nagroda { width: 120px; text-align: center; }
+.krazek { width: 96px; height: 96px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; position: relative; font-size: 40px; color: #3A2A00; background: conic-gradient(from 200deg, #FFE7A0, #FFC83D, #D9961A, #FFE7A0, #FFC83D, #D9961A, #FFE7A0); box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .25), inset 0 -8px 16px rgba(0, 0, 0, .25), 0 10px 24px -10px rgba(255, 200, 61, .6); }
+.krazek::after { content: ''; position: absolute; inset: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .55), transparent 45%); }
+.nagroda.srebro .krazek { color: #23262D; background: conic-gradient(from 200deg, #F2F4F8, #BCC3CF, #8D96A6, #F2F4F8, #BCC3CF, #8D96A6, #F2F4F8); box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .25), inset 0 -8px 16px rgba(0, 0, 0, .2), 0 10px 24px -12px rgba(200, 210, 230, .5); }
+.nagroda.zabl .krazek { background: var(--karta-2); color: var(--tekst-3); box-shadow: inset 0 0 0 2px var(--linia); }
+.nagroda.zabl .krazek::after { display: none; }
+.nagroda b { display: block; margin-top: 10px; font: 600 14px/1.2 var(--f); }
+.nagroda small { display: block; margin-top: 3px; font: 400 12px/1.25 var(--f); color: var(--tekst-2); }
+
+.propozycja .t { display: flex; align-items: center; gap: 8px; color: var(--lime); font: 600 13px/1 var(--f); text-transform: uppercase; letter-spacing: .02em; }
+.propozycja h3 { margin-top: 8px; font: 700 22px/1.15 var(--f); letter-spacing: -.02em; }
+.propozycja p { margin-top: 6px; font: 400 15px/1.4 var(--f); color: var(--tekst-2); }
+.propozycja .ok { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 6px 10px; border-radius: 99px; background: rgba(166, 242, 60, .14); color: var(--lime); font: 600 13px/1 var(--f); }
+
+/* inne ekrany */
+.lista-ios { background: var(--karta); border-radius: 14px; overflow: hidden; }
+.wiersz { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; position: relative; }
+.wiersz + .wiersz::before { content: ''; position: absolute; left: 70px; right: 0; top: 0; border-top: .5px solid var(--linia); }
+.wiersz .ikb { width: 44px; height: 44px; border-radius: 12px; overflow: hidden; background: #0C0C0D; display: grid; place-items: center; }
+.wiersz .ikb.zw { background: rgba(139, 124, 255, .18); color: var(--zwift); font-size: 22px; }
+.wiersz h3 { font: 400 16px/1.25 var(--f); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wiersz p { font: 400 13px/1.3 var(--f); color: var(--tekst-2); margin-top: 1px; }
+.wiersz .km { text-align: right; font: 600 16px/1 var(--f); font-variant-numeric: tabular-nums; }
+.wiersz .km small { display: block; margin-top: 3px; font: 400 12px/1 var(--f); color: var(--tekst-2); }
+.wiersz .chev { color: var(--tekst-3); font-size: 14px; margin-left: 4px; }
+.pr-ik { color: var(--zloto); font-size: 13px; margin-left: 4px; }
+.grupa-t { padding: 14px 16px 6px; font: 400 13px/1 var(--f); color: var(--tekst-2); text-transform: uppercase; display: flex; justify-content: space-between; }
+.segm { display: flex; padding: 2px; border-radius: 9px; background: rgba(118, 118, 128, .24); margin: 8px 18px 0; }
+.segm button { all: unset; cursor: pointer; flex: 1; text-align: center; padding: 7px 0; border-radius: 7px; font: 600 13px/1 var(--f); }
+.segm button[aria-pressed="true"] { background: #636366; box-shadow: 0 3px 8px rgba(0, 0, 0, .12); }
+.segm button:focus-visible { outline: 2px solid var(--lime); outline-offset: 1px; }
+
+.wk-siatka { stroke: rgba(255, 255, 255, .07); } .wk-baza { stroke: rgba(255, 255, 255, .15); }
+.wk-os-t { font: 500 11px/1 var(--f); fill: var(--tekst-3); }
+.wk-linia { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.wk-linia.s-l { stroke: var(--lime); } .wk-obszar.s-l { fill: var(--lime); opacity: .14; }
+.wk-linia.s-k { stroke: var(--koral); } .wk-obszar.s-k { fill: var(--koral); opacity: .14; }
+.wk-linia.s-szary { stroke: rgba(235, 235, 245, .3); stroke-width: 1.5; }
+.wk-linia.s-teren { stroke: var(--lime); stroke-width: 2; } .wk-obszar.s-teren { fill: var(--lime); opacity: .14; }
+.wk-obszar { stroke: none; }
+.wk-slupek { fill: #3A3A3C; } .wk-slupek.cz-szosa { fill: var(--koral); } .wk-slupek.cz-zwift { fill: var(--zwift); }
+.wk-sl.akcent .wk-slupek.cz-szosa { fill: var(--koral-2); }
+.wk-krzyz { stroke: rgba(255, 255, 255, .4); stroke-width: 1; }
+.wk-kropka, .wk-koniec { fill: var(--tlo); stroke: var(--lime); stroke-width: 3; }
+.wk-wartosc { font: 600 12px/1 var(--f); fill: var(--tekst); }
+.wk-tip { background: #2C2C2E; color: #fff; border-radius: 12px; padding: 9px 12px; box-shadow: 0 12px 30px -8px rgba(0, 0, 0, .8); }
+.wk-tip-n { font: 500 12px/1 var(--f); color: var(--tekst-2); margin-bottom: 5px; }
+.wk-tip-w { font: 400 12.5px/1.5 var(--f); color: var(--tekst-2); }
+.wk-tip-w strong { font: 600 16px/1.3 var(--f); color: #fff; }
+.wk-tip-kreska { background: #fff; } .wk-tip-kreska.s-l { background: var(--lime); } .wk-tip-kreska.s-k { background: var(--koral); } .wk-tip-kreska.s-zw { background: var(--zwift); }
+.wk-pasmo { fill: var(--koral); opacity: .16; }
+.legenda { display: flex; gap: 14px; margin-top: 10px; font: 500 12.5px/1 var(--f); color: var(--tekst-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { width: 9px; height: 9px; border-radius: 50%; }
+
+.profil-g { text-align: center; padding: 22px 18px 6px; }
+.profil-g .duzy { width: 92px; height: 92px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #5E5CE6, #BF5AF2); font: 600 32px/1 var(--f); }
+.profil-g h1 { margin-top: 14px; font: 700 26px/1.1 var(--f); letter-spacing: -.02em; }
+.profil-g p { margin-top: 4px; font-size: 15px; color: var(--tekst-2); }
+.nagrody-siatka { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 8px; }
+.nagrody-siatka .nagroda { width: auto; }
+.nagrody-siatka .krazek { width: 82px; height: 82px; font-size: 34px; }
+.przypis { font: 400 12.5px/1.45 var(--f); color: var(--tekst-3); text-align: center; padding: 8px 18px; }
+
+/* arkusz */
+.arkusz { background: #111112; color: var(--tekst); }
+.arkusz-zamknij { background: rgba(118, 118, 128, .3); color: var(--tekst-2); }
+.sj { padding: 4px 16px 0; }
+.sj-nag { padding: 4px 48px 14px 4px; }
+.sj-kiedy { font: 600 13px/1 var(--f); color: var(--tekst-2); text-transform: uppercase; }
+.sj-tytul { margin-top: 6px; font: 700 28px/1.1 var(--f); letter-spacing: -.025em; }
+.sj-typ { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; font: 600 14px/1 var(--f); color: var(--koral); }
+.sj-mapa { position: relative; height: 280px; border-radius: 22px; overflow: hidden; background: #0C0C0D; }
+.sj-mapa .m-droga { fill: none; stroke: #26262A; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-droga.wal { stroke: #2E2E33; stroke-width: 2; }
+.sj-mapa .m-rzeka { fill: none; stroke: #102233; stroke-linecap: round; }
+.sj-mapa .m-doplyw { fill: none; stroke: #13283B; stroke-width: 1.6; }
+.sj-mapa .m-woda { font: italic 600 12px/1 var(--f); fill: #3B6A90; letter-spacing: .2em; }
+.sj-mapa .m-miejsce { font: 500 10.5px/1 var(--f); fill: #5C5C62; }
+.sj-mapa .m-kropka-miejsca { fill: #48484D; }
+.sj-mapa .m-poswiata { fill: none; stroke: var(--koral); stroke-opacity: .25; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; filter: blur(2px); }
+.sj-mapa .m-trasa { fill: none; stroke: var(--koral); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-przejechana { fill: none; stroke: #fff; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-seg { fill: none; stroke: var(--lime); stroke-width: 8; stroke-linecap: round; opacity: .35; }
+.sj-mapa .m-km rect { fill: #2C2C2E; } .sj-mapa .m-km text { font: 600 9px/1 var(--f); fill: #fff; }
+.sj-mapa .m-start circle { fill: #fff; stroke: #000; stroke-width: 3; }
+.sj-mapa .m-start text { font: 600 11px/1 var(--f); fill: #fff; paint-order: stroke; stroke: #0C0C0D; stroke-width: 3px; }
+.sj-mapa .m-skala line { stroke: var(--tekst-3); stroke-width: 1.5; } .sj-mapa .m-skala text { font: 500 10px/1 var(--f); fill: var(--tekst-3); }
+.sj-mapa .m-kursor .r1 { fill: #fff; stroke: var(--koral); stroke-width: 4; } .sj-mapa .m-kursor .r2 { fill: rgba(255, 55, 95, .2); }
+.sj-staty { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 12px; border-radius: 18px; overflow: hidden; background: var(--linia); }
+.sj-stat { padding: 13px 14px; background: var(--karta); }
+.sj-stat dt { font: 500 13px/1 var(--f); color: var(--tekst-2); }
+.sj-stat dd { margin-top: 6px; font: 600 21px/1 var(--f); letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sj-stat dd small { font: 500 12px/1 var(--f); color: var(--tekst-2); margin-left: 2px; }
+.sj-h { margin: 22px 4px 10px; font: 700 20px/1 var(--f); letter-spacing: -.02em; }
+.sj-profil { padding: 14px 10px 8px; border-radius: 18px; background: var(--karta); }
+.sj-odcinki { padding: 6px 14px; border-radius: 18px; background: var(--karta); }
+.sj-odcinki li { display: grid; grid-template-columns: 52px 1fr 40px 58px; gap: 10px; align-items: center; padding: 7px 0; font: 500 13px/1 var(--f); color: var(--tekst-2); font-variant-numeric: tabular-nums; }
+.sj-odcinki .o-tor { height: 6px; border-radius: 3px; background: #2C2C2E; overflow: hidden; }
+.sj-odcinki .o-tor i { display: block; height: 100%; border-radius: 3px; background: #636366; }
+.sj-odcinki li.naj .o-tor i { background: var(--lime); }
+.sj-odcinki .o-v { font-weight: 600; color: var(--tekst); text-align: right; }
+.sj-odcinki .o-hr { text-align: right; }
+.sj-segmenty { border-radius: 18px; background: var(--karta); padding: 2px 14px; }
+.sj-segmenty li { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 11px 0; }
+.sj-segmenty li + li { border-top: .5px solid var(--linia); }
+.sg-ik { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; background: #2C2C2E; color: var(--tekst-2); }
+.seg-pr .sg-ik { background: rgba(255, 200, 61, .18); color: var(--zloto); } .seg-blisko .sg-ik { background: rgba(166, 242, 60, .15); color: var(--lime); }
+.sg-n { font: 500 15px/1.2 var(--f); } .sg-n small { display: block; margin-top: 2px; font: 400 12.5px/1 var(--f); color: var(--tekst-2); }
+.sg-c { font: 600 17px/1 var(--f); font-variant-numeric: tabular-nums; }
+.sj-uwaga { margin: 14px 4px 0; font-size: 13px; color: var(--tekst-3); }

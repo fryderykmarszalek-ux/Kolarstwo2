@@ -1,0 +1,286 @@
+/* ŚWIAT — ilustrowany świat, poziom i seria. Klimat aplikacji-towarzysza do jazdy. */
+:root {
+  --tlo: #EEF2F8;
+  --karta: #FFFFFF;
+  --tekst: #16213A;
+  --tekst-2: #5B6680;
+  --tekst-3: #8C95A8;
+  --linia: #E4E9F1;
+  --pom: #FC6B1E;
+  --pom-2: #FF9A5C;
+  --pom-tlo: #FFF1E8;
+  --nieb: #2F7BD6;
+  --granat: #1C2944;
+  --granat-2: #2A3A5E;
+  --ziel: #22B573;
+  --zloty: #FFC53D;
+  --zwift: #2F7BD6;
+  --poza: #CFE0F4;
+  --f: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --cien: 0 1px 2px rgba(22, 33, 58, .06), 0 8px 24px -12px rgba(22, 33, 58, .18);
+}
+body { font: 400 15px/1.4 var(--f); color: var(--tekst); background: var(--tlo); }
+@media (min-width: 720px) { body { background: linear-gradient(180deg, #BFD9F5, #E9F1FB 70%); } }
+.apka { background: var(--tlo); }
+:focus-visible { outline: 3px solid var(--pom); outline-offset: 2px; }
+
+/* ───── pasek zakładek ───── */
+.pasek-zakladek { left: 0; right: 0; bottom: 0; height: calc(var(--pasek-h) + env(safe-area-inset-bottom)); padding: 6px 6px env(safe-area-inset-bottom); background: rgba(255, 255, 255, .96); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 -1px 0 var(--linia); }
+.pasek-zakladek button { color: #9AA3B5; padding-bottom: 10px; }
+.zak-ikona { font-size: 25px; height: 28px; display: grid; place-items: center; }
+.zak-ikona .akt { display: none; }
+.pasek-zakladek button.aktywna { color: var(--pom); }
+.pasek-zakladek button.aktywna .akt { display: block; } .pasek-zakladek button.aktywna .nieakt { display: none; }
+.zak-nazwa { font: 700 10.5px/1 var(--f); letter-spacing: .06em; text-transform: uppercase; }
+
+/* ───── świat na górze ───── */
+.swiat { position: relative; height: 370px; overflow: hidden; color: #fff; }
+.swiat svg.krajobraz { position: absolute; inset: 0; width: 100%; height: 100%; }
+.swiat::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 120px; background: linear-gradient(transparent, var(--tlo)); pointer-events: none; }
+.chmura { animation: dryf 60s linear infinite alternate; }
+.chmura.c2 { animation-duration: 80s; animation-direction: alternate-reverse; }
+.chmura.c3 { animation-duration: 95s; }
+@keyframes dryf { from { transform: translateX(-24px); } to { transform: translateX(24px); } }
+.kolarz { animation: pedal 1.2s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes pedal { to { transform: translateY(-1px); } }
+@media (prefers-reduced-motion: reduce) { .chmura, .kolarz { animation: none; } }
+
+.gora-app { position: relative; z-index: 2; display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; padding: 14px 16px 0; }
+.awatar { position: relative; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; }
+.awatar svg { position: absolute; inset: 0; }
+.awatar span { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--pom-2), var(--pom)); font: 800 14px/1 var(--f); letter-spacing: -.01em; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5); }
+.znak { justify-self: center; font: italic 900 27px/1 var(--f); letter-spacing: -.02em; text-transform: uppercase; text-shadow: 0 2px 0 rgba(28, 41, 68, .18); }
+.znak b { color: var(--pom); font-weight: 900; }
+.dzwonek { all: unset; cursor: pointer; justify-self: end; position: relative; width: 42px; height: 42px; display: grid; place-items: center; font-size: 26px; }
+.dzwonek .odznaka { position: absolute; top: 3px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--pom); border: 2px solid #fff; font: 800 10.5px/14px var(--f); text-align: center; }
+
+.staty { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 20px 10px 0; text-align: center; }
+.stat b { display: block; font: 800 25px/1 var(--f); letter-spacing: -.02em; text-shadow: 0 2px 0 rgba(28, 41, 68, .15); }
+.stat span { display: inline-flex; align-items: center; gap: 4px; margin-top: 7px; font: 700 10px/1 var(--f); letter-spacing: .07em; text-transform: uppercase; opacity: .92; }
+.stat span i { font-size: 13px; }
+.klapki { display: inline-flex !important; gap: 3px; margin: 0 !important; }
+.klapki em { display: inline-grid; place-items: center; width: 20px; height: 26px; border-radius: 4px; background: #fff; color: var(--granat); font: 800 19px/1 var(--f); font-style: normal; position: relative; box-shadow: 0 2px 0 rgba(28, 41, 68, .2); }
+.klapki em::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(28, 41, 68, .18); }
+
+/* ───── karty ───── */
+.karty { position: relative; z-index: 3; margin-top: -132px; padding: 0 14px; display: flex; flex-direction: column; gap: 14px; }
+.karta { background: var(--karta); border-radius: 22px; padding: 18px; box-shadow: var(--cien); position: relative; overflow: hidden; }
+.karta-nag { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.etyk { font: 700 11px/1 var(--f); letter-spacing: .08em; text-transform: uppercase; color: var(--tekst-3); display: inline-flex; align-items: center; gap: 6px; }
+.etyk.ok { color: var(--ziel); }
+.link { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font: 700 13px/1 var(--f); color: var(--pom); }
+.przycisk { all: unset; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 22px; background: var(--pom); color: #fff; font: 700 14.5px/1 var(--f); box-shadow: 0 4px 0 #D9520C; transition: transform .12s, box-shadow .12s; }
+.przycisk:active { transform: translateY(3px); box-shadow: 0 1px 0 #D9520C; }
+.przycisk.jasny { background: #fff; color: var(--granat); box-shadow: 0 4px 0 rgba(0, 0, 0, .25); }
+.przycisk:focus-visible, .link:focus-visible { outline: 3px solid var(--pom); outline-offset: 2px; }
+
+.propozycja { display: grid; grid-template-columns: 52px 1fr; gap: 4px 14px; align-items: center; }
+.propozycja .kolko { grid-row: span 2; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--pom-tlo); color: var(--pom); font-size: 28px; }
+.propozycja h3 { font: 800 19px/1.15 var(--f); letter-spacing: -.01em; }
+.propozycja .meta { font: 500 13px/1.3 var(--f); color: var(--tekst-2); }
+.propozycja p.opis { grid-column: span 2; margin-top: 10px; font-size: 14px; line-height: 1.45; color: var(--tekst-2); }
+.zaliczone { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 6px 10px 6px 8px; border-radius: 99px; background: #E7F8EF; color: #138A55; font: 700 12.5px/1 var(--f); }
+.zaliczone i { font-size: 16px; }
+
+.jazda-karta { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; }
+.mapka-box { width: 96px; height: 96px; border-radius: 16px; background: #EAF1FA; overflow: hidden; display: grid; place-items: center; }
+.mapka { width: 100%; height: 100%; }
+.mapka-droga { fill: none; stroke: #D3DEEC; stroke-width: 1; }
+.mapka-trasa { fill: none; stroke: var(--pom); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.mapka-cien { fill: none; stroke: rgba(252, 107, 30, .2); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.mapka-start { fill: #fff; stroke: var(--granat); stroke-width: 2; }
+.zw-kafel { width: 100%; height: 100%; display: grid; place-items: center; background: linear-gradient(160deg, #3F8EDB, #2563B8); color: #fff; font-size: 34px; }
+.jazda-karta h3 { font: 800 17px/1.2 var(--f); letter-spacing: -.01em; }
+.jazda-karta .kiedy { margin-top: 3px; font: 500 12.5px/1.3 var(--f); color: var(--tekst-3); }
+.mini-staty { display: flex; gap: 16px; margin-top: 10px; }
+.mini-staty div b { display: block; font: 800 17px/1 var(--f); letter-spacing: -.01em; }
+.mini-staty div small { font: 600 10.5px/1 var(--f); color: var(--tekst-3); text-transform: uppercase; letter-spacing: .05em; }
+.osiag { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 5px 9px; border-radius: 99px; background: #FFF6DA; color: #A36B00; font: 700 11.5px/1 var(--f); }
+
+.wyzwanie { background: var(--granat); color: #fff; padding: 20px 18px 18px; }
+.wyzwanie .etyk { color: var(--zloty); }
+.wyzwanie h3 { margin-top: 10px; font: 800 24px/1.1 var(--f); letter-spacing: -.015em; max-width: 13ch; }
+.wyzwanie p { margin-top: 8px; font-size: 14px; line-height: 1.4; color: #C7D1E6; max-width: 26ch; }
+.wyzwanie .ilustracja { position: absolute; right: -6px; top: 18px; width: 128px; height: 128px; }
+.wyzwanie .postep-txt { display: flex; justify-content: space-between; margin-top: 18px; font: 700 13px/1 var(--f); }
+.wyzwanie .postep-txt b { color: var(--zloty); }
+.pasek-postepu { height: 12px; border-radius: 6px; background: #EDF1F7; overflow: hidden; margin-top: 8px; }
+.pasek-postepu i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--pom-2), var(--pom)); transition: width 1.1s cubic-bezier(.2, .8, .2, 1); }
+.wyzwanie .pasek-postepu { background: rgba(255, 255, 255, .12); }
+.wyzwanie .pasek-postepu i { background: linear-gradient(90deg, #FFD86B, var(--zloty)); }
+
+.tydzien { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.dzien { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.dzien .kolo { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #EEF2F8; color: #AAB3C4; font-size: 18px; position: relative; }
+.dzien.szosa .kolo { background: var(--pom); color: #fff; }
+.dzien.zwift .kolo { background: var(--zwift); color: #fff; }
+.dzien.dzis .kolo { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--pom); }
+.dzien.przyszly .kolo { background: transparent; border: 2px dashed #D5DCE7; }
+.dzien span { font: 700 11px/1 var(--f); color: var(--tekst-3); text-transform: uppercase; }
+.dzien small { font: 600 10.5px/1 var(--f); color: var(--tekst-2); min-height: 11px; }
+.tydz-suma { display: flex; gap: 18px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--linia); }
+.tydz-suma div b { font: 800 20px/1 var(--f); letter-spacing: -.01em; }
+.tydz-suma div small { display: block; margin-top: 4px; font: 600 11px/1 var(--f); color: var(--tekst-3); text-transform: uppercase; letter-spacing: .05em; }
+
+.poziom-karta { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: center; }
+.poziom-nr { width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(145deg, #4C9BEB, #2563B8); color: #fff; display: grid; place-items: center; text-align: center; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .15); }
+.poziom-nr b { display: block; font: 900 28px/1 var(--f); }
+.poziom-nr small { display: block; font: 700 8.5px/1 var(--f); letter-spacing: .1em; text-transform: uppercase; margin-top: 3px; opacity: .85; }
+.poziom-karta h3 { font: 800 17px/1.2 var(--f); }
+.poziom-karta p { font: 500 12.5px/1.35 var(--f); color: var(--tekst-2); margin-top: 3px; }
+
+.sekcja-t { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 4px 0; }
+.sekcja-t h2 { font: 800 19px/1 var(--f); letter-spacing: -.01em; }
+.odznaki { padding: 2px 0 6px; margin: 0 -14px; padding-left: 14px; padding-right: 14px; scroll-padding: 14px; }
+.odz { width: 112px; padding: 14px 10px 12px; border-radius: 20px; background: var(--karta); box-shadow: var(--cien); text-align: center; }
+.medal { position: relative; width: 64px; height: 64px; margin: 0 auto; display: grid; place-items: center; }
+.medal svg { position: absolute; inset: 0; }
+.medal .wnetrze { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; color: #fff; background: linear-gradient(145deg, #FFB547, var(--pom)); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 0 0 3px #FFE3C7; }
+.odz.zablokowana .medal .wnetrze { background: #E8ECF3; color: #A9B2C3; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .06); }
+.odz b { display: block; margin-top: 9px; font: 800 13px/1.15 var(--f); }
+.odz small { display: block; margin-top: 3px; font: 500 11px/1.25 var(--f); color: var(--tekst-3); }
+.pierscien-tor { stroke: #EDF1F7; }
+.pierscien { stroke: var(--pom); transition: stroke-dasharray 1.2s cubic-bezier(.2, .8, .2, 1); }
+
+.cel-wiersz { display: flex; justify-content: space-between; align-items: baseline; }
+.cel-wiersz b { font: 800 30px/1 var(--f); letter-spacing: -.02em; }
+.cel-wiersz b small { font: 700 14px/1 var(--f); color: var(--tekst-3); letter-spacing: 0; }
+.cel-wiersz span { font: 700 13px/1 var(--f); color: var(--pom); }
+.cel-opis { margin-top: 10px; font-size: 13px; color: var(--tekst-2); }
+
+/* ───── inne ekrany ───── */
+.naglowek { position: sticky; top: 0; z-index: 5; padding: 18px 18px 14px; background: linear-gradient(180deg, #3F8EDB, #4E9BE6); color: #fff; }
+.naglowek h1 { font: italic 900 30px/1 var(--f); text-transform: uppercase; letter-spacing: -.02em; }
+.naglowek p { margin-top: 6px; font: 500 13.5px/1.3 var(--f); opacity: .9; }
+.zawartosc { padding: 16px 14px 0; display: flex; flex-direction: column; gap: 14px; }
+.filtry { display: flex; gap: 8px; margin-top: 14px; }
+.filtry button { all: unset; cursor: pointer; padding: 8px 14px; border-radius: 99px; background: rgba(255, 255, 255, .18); font: 700 13px/1 var(--f); }
+.filtry button[aria-pressed="true"] { background: #fff; color: var(--nieb); }
+.filtry button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.grupa-t { display: flex; justify-content: space-between; padding: 6px 4px 0; font: 700 12px/1 var(--f); letter-spacing: .06em; text-transform: uppercase; color: var(--tekst-3); }
+.grupa-t b { color: var(--tekst-2); }
+.lista { display: flex; flex-direction: column; gap: 10px; }
+.wiersz-jazdy { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 18px; background: var(--karta); box-shadow: var(--cien); }
+.wiersz-jazdy .mapka-box { width: 64px; height: 64px; border-radius: 14px; }
+.wiersz-jazdy .zw-kafel { font-size: 26px; }
+.wiersz-jazdy h3 { font: 700 15px/1.2 var(--f); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.wiersz-jazdy p { margin-top: 3px; font: 500 12px/1.3 var(--f); color: var(--tekst-3); }
+.wiersz-jazdy .km { text-align: right; font: 800 19px/1 var(--f); letter-spacing: -.01em; }
+.wiersz-jazdy .km small { display: block; margin-top: 4px; font: 600 11px/1 var(--f); color: var(--tekst-3); }
+.wiersz-jazdy .puchar { color: var(--zloty); font-size: 15px; margin-left: 4px; vertical-align: -2px; }
+
+.duza-liczba { display: flex; align-items: baseline; gap: 8px; }
+.duza-liczba b { font: 900 46px/1 var(--f); letter-spacing: -.03em; }
+.duza-liczba span { font: 700 14px/1 var(--f); color: var(--ziel); display: inline-flex; align-items: center; gap: 3px; }
+.karta p.pod { margin-top: 6px; font-size: 13.5px; color: var(--tekst-2); }
+.wk-siatka { stroke: #EEF2F7; stroke-width: 1; } .wk-baza { stroke: #DDE3EC; }
+.wk-os-t { font: 600 10.5px/1 var(--f); fill: var(--tekst-3); }
+.wk-linia { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.wk-linia.s-pom { stroke: var(--pom); } .wk-obszar.s-pom { fill: var(--pom); opacity: .1; }
+.wk-linia.s-nieb { stroke: #9DB7D9; stroke-width: 1.5; stroke-opacity: .8; }
+.wk-linia.s-teren { stroke: var(--nieb); stroke-width: 2.5; } .wk-obszar.s-teren { fill: var(--nieb); opacity: .12; }
+.wk-obszar { stroke: none; }
+.wk-slupek { fill: #C9D6E8; }
+.wk-slupek.cz-szosa { fill: var(--pom); } .wk-slupek.cz-zwift { fill: var(--zwift); }
+.wk-sl.akcent .wk-slupek.cz-szosa { fill: #FF8A47; }
+.wk-krzyz { stroke: var(--tekst-3); stroke-width: 1; stroke-opacity: .5; }
+.wk-kropka { fill: #fff; stroke: var(--pom); stroke-width: 3; }
+.wk-koniec { fill: #fff; stroke: var(--pom); stroke-width: 3; }
+.wk-wartosc { font: 800 12px/1 var(--f); fill: var(--tekst); }
+.wk-tip { background: var(--granat); color: #fff; border-radius: 12px; padding: 9px 12px; box-shadow: 0 10px 24px -8px rgba(22, 33, 58, .4); }
+.wk-tip-n { font: 600 11px/1 var(--f); opacity: .7; margin-bottom: 5px; }
+.wk-tip-w { font: 500 12px/1.5 var(--f); color: #C7D1E6; }
+.wk-tip-w strong { font: 800 15px/1.3 var(--f); color: #fff; }
+.wk-tip-kreska { background: #fff; } .wk-tip-kreska.s-pom { background: var(--pom); } .wk-tip-kreska.s-zw { background: var(--zwift); }
+.wk-pasmo { fill: var(--pom); opacity: .12; }
+.legenda { display: flex; gap: 14px; font: 600 12px/1 var(--f); color: var(--tekst-2); margin-top: 10px; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { width: 10px; height: 10px; border-radius: 50%; }
+
+.rekordy { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rek { padding: 14px; border-radius: 18px; background: var(--karta); box-shadow: var(--cien); }
+.rek i { font-size: 22px; color: var(--pom); }
+.rek b { display: block; margin-top: 8px; font: 800 22px/1 var(--f); letter-spacing: -.02em; }
+.rek b small { font: 700 12px/1 var(--f); color: var(--tekst-3); margin-left: 2px; }
+.rek span { display: block; margin-top: 5px; font: 500 12px/1.3 var(--f); color: var(--tekst-2); }
+.seg-wiersz { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 11px 0; border-top: 1px solid var(--linia); }
+.seg-wiersz:first-of-type { border-top: 0; }
+.seg-wiersz .nr { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--pom-tlo); color: var(--pom); font: 800 13px/1 var(--f); }
+.seg-wiersz b { display: block; font: 700 14.5px/1.2 var(--f); }
+.seg-wiersz small { font: 500 12px/1.2 var(--f); color: var(--tekst-3); }
+.seg-wiersz .c { text-align: right; font: 800 18px/1 var(--f); }
+.seg-wiersz .c small { display: block; margin-top: 3px; font-size: 10.5px; }
+
+.profil-gora { text-align: center; padding: 24px 18px 22px; background: linear-gradient(180deg, #3F8EDB, #4E9BE6 70%, var(--tlo)); color: #fff; }
+.profil-gora .awatar { width: 104px; height: 104px; margin: 0 auto; }
+.profil-gora .awatar span { width: 82px; height: 82px; font-size: 30px; }
+.profil-gora h1 { margin-top: 12px; font: 900 26px/1.1 var(--f); letter-spacing: -.01em; }
+.profil-gora p { margin-top: 4px; font: 600 13.5px/1 var(--f); opacity: .92; }
+.liczby-profil { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.liczby-profil div { padding: 14px 8px; border-radius: 18px; background: var(--karta); box-shadow: var(--cien); text-align: center; }
+.liczby-profil b { display: block; font: 800 21px/1 var(--f); letter-spacing: -.02em; }
+.liczby-profil small { display: block; margin-top: 5px; font: 600 10.5px/1 var(--f); color: var(--tekst-3); text-transform: uppercase; letter-spacing: .05em; }
+.odznaki-siatka { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.odznaki-siatka .odz { width: auto; }
+.ustawienia { padding: 4px 0; }
+.ust { display: grid; grid-template-columns: 38px 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--linia); }
+.ust:first-child { border-top: 0; }
+.ust .ik { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: #EEF2F8; color: var(--tekst-2); }
+.ust .ik.strava { background: #FFF1E8; color: var(--pom); }
+.ust b { font: 600 15px/1.2 var(--f); }
+.ust small { display: block; font: 500 12px/1.3 var(--f); color: var(--tekst-3); }
+.ust > span:last-child { color: var(--tekst-3); font-size: 18px; }
+.przypis { font: 500 12px/1.45 var(--f); color: var(--tekst-3); text-align: center; padding: 6px 18px; }
+
+/* ───── arkusz ───── */
+.arkusz { background: var(--tlo); color: var(--tekst); }
+.arkusz-zamknij { background: rgba(255, 255, 255, .9); color: var(--tekst); box-shadow: var(--cien); }
+.sj { padding: 4px 16px 0; }
+.sj-nag { padding: 4px 44px 14px 4px; }
+.sj-kiedy { font: 600 12px/1 var(--f); color: var(--tekst-3); text-transform: uppercase; letter-spacing: .05em; }
+.sj-tytul { margin-top: 8px; font: 900 25px/1.1 var(--f); letter-spacing: -.02em; }
+.sj-typ { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--f); color: var(--pom); }
+.sj-mapa { position: relative; height: 260px; border-radius: 22px; overflow: hidden; background: #E3ECF7; box-shadow: var(--cien); }
+.sj-mapa .m-droga { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-droga.wal { stroke: #F4F7FB; stroke-width: 3; }
+.sj-mapa .m-rzeka { fill: none; stroke: #9FC6EE; stroke-linecap: round; }
+.sj-mapa .m-doplyw { fill: none; stroke: #B9D5F2; stroke-width: 2; }
+.sj-mapa .m-woda { font: italic 700 12px/1 var(--f); fill: #5B8CC4; letter-spacing: .2em; }
+.sj-mapa .m-miejsce { font: 600 10.5px/1 var(--f); fill: #7C8AA3; }
+.sj-mapa .m-kropka-miejsca { fill: #A9B6CA; }
+.sj-mapa .m-poswiata { fill: none; stroke: var(--pom); stroke-opacity: .2; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-trasa { fill: none; stroke: var(--pom); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-przejechana { fill: none; stroke: var(--granat); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.sj-mapa .m-seg { fill: none; stroke: var(--zloty); stroke-width: 9; stroke-linecap: round; opacity: .7; }
+.sj-mapa .m-km rect { fill: #fff; stroke: none; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .2)); }
+.sj-mapa .m-km text { font: 800 9px/1 var(--f); fill: var(--granat); }
+.sj-mapa .m-start circle { fill: #fff; stroke: var(--granat); stroke-width: 3; }
+.sj-mapa .m-start text { font: 800 11px/1 var(--f); fill: var(--granat); paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.sj-mapa .m-skala line { stroke: var(--tekst-2); stroke-width: 1.5; } .sj-mapa .m-skala text { font: 600 10px/1 var(--f); fill: var(--tekst-2); }
+.sj-mapa .m-kursor .r1 { fill: #fff; stroke: var(--pom); stroke-width: 4; } .sj-mapa .m-kursor .r2 { fill: rgba(252, 107, 30, .15); stroke: none; }
+.sj-staty { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.sj-stat { padding: 12px; border-radius: 16px; background: var(--karta); box-shadow: var(--cien); }
+.sj-stat dt { font: 600 11px/1 var(--f); color: var(--tekst-3); text-transform: uppercase; letter-spacing: .05em; }
+.sj-stat dd { margin-top: 7px; font: 800 20px/1 var(--f); letter-spacing: -.02em; white-space: nowrap; }
+.sj-stat dd small { font: 700 11.5px/1 var(--f); color: var(--tekst-3); margin-left: 2px; letter-spacing: 0; }
+.sj-h { margin: 20px 4px 10px; font: 800 17px/1 var(--f); }
+.sj-profil { padding: 12px 10px 6px; border-radius: 18px; background: var(--karta); box-shadow: var(--cien); }
+.sj-odcinki { padding: 6px 14px; border-radius: 18px; background: var(--karta); box-shadow: var(--cien); }
+.sj-odcinki li { display: grid; grid-template-columns: 52px 1fr 40px 58px; gap: 10px; align-items: center; padding: 7px 0; font: 600 12.5px/1 var(--f); color: var(--tekst-2); }
+.sj-odcinki .o-tor { height: 8px; border-radius: 4px; background: #EEF2F8; overflow: hidden; }
+.sj-odcinki .o-tor i { display: block; height: 100%; border-radius: 4px; background: #C3D3EA; }
+.sj-odcinki li.naj .o-tor i { background: var(--pom); }
+.sj-odcinki .o-v { font-weight: 800; color: var(--tekst); text-align: right; }
+.sj-odcinki .o-hr { text-align: right; color: var(--tekst-3); }
+.sj-segmenty { display: flex; flex-direction: column; gap: 8px; }
+.sj-segmenty li { display: grid; grid-template-columns: 38px 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 16px; background: var(--karta); box-shadow: var(--cien); }
+.sg-ik { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: #EEF2F8; color: var(--tekst-3); }
+.seg-pr .sg-ik { background: #FFF6DA; color: #E0A100; } .seg-blisko .sg-ik { background: var(--pom-tlo); color: var(--pom); }
+.sg-n { font: 700 14px/1.2 var(--f); } .sg-n small { display: block; margin-top: 3px; font: 500 12px/1 var(--f); color: var(--tekst-3); }
+.sg-c { font: 800 17px/1 var(--f); }
+.sj-uwaga { margin: 14px 4px 0; font-size: 12.5px; color: var(--tekst-3); }
+.powiad { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+.powiad h2 { font: 900 24px/1 var(--f); padding: 2px 4px 6px; }
+.pw { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: center; padding: 12px; border-radius: 18px; background: var(--karta); box-shadow: var(--cien); }
+.pw .ik { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: var(--pom-tlo); color: var(--pom); }
+.pw b { font: 700 14.5px/1.2 var(--f); } .pw small { display: block; margin-top: 3px; font: 500 12.5px/1.3 var(--f); color: var(--tekst-2); }

@@ -6,7 +6,7 @@
   <title>Kolarstwo 2</title>
   <script>
     (function () {
-      var style = ['telemetria', 'raster', 'almanach', 'topo', 'sezon'], s = style[0];
+      var style = ['swiat', 'trener', 'puls', 'feed', 'sciezka'], s = style[0];
       try { var z = localStorage.getItem('k2.styl'); if (style.indexOf(z) >= 0) s = z; } catch (e) {}
       location.replace('style/' + s + '/');
     })();
@@ -19,11 +19,7 @@
 <body>
   <noscript>
     <p>Kolarstwo 2 — wybierz styl:
-      <a href="style/telemetria/">Telemetria</a> ·
-      <a href="style/raster/">Raster</a> ·
-      <a href="style/almanach/">Almanach</a> ·
-      <a href="style/topo/">Topo</a> ·
-      <a href="style/sezon/">Sezon</a>
+      <a href="style/swiat/">Świat</a> · <a href="style/trener/">Trener</a> · <a href="style/puls/">Puls</a> · <a href="style/feed/">Feed</a> · <a href="style/sciezka/">Ścieżka</a>
     </p>
   </noscript>
 </body>
