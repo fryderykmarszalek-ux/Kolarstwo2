@@ -463,7 +463,7 @@
     const o = Object.assign({ kontury: null, miejsca: true, km: 10, etykietaStartu: 'Start · meta', rzeka: 'Wisła', skalaKm: 2, polnoc: true, margines: 1.6, pad: 12, poswiata: false, promienKursora: 5 }, opts);
     const M = o.mapa, trasa = o.trasa, bb = W.bbox(trasa, o.margines);
     const kont = o.kontury ? W.kontury(M.wysokosc, Math.max(-1, bb[0] - 9), Math.max(-1, bb[1] - 9), Math.min(M.szer + 1, bb[2] + 9), Math.min(M.wys + 1, bb[3] + 9), o.kontury.krok || 0.2, o.kontury.poziomy) : [];
-    let rzut = null, kursor = null, przejechana = null, kh = null, kv = null;
+    let rzut = null, kursor = null, przejechana = null, kh = null, kv = null, zakresEl = null, zakres = null;
     const sc = (pts, co = 1) => 'M' + pts.filter((_, i) => i % co === 0 || i === pts.length - 1).map((p) => { const q = rzut(p); return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join('L');
     const api = {
       kursor(i) {
@@ -473,6 +473,11 @@
         kursor.setAttribute('transform', `translate(${q[0].toFixed(1)},${q[1].toFixed(1)})`); kursor.style.opacity = 1;
         if (kh) { kh.setAttribute('y1', q[1]); kh.setAttribute('y2', q[1]); kv.setAttribute('x1', q[0]); kv.setAttribute('x2', q[0]); kh.style.opacity = 1; kv.style.opacity = 1; }
         if (przejechana) przejechana.setAttribute('d', sc(trasa.slice(0, i + 1)));
+      },
+      // podświetlenie fragmentu trasy (indeksy próbek); null czyści
+      zakres(a, b) {
+        zakres = a == null ? null : [Math.min(a, b), Math.max(a, b)];
+        if (zakresEl) zakresEl.setAttribute('d', zakres ? sc(trasa.slice(zakres[0], zakres[1] + 1)) : '');
       },
     };
     W.rozmiar(host, (szer) => {
@@ -507,6 +512,7 @@
       for (const s of o.segmenty || []) W.svg('path', { d: sc(trasa.slice(Math.round(s.od * 10), Math.round(s.do * 10) + 1)), class: 'm-seg' }, svg);
       W.svg('path', { d: sc(trasa), class: 'm-trasa' }, svg);
       if (o.przejechana !== false) przejechana = W.svg('path', { d: '', class: 'm-przejechana' }, svg);
+      zakresEl = W.svg('path', { d: zakres ? sc(trasa.slice(zakres[0], zakres[1] + 1)) : '', class: 'm-zakres' }, svg);
       if (o.km) for (let k = o.km; k < trasa.length / 10 - 3; k += o.km) {
         const q = rzut(trasa[k * 10]); const g = W.svg('g', { class: 'm-km', transform: `translate(${q[0].toFixed(1)},${q[1].toFixed(1)})` }, svg);
         if (o.kmStyl === 'kropka') { W.svg('circle', { r: 2.6 }, g); W.tekst(g, 6, -6, String(k), {}); }

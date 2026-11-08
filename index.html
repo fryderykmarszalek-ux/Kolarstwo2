@@ -6,9 +6,9 @@
   <title>Kolarstwo 2</title>
   <script>
     (function () {
-      var style = ['swiat', 'trener', 'puls', 'feed', 'sciezka'], s = style[0];
+      var style = ['horyzont', 'trener', 'atlas', 'pulpit', 'os'], s = style[0];
       try { var z = localStorage.getItem('k2.styl'); if (style.indexOf(z) >= 0) s = z; } catch (e) {}
-      location.replace('style/' + s + '/');
+      location.replace('style/' + s + '/' + location.hash);
     })();
   </script>
   <style>
@@ -19,7 +19,7 @@
 <body>
   <noscript>
     <p>Kolarstwo 2 — wybierz styl:
-      <a href="style/swiat/">Świat</a> · <a href="style/trener/">Trener</a> · <a href="style/puls/">Puls</a> · <a href="style/feed/">Feed</a> · <a href="style/sciezka/">Ścieżka</a>
+      <a href="style/horyzont/">Horyzont</a> · <a href="style/trener/">Trener Pro</a> · <a href="style/atlas/">Atlas</a> · <a href="style/pulpit/">Pulpit</a> · <a href="style/os/">Oś</a> · <a href="archiwum/">archiwum</a>
     </p>
   </noscript>
 </body>

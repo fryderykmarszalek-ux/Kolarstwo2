@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pl" data-styl="almanach">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Almanach · Kolarstwo</title>
+  <meta name="theme-color" content="#F4EFE6">
+  <meta name="color-scheme" content="light">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <div class="pasek-gora" id="pasek-gora" aria-hidden="true">
+    <div class="kol">
+      <span class="pg-tytul">Almanach Kolarski</span>
+      <span class="pg-nr" id="pg-nr"></span>
+      <nav class="pg-nav"><a href="#lead">Wydanie</a><a href="#sezon">Sezon</a><a href="#forma">Forma</a><a href="#tabela">Tabela</a><a href="#moc">Trenażer</a><a href="#kalendarz">Kalendarz</a><a href="#panteon">Panteon</a></nav>
+    </div>
+  </div>
+
+  <header class="winieta kol">
+    <div class="w-gora">
+      <span id="w-wydanie"></span>
+      <span class="ukryj-m">Konstancin-Jeziorna · okolice Gassów i Obór</span>
+      <span id="w-cena"></span>
+    </div>
+    <h1 class="w-tytul">Almanach <em>Kolarski</em></h1>
+    <p class="w-podtytul">Tygodnik treningowy Fryderyka Marszałka · pisany z danych</p>
+    <nav class="w-nav" aria-label="Działy">
+      <a href="#lead">Wydanie</a><a href="#sezon">Sezon</a><a href="#forma">Forma</a><a href="#tabela">Tabela ligowa</a><a href="#moc">Z trenażera</a><a href="#kalendarz">Kalendarz</a><a href="#panteon">Panteon</a><a href="#dziennik">Dziennik</a>
+    </nav>
+  </header>
+
+  <main class="kol">
+    <!-- Wydanie: artykuł wiodący + kolumna boczna -->
+    <section class="lead" id="lead" aria-labelledby="t-lead">
+      <article class="artykul">
+        <p class="kicker" id="lead-kicker"></p>
+        <h2 class="naglowek" id="t-lead"></h2>
+        <p class="lid" id="lead-lid"></p>
+        <p class="autor" id="lead-autor"></p>
+        <figure class="ryc ryc-mapa">
+          <div class="mapa" id="mapa"></div>
+          <div class="profil" id="profil"></div>
+          <figcaption id="ryc1"></figcaption>
+        </figure>
+        <div class="tekst" id="lead-tekst"></div>
+      </article>
+
+      <aside class="boczna" aria-label="Liczby tygodnia">
+        <div class="ramka">
+          <h3 class="ramka-t">Liczby</h3>
+          <div class="zakl" role="group" aria-label="Okres" id="okresy"></div>
+          <dl class="liczby" id="liczby"></dl>
+        </div>
+        <div class="ramka">
+          <h3 class="ramka-t">Cel na 2026</h3>
+          <div id="cel"></div>
+        </div>
+        <blockquote class="cytat" id="cytat"></blockquote>
+        <div class="ramka">
+          <h3 class="ramka-t">Segmenty dnia</h3>
+          <ol class="seg-dnia" id="seg-dnia"></ol>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Sezon: small multiples -->
+    <section class="dzial" id="sezon" aria-labelledby="t-sezon">
+      <header class="dzial-g">
+        <p class="kicker">Sezon</p>
+        <h2 id="t-sezon">Szesnaście miesięcy, każdy osobno</h2>
+        <p class="lid-maly">Każdy słupek to jeden dzień. Wysokość — kilometry. Ta sama skala we wszystkich miesiącach, żeby dało się je uczciwie porównać.</p>
+      </header>
+      <div class="miesiace" id="miesiace"></div>
+    </section>
+
+    <!-- Forma -->
+    <section class="dzial" id="forma" aria-labelledby="t-forma">
+      <header class="dzial-g">
+        <p class="kicker">Forma</p>
+        <h2 id="t-forma"></h2>
+        <p class="lid-maly" id="forma-lid"></p>
+      </header>
+      <div class="forma-uklad">
+        <figure class="ryc">
+          <div class="ryc-nag"><span class="legenda" id="pmc-legenda"></span><button class="przycisk-tekst" type="button" id="pmc-tab">Pokaż tabelę</button></div>
+          <div id="pmc"></div>
+          <figcaption>Ryc. 2 — Forma (42-dniowa średnia obciążenia) i zmęczenie (7-dniowa) w ostatnich 365 dniach.² Podpisy wskazują wydarzenia, które widać na wykresie.</figcaption>
+        </figure>
+        <div class="forma-boczna">
+          <dl class="forma-liczby" id="forma-liczby"></dl>
+          <h3 class="h-maly">Rozkład wysiłku · 90 dni</h3>
+          <div id="strefy"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabela ligowa -->
+    <section class="dzial" id="tabela" aria-labelledby="t-tab">
+      <header class="dzial-g">
+        <p class="kicker">Tabela ligowa</p>
+        <h2 id="t-tab">Segmenty, które znasz najlepiej</h2>
+        <p class="lid-maly">Ułożone według liczby prób. Różowe tło: próba z ostatnich trzydziestu dni bliżej niż 3% od rekordu.</p>
+      </header>
+      <div class="tabela-wrap" id="liga"></div>
+    </section>
+
+    <!-- Z trenażera -->
+    <section class="dzial dwie" id="moc" aria-labelledby="t-moc">
+      <header class="dzial-g">
+        <p class="kicker">Z trenażera</p>
+        <h2 id="t-moc">Waty mierzone tylko w domu</h2>
+        <p class="lid-maly">Na szosie nie ma miernika mocy, więc almanach nie podaje tam watów — nawet szacunkowo.¹ Zwift mierzy je co sekundę.</p>
+        <dl class="moc-liczby" id="moc-liczby"></dl>
+      </header>
+      <figure class="ryc">
+        <div class="ryc-nag"><span class="legenda" id="moc-legenda"></span></div>
+        <div id="krzywa"></div>
+        <figcaption>Ryc. 3 — Krzywa mocy: najwyższa średnia moc utrzymana przez dany czas. Oś czasu logarytmiczna.</figcaption>
+      </figure>
+    </section>
+
+    <!-- Kalendarz -->
+    <section class="dzial" id="kalendarz" aria-labelledby="t-kal">
+      <header class="dzial-g">
+        <p class="kicker">Kalendarz</p>
+        <h2 id="t-kal">Tablica dni</h2>
+        <p class="lid-maly">Wiersz to miesiąc, kolumna to dzień. Im ciemniejsza kratka, tym więcej kilometrów. Różowa — dzisiaj.</p>
+      </header>
+      <div class="tablica-wrap"><div id="tablica"></div></div>
+      <div class="tablica-skala" id="tablica-skala"></div>
+    </section>
+
+    <!-- Panteon i dziennik -->
+    <section class="dzial dwie-rowne" aria-label="Panteon i dziennik">
+      <div id="panteon">
+        <p class="kicker">Panteon</p>
+        <h2 class="h-dzial">Rekordy sezonu</h2>
+        <ol class="panteon" id="panteon-lista"></ol>
+      </div>
+      <div id="dziennik">
+        <p class="kicker">Dziennik</p>
+        <h2 class="h-dzial">Ostatnie jazdy</h2>
+        <ol class="dziennik" id="dziennik-lista"></ol>
+      </div>
+    </section>
+
+    <footer class="przypisy">
+      <p><sup>1</sup> Moc mierzona wyłącznie na trenażerze (Zwift). Jazdy szosowe nie mają pomiaru mocy i nie są szacowane.</p>
+      <p><sup>2</sup> Forma (CTL) i zmęczenie (ATL) to wykładnicze średnie dziennego obciążenia z 42 i 7 dni; świeżość (TSB) to ich różnica z dnia poprzedniego.</p>
+      <p><sup>3</sup> Mapa poglądowa: położenie miejscowości przybliżone, ukształtowanie terenu z modelu.</p>
+      <p class="stopka-redakcja">Almanach Kolarski · skład: Newsreader i Schibsted Grotesk · dane przykładowe, segmenty i rekordy ze starej strony.</p>
+    </footer>
+  </main>
+
+  <script src="../../wspolne/dane.js?v=3"></script>
+  <script src="../../wspolne/wykresy.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+  <script src="../../wspolne/przelacznik.js?v=3"></script>
+</body>
+</html>

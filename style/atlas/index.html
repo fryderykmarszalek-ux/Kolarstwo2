@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pl" data-styl="atlas">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas · Kolarstwo</title>
+  <meta name="theme-color" content="#F7F5F0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="../../wspolne/web.css?v=6">
+  <link rel="stylesheet" href="style.css?v=6">
+</head>
+<body>
+  <header class="at-gora">
+    <a class="at-logo" href="#pulpit" aria-label="Atlas — przegląd">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" rx="8" fill="#1D3557"/><path d="M6 19c3-1 4-6 8-6s4 3 8 1" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="20.5" cy="9" r="2.4" fill="#E8613C"/></svg>
+      <span><b>Atlas</b> jazd</span>
+    </a>
+    <nav class="at-zakl" aria-label="Główne">
+      <a href="#pulpit" data-widok="pulpit">Przegląd</a>
+      <a href="#kalendarz" data-widok="kalendarz">Kalendarz</a>
+      <a href="#jazdy" data-widok="jazdy">Jazdy</a>
+      <a href="#postepy" data-widok="postepy">Postępy</a>
+    </nav>
+    <div class="at-ja"><span class="at-dane">dane przykładowe</span><span class="at-awatar" aria-label="Fryderyk Marszałek">FM</span></div>
+  </header>
+  <div class="at">
+    <div class="at-mapa-k"><div class="at-mapa"></div></div>
+    <main class="at-panel" id="tresc"></main>
+  </div>
+  <script src="../../wspolne/dane.js?v=6"></script>
+  <script src="../../wspolne/wykresy.js?v=6"></script>
+  <script src="../../wspolne/apka.js?v=6"></script>
+  <script src="../../wspolne/web.js?v=6"></script>
+  <script src="app.js?v=6"></script>
+  <script src="../../wspolne/przelacznik.js?v=6"></script>
+</body>
+</html>

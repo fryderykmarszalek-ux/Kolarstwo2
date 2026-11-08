@@ -1,0 +1,356 @@
+/* ═══════════════════════════════════════════════════════════════
+   TOPO — mapa topograficzna nocą, notatnik terenowy
+   Głęboka zieleń, kostna biel, pomarańcz trasy. Fira Sans jak na mapie.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --tlo: #0B1411;
+  --tlo-2: #0E1915;
+  --karta: #101D18;
+  --karta-2: #142520;
+  --linia: #1D2E27;
+  --linia-2: #2A3F36;
+  --linia-3: #3B5348;
+  --tekst: #E9E4D4;
+  --tekst-2: #AEB5A6;
+  --tekst-3: #75817A;
+  --tekst-4: #4E5C55;
+  --trasa: #FF7A3D;
+  --trasa-2: #FFAC80;
+  --trasa-tlo: rgba(255, 122, 61, .12);
+  --piasek: #D3B47A;
+  --woda: #2F6A82;
+  --woda-t: #6FA3B8;
+  --zwift: #8FB3E8;
+  --hr: #E8798F;
+  --dobry: #7BC8A0;
+  --uwaga: #E9B44C;
+  --zle: #E8705F;
+  --f: 'Fira Sans', 'Helvetica Neue', Arial, sans-serif;
+  --fc: 'Fira Sans Condensed', 'Fira Sans', 'Arial Narrow', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--tlo); scroll-behavior: smooth; scroll-padding-top: 64px; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--tlo); color: var(--tekst); font: 400 15px/1.5 var(--f); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; padding-bottom: 96px; }
+::selection { background: var(--trasa); color: #140a04; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, p, dl, dd, ol { margin: 0; padding: 0; }
+:focus-visible { outline: 2px solid var(--trasa); outline-offset: 2px; }
+.kol { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
+
+/* ───── górny pasek ───── */
+.gora { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 28px; height: 56px; padding: 0 24px; background: rgba(11, 20, 17, .82); -webkit-backdrop-filter: blur(10px) saturate(130%); backdrop-filter: blur(10px) saturate(130%); border-bottom: 1px solid var(--linia); }
+.marka { display: flex; align-items: center; gap: 10px; color: var(--tekst); font: 400 15px/1 var(--f); }
+.marka b { font-weight: 600; }
+.nawigacja { display: flex; gap: 22px; overflow-x: auto; scrollbar-width: none; font: 500 13px/1 var(--fc); letter-spacing: .1em; text-transform: uppercase; color: var(--tekst-3); }
+.nawigacja::-webkit-scrollbar { display: none; }
+.nawigacja a { white-space: nowrap; padding: 6px 0; transition: color .15s; }
+.nawigacja a:hover, .nawigacja a.aktywny { color: var(--tekst); }
+.nawigacja a.aktywny { box-shadow: inset 0 -2px 0 var(--trasa); }
+.wsp { margin-left: auto; font: 500 12px/1 var(--fc); letter-spacing: .08em; color: var(--tekst-3); font-feature-settings: 'tnum'; white-space: nowrap; }
+
+/* ───── wspólne ───── */
+.etykieta { display: flex; align-items: center; gap: 10px; font: 600 12px/1 var(--fc); letter-spacing: .22em; text-transform: uppercase; color: var(--piasek); }
+.znak { width: 14px; height: 10px; background: linear-gradient(var(--piasek), var(--piasek)) 0 0/100% 1.5px no-repeat, linear-gradient(var(--piasek), var(--piasek)) 0 4px/70% 1.5px no-repeat, linear-gradient(var(--piasek), var(--piasek)) 0 8px/40% 1.5px no-repeat; opacity: .8; }
+.karta { background: var(--karta); border: 1px solid var(--linia); border-radius: 6px; padding: 18px 20px; position: relative; min-width: 0; }
+.karta-nag { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+.mini-tytul { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 600 11.5px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); margin-bottom: 8px; }
+.mini-tytul span:first-child { color: var(--tekst-2); display: inline-flex; align-items: center; gap: 8px; }
+.legenda { display: flex; gap: 16px; flex-wrap: wrap; font: 500 12.5px/1 var(--f); color: var(--tekst-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 7px; }
+.kl { display: inline-block; width: 16px; height: 2px; border-radius: 1px; background: var(--tekst); }
+.kl-trasa { background: var(--trasa); } .kl-zwift { background: var(--zwift); } .kl-hr { background: var(--hr); } .kl-v { background: var(--trasa); } .kl-kosc { background: var(--tekst-2); }
+.kl.kw { width: 10px; height: 10px; border-radius: 2px; }
+.kl-teren { width: 14px; height: 10px; border-radius: 2px 2px 0 0; background: linear-gradient(#B39A5E 0 25%, #4A5E3A 25% 55%, #1E3A2D 55%); }
+.btn-t { all: unset; cursor: pointer; font: 600 11px/1 var(--fc); letter-spacing: .14em; text-transform: uppercase; color: var(--tekst-3); padding: 6px 10px; border: 1px solid var(--linia-2); border-radius: 4px; }
+.btn-t:hover, .btn-t[aria-pressed="true"] { color: var(--tekst); border-color: var(--linia-3); }
+.btn-t:focus-visible { outline: 2px solid var(--trasa); outline-offset: 2px; }
+.przelacz { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--linia-2); border-radius: 5px; }
+.przelacz button { all: unset; cursor: pointer; padding: 6px 11px; border-radius: 3px; font: 600 11px/1 var(--fc); letter-spacing: .12em; text-transform: uppercase; color: var(--tekst-3); white-space: nowrap; }
+.przelacz button:hover { color: var(--tekst); }
+.przelacz button[aria-pressed="true"] { background: var(--karta-2); color: var(--tekst); box-shadow: inset 0 0 0 1px var(--linia-3); }
+.przelacz button:focus-visible { outline: 2px solid var(--trasa); outline-offset: 1px; }
+
+/* ───── hero: mapa sezonu ───── */
+.hero { position: relative; height: clamp(540px, 82vh, 860px); border-bottom: 1px solid var(--linia); overflow: hidden; background: #09110E; }
+.hero-mapa { position: absolute; inset: 0; }
+.hero-mapa canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero-mapa svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hm-siatka { stroke: var(--tekst); stroke-opacity: .045; stroke-width: 1; shape-rendering: crispEdges; }
+.hm-kontur { fill: none; stroke: #2E4A3C; stroke-opacity: .55; stroke-width: .8; }
+.hm-kontur.gruby { stroke: #4B6B58; stroke-opacity: .6; stroke-width: 1.1; }
+.hm-kontur-t { font: 500 9.5px/1 var(--fc); fill: #6F8A7A; letter-spacing: .04em; paint-order: stroke; stroke: #0C1612; stroke-width: 3px; }
+.hm-rzeka { fill: none; stroke: #173847; stroke-linecap: round; stroke-linejoin: round; }
+.hm-rzeka-brzeg { fill: none; stroke: #24536A; stroke-width: 1; }
+.hm-doplyw { fill: none; stroke: #24536A; stroke-width: 1.6; }
+.hm-droga { fill: none; stroke: #2B3F36; stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; }
+.hm-cieplo { fill: none; stroke: var(--trasa); stroke-linecap: round; stroke-linejoin: round; mix-blend-mode: screen; }
+.hm-poswiata { fill: none; stroke: var(--trasa); stroke-linecap: round; stroke-linejoin: round; opacity: .16; filter: blur(3px); }
+.hm-hit { fill: none; stroke: transparent; stroke-width: 12; cursor: crosshair; }
+.hm-hit:hover + .hm-zazn, .hm-zazn.on { opacity: 1; }
+.hm-zazn { fill: none; stroke: #FFF4EC; stroke-width: 2.5; opacity: 0; pointer-events: none; stroke-linecap: round; }
+.hm-miejsce { font: 600 11px/1 var(--fc); letter-spacing: .22em; text-transform: uppercase; fill: var(--tekst); fill-opacity: .78; paint-order: stroke; stroke: #0B1411; stroke-width: 3.5px; stroke-opacity: .9; }
+.hm-miejsce.miasto { font-size: 13px; letter-spacing: .26em; fill-opacity: .92; }
+.hm-miejsce.punkt { font: italic 400 11px/1 var(--f); letter-spacing: .06em; text-transform: none; }
+.hm-kropka { fill: var(--tekst); fill-opacity: .7; }
+.hm-woda { font: italic 400 15px/1 var(--f); fill: var(--woda-t); letter-spacing: .5em; paint-order: stroke; stroke: #0B1411; stroke-width: 3px; }
+.hm-dom { fill: var(--tekst); stroke: #0B1411; stroke-width: 2; }
+.hm-ramka { fill: none; stroke: var(--tekst); stroke-opacity: .28; }
+.hm-tick { stroke: var(--tekst); stroke-opacity: .4; }
+.hm-tick-t { font: 500 9.5px/1 var(--fc); fill: var(--tekst-3); letter-spacing: .06em; }
+.hero-tytul { position: absolute; left: 32px; top: 30px; max-width: 360px; padding: 20px 22px 18px; background: rgba(11, 20, 17, .78); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid var(--linia-2); border-radius: 6px; }
+.hero-tytul h1 { margin-top: 12px; font: 300 40px/1.02 var(--f); letter-spacing: -.02em; }
+.hero-tytul h1 span { font-weight: 600; }
+.hero-opis { margin-top: 10px; font-size: 13.5px; line-height: 1.5; color: var(--tekst-2); }
+.hero-liczby { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.hero-liczby .w { padding: 10px 0 8px; border-top: 1px solid var(--linia-2); }
+.hero-liczby dt { font: 600 10.5px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); }
+.hero-liczby dd { margin-top: 6px; font: 500 26px/1 var(--f); letter-spacing: -.02em; white-space: nowrap; }
+.hero-liczby dd small { font-size: 13px; color: var(--tekst-3); margin-left: 3px; letter-spacing: 0; }
+.hero-liczby .szer { grid-column: span 2; }
+.hero-liczby .szer dd { font-size: 16px; font-weight: 500; letter-spacing: 0; white-space: normal; line-height: 1.3; }
+.hero-legenda { position: absolute; right: 32px; bottom: 82px; padding: 14px 16px 12px; background: rgba(11, 20, 17, .78); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid var(--linia-2); border-radius: 6px; font: 500 12px/1 var(--f); color: var(--tekst-2); }
+.hero-legenda h3 { font: 600 10.5px/1 var(--fc); letter-spacing: .18em; text-transform: uppercase; color: var(--tekst-3); margin-bottom: 10px; }
+.hero-legenda .lw { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.hero-legenda svg { flex: none; }
+.hero-legenda .skala { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--linia-2); display: flex; justify-content: space-between; align-items: center; gap: 16px; color: var(--tekst-3); font: 500 11px/1 var(--fc); letter-spacing: .08em; }
+.hm-tip { position: absolute; z-index: 5; pointer-events: none; padding: 9px 11px; background: rgba(16, 29, 24, .96); border: 1px solid var(--linia-3); border-radius: 5px; font: 400 12.5px/1.45 var(--f); color: var(--tekst-2); opacity: 0; transition: opacity .1s; white-space: nowrap; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .6); }
+.hm-tip.on { opacity: 1; }
+.hm-tip b { display: block; font: 500 20px/1.2 var(--f); color: var(--tekst); letter-spacing: -.01em; }
+
+/* ───── sekcje ───── */
+.sekcja { padding-top: 76px; }
+.sek-g { margin-bottom: 24px; max-width: 760px; }
+.sek-g h2 { margin-top: 12px; font: 300 clamp(28px, 3.4vw, 40px)/1.08 var(--f); letter-spacing: -.02em; text-wrap: balance; }
+.sek-opis { margin-top: 10px; color: var(--tekst-2); font-size: 15px; max-width: 64ch; }
+
+/* jazda */
+.jazda-uklad { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: 16px; }
+.karta-mapa { padding: 0; overflow: hidden; }
+.mapa { position: relative; height: 100%; min-height: 480px; background: #0A130F; }
+.m-svg { position: absolute; inset: 0; display: block; }
+.m-kontur { fill: none; stroke: #20362C; stroke-width: .9; }
+.m-kontur.gruby { stroke: #2F4A3C; stroke-width: 1.2; }
+.m-droga { fill: none; stroke: #263A31; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.m-droga.wal { stroke: #2E4A44; stroke-width: 1.5; }
+.m-rzeka { fill: none; stroke: #173847; stroke-linecap: round; stroke-linejoin: round; }
+.m-doplyw { fill: none; stroke: #24536A; stroke-width: 1.5; }
+.m-woda { font: italic 400 13px/1 var(--f); fill: var(--woda-t); letter-spacing: .4em; }
+.m-miejsce { font: 600 10px/1 var(--fc); letter-spacing: .2em; text-transform: uppercase; fill: var(--tekst-2); paint-order: stroke; stroke: #0A130F; stroke-width: 3px; }
+.m-miejsce.punkt { font: italic 400 11px/1 var(--f); letter-spacing: .04em; text-transform: none; }
+.m-kropka-miejsca { fill: var(--tekst-3); }
+.m-poswiata { fill: none; stroke: var(--trasa); stroke-opacity: .2; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; filter: blur(2px); }
+.m-trasa { fill: none; stroke: var(--trasa); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.m-przejechana { fill: none; stroke: #FFF2E8; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.m-seg { fill: none; stroke: var(--piasek); stroke-width: 8; stroke-opacity: .35; stroke-linecap: round; }
+.m-km rect { fill: #0A130F; stroke: var(--trasa); stroke-opacity: .7; }
+.m-km text { font: 600 9px/1 var(--fc); fill: var(--trasa-2); letter-spacing: .04em; }
+.m-start circle { fill: var(--tekst); stroke: #0A130F; stroke-width: 2.5; }
+.m-start text { font: 600 10px/1 var(--fc); letter-spacing: .18em; text-transform: uppercase; fill: var(--tekst); paint-order: stroke; stroke: #0A130F; stroke-width: 3px; }
+.m-skala line { stroke: var(--tekst-2); } .m-skala text { font: 500 10.5px/1 var(--fc); fill: var(--tekst-2); letter-spacing: .06em; }
+.m-polnoc path { fill: var(--tekst-2); } .m-polnoc text { font: 600 10px/1 var(--fc); fill: var(--tekst-2); }
+.m-kursor { pointer-events: none; }
+.m-kursor .r1 { fill: var(--trasa); stroke: #0A130F; stroke-width: 2.5; }
+.m-kursor .r2 { fill: var(--trasa-tlo); stroke: var(--trasa); stroke-opacity: .6; }
+
+.odczyty { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: -4px 0 14px; }
+.odczyt { padding: 10px 0 12px; border-bottom: 1px solid var(--linia); }
+.odczyt:nth-child(3n+2), .odczyt:nth-child(3n+3) { padding-left: 16px; border-left: 1px solid var(--linia); }
+.odczyt .l { font: 600 10.5px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); }
+.odczyt .v { margin-top: 8px; font: 400 28px/1 var(--f); letter-spacing: -.02em; font-feature-settings: 'tnum'; white-space: nowrap; }
+.odczyt .v small { font-size: 13px; color: var(--tekst-3); margin-left: 4px; letter-spacing: 0; }
+.odczyty.na-zywo .odczyt .v { color: var(--trasa-2); }
+.przekroj { margin-top: 10px; }
+.strumienie { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* wykresy */
+.wk { position: relative; }
+.wk-svg { display: block; overflow: visible; touch-action: pan-y; }
+.wk-siatka { stroke: var(--linia); stroke-width: 1; shape-rendering: crispEdges; }
+.wk-baza { stroke: var(--linia-3); stroke-width: 1; shape-rendering: crispEdges; }
+.wk-os-t { font: 500 10.5px/1 var(--fc); fill: var(--tekst-3); letter-spacing: .04em; font-feature-settings: 'tnum'; }
+.wk-linia { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.wk-linia.s-trasa { stroke: var(--trasa); } .wk-linia.s-kosc { stroke: var(--tekst); stroke-width: 1.5; } .wk-linia.s-szary { stroke: var(--tekst-3); stroke-width: 1.25; }
+.wk-linia.s-v { stroke: var(--trasa); stroke-width: 1.4; } .wk-linia.s-hr { stroke: var(--hr); stroke-width: 1.4; }
+.wk-linia.s-zm { stroke: var(--trasa); stroke-width: 1.15; stroke-opacity: .78; }
+.wk-linia.s-teren { stroke: var(--piasek); stroke-width: 1.4; }
+.wk-linia.s-plan { stroke: var(--tekst-4); stroke-width: 1; }
+.wk-obszar { stroke: none; }
+.wk-obszar.s-trasa { fill: var(--trasa); opacity: .1; } .wk-obszar.s-v { fill: var(--trasa); opacity: .07; } .wk-obszar.s-hr { fill: var(--hr); opacity: .07; }
+.wk-krzyz { stroke: var(--tekst); stroke-opacity: .35; stroke-width: 1; visibility: hidden; shape-rendering: crispEdges; }
+.wk-hover .wk-krzyz { visibility: visible; }
+.wk-kropka { visibility: hidden; stroke: var(--karta); stroke-width: 2; fill: var(--tekst); }
+.wk-kropka.s-trasa, .wk-kropka.s-zm, .wk-kropka.s-v { fill: var(--trasa); } .wk-kropka.s-hr { fill: var(--hr); } .wk-kropka.s-teren { fill: var(--piasek); } .wk-kropka.s-szary { fill: var(--tekst-3); }
+.wk-kropka.s-plan { display: none; }
+.wk-hover .wk-kropka { visibility: visible; }
+.wk-koniec { fill: var(--tekst); stroke: var(--karta); stroke-width: 2; }
+.wk-slupek { fill: var(--trasa); }
+.wk-slupek.cz-szosa { fill: #B8673C; } .wk-slupek.cz-zwift { fill: #4D6A8E; }
+.wk-sl.akcent .wk-slupek.cz-szosa { fill: var(--trasa); } .wk-sl.akcent .wk-slupek.cz-zwift { fill: var(--zwift); }
+.wk-hover .wk-sl { opacity: .4; } .wk-hover .wk-sl.wk-aktywny { opacity: 1; }
+.wk-wartosc { font: 600 11px/1 var(--fc); fill: var(--tekst); letter-spacing: .04em; }
+.wk-tip { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; min-width: 150px; padding: 9px 11px; background: rgba(20, 37, 32, .97); border: 1px solid var(--linia-3); border-radius: 5px; box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .7); opacity: 0; transition: opacity .1s; }
+.wk-tip--on { opacity: 1; }
+.wk-tip-n { font: 600 10.5px/1 var(--fc); letter-spacing: .14em; text-transform: uppercase; color: var(--tekst-3); margin-bottom: 7px; white-space: nowrap; }
+.wk-tip-w { display: flex; align-items: baseline; gap: 8px; font: 400 12.5px/1.5 var(--f); color: var(--tekst-2); white-space: nowrap; }
+.wk-tip-w strong { font: 500 16px/1.3 var(--f); color: var(--tekst); }
+.wk-tip-kreska { width: 10px; height: 2px; border-radius: 1px; align-self: center; flex: none; background: var(--tekst); }
+.wk-tip-kreska.s-trasa, .wk-tip-kreska.s-zm { background: var(--trasa); } .wk-tip-kreska.s-zwift { background: var(--zwift); } .wk-tip-kreska.s-szary { background: var(--tekst-3); } .wk-tip-kreska.s-teren { background: var(--piasek); }
+.wk-tip-kreska.kw { width: 8px; height: 8px; border-radius: 2px; }
+.wk-tabela-wrap { overflow: auto; max-height: 360px; }
+.wk-tabela { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f); font-feature-settings: 'tnum'; }
+.wk-tabela caption { display: none; }
+.wk-tabela th, .wk-tabela td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--linia); text-align: left; white-space: nowrap; }
+.wk-tabela thead th { position: sticky; top: 0; background: var(--karta); font: 600 10.5px/1 var(--fc); letter-spacing: .14em; text-transform: uppercase; color: var(--tekst-3); }
+.wk-tabela .num { text-align: right; }
+.wk-pasmo { fill: var(--piasek); opacity: .08; }
+
+/* krajobraz formy: pasy wysokości */
+.pas-0 { fill: #13261E; } .pas-1 { fill: #1A3428; } .pas-2 { fill: #234433; } .pas-3 { fill: #33573D; } .pas-4 { fill: #5A6E40; } .pas-5 { fill: #8E844F; } .pas-6 { fill: #C2A665; }
+.warstwica { stroke: #0B1411; stroke-opacity: .55; stroke-width: 1; shape-rendering: crispEdges; }
+.szczyt-t { font: 600 11px/1 var(--fc); letter-spacing: .12em; text-transform: uppercase; fill: var(--tekst); paint-order: stroke; stroke: var(--karta); stroke-width: 3px; }
+.szczyt-z { fill: var(--tekst); }
+.dzis-t { font: 600 11px/1 var(--fc); letter-spacing: .12em; text-transform: uppercase; fill: var(--trasa-2); }
+.prof-pas-0 { fill: #13261E; } .prof-pas-1 { fill: #1B3428; } .prof-pas-2 { fill: #294533; } .prof-pas-3 { fill: #4A603C; } .prof-pas-4 { fill: #8A7D4C; }
+
+.forma-uklad { display: grid; grid-template-columns: minmax(0, 9fr) minmax(0, 3fr); gap: 16px; }
+.forma-liczby .w { padding: 12px 0 13px; border-bottom: 1px solid var(--linia); }
+.forma-liczby .w:first-child { padding-top: 2px; }
+.forma-liczby dt { display: flex; align-items: center; gap: 8px; font: 600 10.5px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); }
+.forma-liczby dd { margin-top: 8px; font: 300 46px/1 var(--f); letter-spacing: -.03em; }
+.forma-liczby dd small { font: 400 13px/1 var(--f); color: var(--tekst-3); margin-left: 6px; letter-spacing: 0; }
+.stan { margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--tekst-2); line-height: 1.45; }
+.stan b { display: block; font: 600 11px/1.3 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--uwaga); margin-bottom: 3px; }
+.stan.s-good b { color: var(--dobry); } .stan.s-critical b { color: var(--zle); }
+.stan svg { flex: none; margin-top: 1px; }
+
+/* objętość */
+.obj-uklad { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 16px; }
+.obj-liczby { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 14px; }
+.ol { padding: 4px 0 12px; border-bottom: 1px solid var(--linia); }
+.ol + .ol { padding-left: 16px; border-left: 1px solid var(--linia); }
+.ol .l { font: 600 10.5px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); }
+.ol .v { margin-top: 8px; font: 300 34px/1 var(--f); letter-spacing: -.03em; white-space: nowrap; }
+.ol .v small { font: 400 13px/1 var(--f); color: var(--tekst-3); margin-left: 4px; letter-spacing: 0; }
+.ol .d { margin-top: 6px; font-size: 12.5px; color: var(--tekst-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ol .d b { color: var(--dobry); font-weight: 500; } .ol .d b.minus { color: var(--tekst-2); }
+.obj-liczby.zmiana .v { animation: przejscie .35s ease-out; }
+@keyframes przejscie { from { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .obj-liczby.zmiana .v { animation: none; } }
+.cel-karta { display: flex; flex-direction: column; }
+.cel-v { font: 300 52px/1 var(--f); letter-spacing: -.035em; margin-top: 6px; }
+.cel-v small { font: 400 16px/1 var(--f); color: var(--tekst-3); letter-spacing: 0; margin-left: 4px; }
+.cel-tor { position: relative; height: 10px; margin-top: 16px; border-radius: 5px; background: var(--karta-2); box-shadow: inset 0 0 0 1px var(--linia); }
+.cel-tor i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: linear-gradient(90deg, #B8673C, var(--trasa)); }
+.cel-tor .plan { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--tekst); border-radius: 1px; }
+.cel-op { margin-top: 12px; font-size: 13.5px; color: var(--tekst-2); }
+.cel-op b { color: var(--tekst); font-weight: 500; }
+.cel-wiersze { margin-top: auto; padding-top: 18px; }
+.cel-wiersze .w { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--linia); font-size: 13.5px; color: var(--tekst-3); }
+.cel-wiersze .w b { color: var(--tekst); font-weight: 500; }
+
+/* szlaki */
+.szlaki { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.szlak { display: grid; grid-template-columns: 76px 1fr; gap: 6px 14px; padding: 16px 18px 14px; }
+.szlak .ksztalt { grid-row: span 2; width: 76px; height: 76px; border-radius: 4px; background: #0A130F; border: 1px solid var(--linia); }
+.szlak .ksztalt path.s { fill: none; stroke: var(--trasa); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.szlak .ksztalt path.d { fill: none; stroke: #263A31; stroke-width: 1; }
+.szlak .ksztalt circle { fill: var(--tekst); }
+.szlak .ksztalt.zw { display: grid; place-items: center; font: 600 10px/1 var(--fc); letter-spacing: .2em; color: var(--zwift); background: rgba(143, 179, 232, .06); border-color: rgba(143, 179, 232, .25); }
+.szlak h3 { font: 500 16px/1.2 var(--f); letter-spacing: -.005em; }
+.szlak .meta { font: 500 11px/1.3 var(--fc); letter-spacing: .1em; text-transform: uppercase; color: var(--tekst-3); }
+.szlak .prof { grid-column: span 2; margin-top: 4px; }
+.szlak .prof svg { display: block; width: 100%; height: 40px; }
+.szlak .prof .pf { fill: #1E3A2D; } .szlak .prof .pl { fill: none; stroke: var(--piasek); stroke-width: 1.2; }
+.szlak .dol { grid-column: span 2; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-top: 10px; border-top: 1px solid var(--linia); }
+.szlak .pr { font: 300 30px/1 var(--f); letter-spacing: -.02em; }
+.szlak .pr small { display: block; font: 600 10px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); margin-bottom: 5px; }
+.szlak .ost { font-size: 12.5px; color: var(--tekst-3); text-align: right; }
+.szlak .ost b { display: block; color: var(--tekst-2); font-weight: 500; font-size: 13.5px; }
+.szlak .spark-k { grid-column: span 2; }
+.wk-spark { display: block; overflow: visible; }
+.wk-spark-linia { stroke: var(--tekst-3); stroke-width: 1.2; stroke-linejoin: round; }
+.wk-spark-pr { fill: var(--trasa); }
+.wk-spark-kon { fill: var(--tekst); }
+.szlaki-wiecej { all: unset; cursor: pointer; grid-column: 1 / -1; justify-self: center; font: 600 11.5px/1 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-2); padding: 12px 18px; border: 1px solid var(--linia-2); border-radius: 5px; }
+.szlaki-wiecej:hover { color: var(--tekst); border-color: var(--linia-3); }
+.szlaki-wiecej:focus-visible { outline: 2px solid var(--trasa); outline-offset: 2px; }
+
+/* kalendarz, strefy, moc */
+.sekcja.dwie { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; align-items: start; }
+.wk-kal .wk-kom { transition: opacity .1s; }
+.wk-p0 { fill: #13211B; } .wk-p1 { fill: #3D2C1E; } .wk-p2 { fill: #7B4527; } .wk-p3 { fill: #C25E2E; } .wk-p4 { fill: var(--trasa); }
+.wk-kal .wk-aktywny { stroke: var(--tekst); stroke-width: 1.5; }
+.wk-kal .wk-dzis { stroke: var(--tekst); stroke-width: 1.2; }
+.kal-stopka { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linia); font-size: 12.5px; color: var(--tekst-3); }
+.kal-stopka b { color: var(--tekst); font-weight: 500; margin-left: 5px; }
+.strefy-karta { margin-top: 16px; }
+.strefa { display: grid; grid-template-columns: 34px 1fr 74px; gap: 10px; align-items: center; padding: 6px 0; }
+.strefa .z { font: 600 11px/1 var(--fc); letter-spacing: .1em; color: var(--tekst-2); }
+.strefa .tor { height: 12px; border-radius: 2px; background: var(--karta-2); overflow: hidden; }
+.strefa .tor i { display: block; height: 100%; border-radius: 2px; }
+.strefa .p { font: 400 13px/1 var(--f); color: var(--tekst-2); text-align: right; font-feature-settings: 'tnum'; }
+.z1 { background: #2B4A35; } .z2 { background: #46603C; } .z3 { background: #7A7448; } .z4 { background: #B8673C; } .z5 { background: var(--trasa); }
+.przypis { margin-top: 12px; font-size: 13px; color: var(--tekst-3); }
+
+/* szczyty */
+.szczyty { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.szczyt { padding: 18px 20px 16px; border: 1px solid var(--linia); border-radius: 6px; background: var(--karta); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: start; }
+.szczyt svg { grid-row: span 3; margin-top: 4px; }
+.szczyt .n { font: 600 10.5px/1.2 var(--fc); letter-spacing: .16em; text-transform: uppercase; color: var(--tekst-3); }
+.szczyt .v { font: 300 40px/1 var(--f); letter-spacing: -.03em; white-space: nowrap; }
+.szczyt .v small { font-size: 14px; color: var(--tekst-3); margin-left: 4px; letter-spacing: 0; }
+.szczyt .d { font-size: 13px; color: var(--tekst-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* dziennik */
+.karta-tabela { padding: 4px 20px; }
+.dz { width: 100%; border-collapse: collapse; font-feature-settings: 'tnum'; }
+.dz th { text-align: left; font: 600 10.5px/1 var(--fc); letter-spacing: .14em; text-transform: uppercase; color: var(--tekst-3); padding: 12px 12px 10px 0; border-bottom: 1px solid var(--linia-2); white-space: nowrap; }
+.dz td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--linia); white-space: nowrap; font-size: 14px; color: var(--tekst-2); }
+.dz tr:last-child td { border-bottom: 0; }
+.dz .num { text-align: right; }
+.dz .nz { color: var(--tekst); font-weight: 500; white-space: normal; min-width: 200px; }
+.dz .typ { font: 600 10px/1 var(--fc); letter-spacing: .14em; text-transform: uppercase; padding: 3px 6px; border-radius: 3px; background: var(--trasa-tlo); color: var(--trasa-2); }
+.dz .typ.zw { background: rgba(143, 179, 232, .1); color: var(--zwift); }
+.dz tbody tr:hover td { background: rgba(255, 255, 255, .02); }
+
+.stopka { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 76px; padding: 18px 0; border-top: 1px solid var(--linia); font: 500 11px/1.5 var(--fc); letter-spacing: .1em; text-transform: uppercase; color: var(--tekst-4); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-tytul, .hero-legenda { animation: pojaw .8s .2s cubic-bezier(.2, .8, .2, 1) both; }
+  .hero-legenda { animation-delay: .35s; }
+  @keyframes pojaw { from { opacity: 0; transform: translateY(8px); } }
+  .hm-cieplo { animation: swiec 1.4s ease-out both; }
+  @keyframes swiec { from { opacity: 0; } }
+}
+
+@media (max-width: 1100px) {
+  .jazda-uklad, .forma-uklad, .obj-uklad, .sekcja.dwie { grid-template-columns: 1fr; }
+  .mapa { min-height: 400px; }
+  .szlaki, .szczyty { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wsp { display: none; }
+}
+@media (max-width: 720px) {
+  .kol { padding: 0 16px; }
+  .gora { padding: 0 16px; gap: 16px; }
+  .nawigacja { display: none; }
+  .hero { height: auto; min-height: 0; display: flex; flex-direction: column; }
+  .hero-mapa { position: relative; height: 62vh; min-height: 420px; }
+  .hero-tytul { position: relative; left: auto; top: auto; max-width: none; margin: -60px 16px 0; z-index: 2; }
+  .hero-tytul h1 { font-size: 32px; }
+  .hero-legenda { position: relative; right: auto; bottom: auto; margin: 12px 16px 20px; }
+  .sekcja { padding-top: 56px; }
+  .karta { padding: 16px; }
+  .mapa { min-height: 320px; }
+  .odczyt .v { font-size: 22px; }
+  .strumienie { grid-template-columns: 1fr; }
+  .obj-liczby { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ol:nth-child(3) { padding-left: 0; border-left: 0; }
+  .ol .v { font-size: 28px; }
+  .szlaki, .szczyty { grid-template-columns: 1fr; }
+  .dz .ukryj-m { display: none; }
+  .forma-liczby dd { font-size: 38px; }
+}
