@@ -102,6 +102,13 @@ ekranem, płynne przewijanie), a porównanie ze starą wersją bez jej czcionki 
 
 - **Prawdziwe dane** — strona stoi na przykładowych. Podłączenie danych ze starej strony
   (`dane.js` jako `window.DANE`) to osobny krok.
+  **Pełne dane każdej jazdy leżą w repo `Kolarstwo`, katalog `surowe/`** (od 11.11.2026):
+  szczegóły jazdy i wszystkie 11 strumieni w pełnej rozdzielczości, bez zaokrągleń,
+  dociągane co noc. Format w `Kolarstwo/surowe/README.md`. Tam, a nie w Kolarstwie2,
+  bo klucze Stravy są w sekretach tamtego repo. **Na stronie nic się od tego nie
+  zmieniło** — decyzja Fryderyka: najpierw zebrać dane, AI na koniec.
+- **AI** — propozycja z 11.11.2026, jeszcze nie decyzja: Cloudflare Worker + Claude
+  przez API, „kod liczy, model interpretuje”. Fryderyk: „AI dodamy na koniec”.
 
 ## 7. Praca między urządzeniami — lekcja z 11.11.2026
 
