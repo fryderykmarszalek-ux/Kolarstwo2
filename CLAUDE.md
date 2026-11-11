@@ -8,6 +8,9 @@ Jej `CLAUDE.md` §2 opisuje, jak pracować z Fryderykiem — czytać. Skrót: ni
 (każde pojęcie tłumaczyć), 16 lat i umysł matematyczny, **chce krytyki bez łagodzenia**,
 po polsku i kolokwialnie, **jedno pytanie na raz**, pracuje na iPadzie i telefonie.
 
+**Na końcu KAŻDEJ wiadomości link do strony:** https://fryderykmarszalek-ux.github.io/Kolarstwo2/
+(prośba Fryderyka z 11.11.2026).
+
 ---
 
 ## 1. Co to jest i po co
