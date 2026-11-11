@@ -77,8 +77,8 @@
   const info = h('button', { class: 'k2s-info', type: 'button', 'aria-label': 'O przełączniku', 'aria-expanded': 'false' });
   info.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg>';
   const pop = h('div', { class: 'k2s-pop', hidden: '' });
-  pop.innerHTML = '<strong>Runda trzecia: pięć szerokich stron</strong><p>Wszystkie liczby są <b>przykładowe</b>; segmenty i rekordy pochodzą ze starej strony. Plan treningów to szkic do pokazu. Najlepiej oglądać na komputerze, na całym ekranie.</p><p style="color:#9C9CA4">' + STYLE[idx].opis + '.</p><p>Poprzednie rundy: <a href="' + baza + 'archiwum/">archiwum</a>.</p><p style="margin:0">Skróty: <kbd>1</kbd>–<kbd>5</kbd>, <kbd>[</kbd> <kbd>]</kbd>.</p>';
-  const arch = h('a', { class: 'k2s-arch', href: baza + 'archiwum/', title: 'Poprzednie rundy propozycji' }, 'Archiwum rund 1–2');
+  pop.innerHTML = '<strong>Runda trzecia: pięć szerokich stron</strong><p>Wszystkie liczby są <b>przykładowe</b>; segmenty i rekordy pochodzą ze starej strony. Plan treningów to szkic do pokazu. Najlepiej oglądać na komputerze, na całym ekranie.</p><p style="color:#9C9CA4">' + STYLE[idx].opis + '.</p><p>Poprzednie rundy: <a href="' + baza + '../">archiwum</a>.</p><p style="margin:0">Skróty: <kbd>1</kbd>–<kbd>5</kbd>, <kbd>[</kbd> <kbd>]</kbd>.</p>';
+  const arch = h('a', { class: 'k2s-arch', href: baza + '../', title: 'Poprzednie rundy propozycji' }, 'Archiwum');
   nav.append(h('span', { class: 'k2s-etyk', text: 'Styl' }), strL, lista, strP, info, pop, arch);
   info.addEventListener('click', (e) => { e.stopPropagation(); const o = pop.hidden; pop.hidden = !o; info.setAttribute('aria-expanded', String(o)); });
   document.addEventListener('click', (e) => { if (!pop.hidden && !nav.contains(e.target)) { pop.hidden = true; info.setAttribute('aria-expanded', 'false'); } });

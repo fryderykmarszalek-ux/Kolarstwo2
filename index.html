@@ -3,24 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kolarstwo 2</title>
-  <script>
-    (function () {
-      var style = ['horyzont', 'trener', 'atlas', 'pulpit', 'os'], s = style[0];
-      try { var z = localStorage.getItem('k2.styl'); if (style.indexOf(z) >= 0) s = z; } catch (e) {}
-      location.replace('style/' + s + '/' + location.hash);
-    })();
-  </script>
-  <style>
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f6f6f4; color: #16181d; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 16px; }
-    a { color: inherit; }
-  </style>
+  <title>Trener Pro · Kolarstwo</title>
+  <meta name="theme-color" content="#F3F5F9">
+  <link rel="stylesheet" href="wspolne/czcionki/plus-jakarta-sans.css?v=7">
+  <link rel="stylesheet" href="wspolne/ikony/regular/style.css?v=7">
+  <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
+  <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
+  <link rel="stylesheet" href="wspolne/web.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
-  <noscript>
-    <p>Kolarstwo 2 — wybierz styl:
-      <a href="style/horyzont/">Horyzont</a> · <a href="style/trener/">Trener Pro</a> · <a href="style/atlas/">Atlas</a> · <a href="style/pulpit/">Pulpit</a> · <a href="style/os/">Oś</a> · <a href="archiwum/">archiwum</a>
-    </p>
-  </noscript>
+  <div class="tp">
+    <aside class="tp-bok">
+      <a class="tp-logo" href="#pulpit" aria-label="Kolarstwo — pulpit">
+        <span class="tp-logo-z" aria-hidden="true"><i class="ph-bold ph-bicycle"></i></span>
+        <span><b>Kolarstwo</b><small>Trener</small></span>
+      </a>
+      <nav class="tp-nav" aria-label="Główne">
+        <a href="#pulpit" data-widok="pulpit"><i class="ph ph-squares-four" aria-hidden="true"></i><span>Dzisiaj</span></a>
+        <a href="#kalendarz" data-widok="kalendarz"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span>Kalendarz</span></a>
+        <a href="#jazdy" data-widok="jazdy"><i class="ph ph-list-bullets" aria-hidden="true"></i><span>Jazdy</span></a>
+        <a href="#postepy" data-widok="postepy"><i class="ph ph-chart-line-up" aria-hidden="true"></i><span>Postępy</span></a>
+      </nav>
+      <div class="tp-bok-cel"></div>
+      <div class="tp-bok-ja">
+        <span class="tp-awatar" aria-hidden="true">FM</span>
+        <span><b>Fryderyk Marszałek</b><small>dane przykładowe</small></span>
+      </div>
+    </aside>
+    <div class="tp-tresc">
+      <header class="tp-gora">
+        <div class="tp-gora-t"></div>
+        <div class="tp-gora-p"></div>
+      </header>
+      <main id="tresc"></main>
+      <footer class="tp-stopka">Kolarstwo 2 · styl Trener Pro · dane przykładowe, segmenty i rekordy ze starej strony</footer>
+    </div>
+  </div>
+  <script src="wspolne/dane.js?v=6"></script>
+  <script src="wspolne/wykresy.js?v=6"></script>
+  <script src="wspolne/apka.js?v=6"></script>
+  <script src="wspolne/web.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
