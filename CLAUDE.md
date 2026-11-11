@@ -67,15 +67,43 @@ style/trener/index.html         przekierowanie ze starego adresu, zachowuje #wid
 
 Archiwum rund ładuje ikony nadal z unpkg — to zapis historii, nie strona.
 
-## 5. Otwarte, nierozstrzygnięte
+## 5. Urządzenia — sprawdzone 11.11.2026, zasady
 
-- **Najechanie myszką (hover)** — część interakcji (podgląd punktu na mapie, dymki wykresów)
-  zakłada mysz, a Fryderyk pracuje głównie dotykiem. W starej stronie zasada brzmiała
-  „dotyk, nie hover”. Tu jeszcze nie zapadła decyzja.
+Fryderyk pracuje na iPadzie i telefonie, więc strona ma działać **palcem i na każdej szerokości**.
+Sonda w Chromium: 18 urządzeń (iPhone SE 1. i 3. gen, 15 Pro, 15 Pro Max, iPhone poziomo,
+iPad Mini, iPad, iPad Pro 11 i 13 — pionowo i poziomo, MacBook 13″ i 14″, laptop 1440,
+monitory 1920 i 2560) × 5 widoków. Po poprawkach: **0** przewijania w bok, **0** elementów
+za krawędzią, **0** tekstu wylewającego się z pudełka, **0** błędów JS.
+
+- **Wykresy palcem: `W.wskazuj()` w `wykresy.js`.** Do 11.11 żaden z 7 wykresów nie reagował
+  na dotyk — dymek pokazywał się tylko po najechaniu myszką, a na dotyku „pointerleave”
+  przychodzi zaraz po oderwaniu palca. Teraz: stuknięcie albo przesunięcie w poziomie
+  pokazuje odczyt, odczyt zostaje po oderwaniu, stuknięcie obok go chowa. Przewijanie
+  w pionie działa dalej (`touch-action: pan-y`). Analiza jazdy robi to samo ręcznie, bo ma
+  zaznaczanie fragmentu. **Nowy wykres podpinać przez `W.wskazuj`, nie przez `pointermove`.**
+  Myszką zachowanie bez zmian.
+- **Pole trafienia na dotyku** (`@media (pointer: coarse)` na końcu `web.css`): niewidoczna
+  warstwa `::before` poszerza przełączniki, przyciski i okruszki do ~44 px **bez zmiany
+  wyglądu**. Myszką nic się nie zmienia (sprawdzone: 0 z 37 przycisków reaguje poza obrysem).
+- **Pole tekstowe na telefonie ma 16 px** — przy mniejszej czcionce iPhone powiększa stronę.
+- **Kafle liczb w wąskich kartach liczą się szerokością KARTY, nie ekranu** (container queries:
+  `.s-cel-st`, `.s-wybor`, `.tp-cele`). Ta sama karta bywa wąska na dużym ekranie (przy
+  bocznym menu) i szeroka na małym. Safari od iPadOS 16.
+- **Telefon w kalendarzu**: komórka ma 34–55 px, więc jazda to kilometry, plan to strefa
+  (`data-krotko` w `S.wpis`/`S.wpisPlan`). Nazwa jest po dotknięciu.
+- **Wykres przebiegu na wąsko (< 480 px)**: nazwa pasa nad pasem, z lewej tylko skala — inaczej
+  margines zabierał 40% szerokości.
+
+Sonda pilnowała też sama siebie: dwa razy „błąd” był błędem testu (`elementFromPoint` poza
+ekranem, płynne przewijanie), a porównanie ze starą wersją bez jej czcionki zawyżało różnice.
+**Każdą nową kontrolę sprawdzać najpierw na znanym błędzie.**
+
+## 6. Otwarte, nierozstrzygnięte
+
 - **Prawdziwe dane** — strona stoi na przykładowych. Podłączenie danych ze starej strony
   (`dane.js` jako `window.DANE`) to osobny krok.
 
-## 6. Praca między urządzeniami — lekcja z 11.11.2026
+## 7. Praca między urządzeniami — lekcja z 11.11.2026
 
 Praca z sesji na Macu nie była nigdzie widoczna z iPada: sesja działała lokalnie, a jedyną
 wspólną pamięcią jest GitHub. **Każdą zmianę kończyć wysłaniem na GitHuba**, a decyzje

@@ -130,6 +130,27 @@
   };
   W.naglowekTip = (s) => W.h('div', { class: 'wk-tip-n', text: s });
 
+  // ───── wskazywanie: myszką najechaniem, palcem stuknięciem albo przesunięciem ─────
+  /* Na dotyku nie ma najechania. „pointermove” przychodzi dopiero przy przesuwaniu palca,
+     a „pointerleave” zaraz po jego oderwaniu — więc dymek znikał, zanim dało się go
+     przeczytać, a samo stuknięcie nie pokazywało nic. Palcem: stuknięcie albo przesunięcie
+     w poziomie pokazuje odczyt, odczyt ZOSTAJE po oderwaniu palca, a znika po stuknięciu
+     gdziekolwiek poza tym wykresem. Myszką bez zmian. Przewijanie w pionie działa dalej
+     dzięki `touch-action: pan-y` na wykresach. */
+  let otwartyDotykiem = null; // { el, zamknij } — co najwyżej jeden odczyt naraz
+  W.zamykajDotykiem = function (el, zamknij) {
+    if (otwartyDotykiem && otwartyDotykiem.el !== el) otwartyDotykiem.zamknij();
+    otwartyDotykiem = { el, zamknij };
+  };
+  document.addEventListener('pointerdown', (e) => {
+    if (otwartyDotykiem && e.pointerType === 'touch' && !otwartyDotykiem.el.contains(e.target)) { const o = otwartyDotykiem; otwartyDotykiem = null; o.zamknij(); }
+  }, true);
+  W.wskazuj = function (el, naRuch, naWyjscie) {
+    el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'touch') return; W.zamykajDotykiem(el, naWyjscie); naRuch(e); });
+    el.addEventListener('pointermove', naRuch);
+    el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') naWyjscie(e); });
+  };
+
   // ───── wykres słupkowy ─────
   /* opts: dane [{v, klasa, tip:()=>nodes, etykieta}], wys, m {l,r,t,b}, maxSzer, promien, odstep,
      osY {ticki, format, szer}, osX (i, d) => string|null, wartosc (d,i) => string|null, klasa */
@@ -181,8 +202,7 @@
         if (o.naHover) o.naHover(i);
       };
       const ukryj = () => { aktywny = -1; slupki.forEach((s) => s.classList.remove('wk-aktywny')); svg.classList.remove('wk-hover'); tip.ukryj(); if (o.naHover) o.naHover(-1); };
-      hit.addEventListener('pointermove', (e) => { const r = svg.getBoundingClientRect(); pokaz(Math.floor((e.clientX - r.left - m.l) / pasmo)); });
-      hit.addEventListener('pointerleave', ukryj);
+      W.wskazuj(hit, (e) => { const r = svg.getBoundingClientRect(); pokaz(Math.floor((e.clientX - r.left - m.l) / pasmo)); }, ukryj);
       svg.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); pokaz(Math.max(0, Math.min(n - 1, (aktywny < 0 ? n - 1 : aktywny) + (e.key === 'ArrowRight' ? 1 : -1)))); }
         if (e.key === 'Escape') ukryj();
@@ -256,8 +276,7 @@
         if (o.naHover && !cichy) o.naHover(i);
       };
       api.ustawKursor = (i) => { if (i < 0) { pokaz(-1); return; } pokaz(i, true); };
-      hit.addEventListener('pointermove', (e) => { const r = svg.getBoundingClientRect(); pokaz(najblizszy(e.clientX - r.left)); });
-      hit.addEventListener('pointerleave', () => { pokaz(-1); if (o.naHover) o.naHover(-1); });
+      W.wskazuj(hit, (e) => { const r = svg.getBoundingClientRect(); pokaz(najblizszy(e.clientX - r.left)); }, () => { pokaz(-1); if (o.naHover) o.naHover(-1); });
       svg.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const krok = e.shiftKey ? 10 : 1; pokaz(Math.max(0, Math.min(xs.length - 1, (idx < 0 ? xs.length - 1 : idx) + (e.key === 'ArrowRight' ? krok : -krok)))); }
         if (e.key === 'Escape') { pokaz(-1); if (o.naHover) o.naHover(-1); }
@@ -308,14 +327,13 @@
       const skala = svg.clientWidth / Wd;
       if (o.tip) tip.pokaz((k.x + o.komorka / 2) * skala, k.y * skala, o.tip(k.d));
     };
-    svg.addEventListener('pointermove', (e) => {
+    W.wskazuj(svg, (e) => {
       const r = svg.getBoundingClientRect(), skala = r.width / Wd;
       const c = Math.floor(((e.clientX - r.left) / skala - o.m.l) / krok), rr = Math.floor(((e.clientY - r.top) / skala - o.m.t) / krok);
       const i = c * 7 + rr - przes;
       if (c < 0 || rr < 0 || rr > 6 || i < 0 || i >= dni.length) { pokaz(-1); return; }
       if (i !== akt) pokaz(i);
-    });
-    svg.addEventListener('pointerleave', () => pokaz(-1));
+    }, () => pokaz(-1));
     svg.addEventListener('keydown', (e) => {
       const ruch = { ArrowRight: 7, ArrowLeft: -7, ArrowDown: 1, ArrowUp: -1 }[e.key];
       if (ruch) { e.preventDefault(); pokaz(Math.max(0, Math.min(dni.length - 1, (akt < 0 ? dni.length - 1 : akt) + ruch))); }
@@ -530,13 +548,12 @@
       kursor = W.svg('g', { class: 'm-kursor', style: 'opacity:0' }, svg);
       W.svg('circle', { r: o.promienKursora * 2, class: 'r2' }, kursor); W.svg('circle', { r: o.promienKursora, class: 'r1' }, kursor);
       if (o.onHover) {
-        svg.addEventListener('pointermove', (e) => {
+        W.wskazuj(svg, (e) => {
           const r = svg.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
           let best = -1, bd = 26 * 26;
           for (let i = 0; i < trasa.length; i += 2) { const q = rzut(trasa[i]); const d = (q[0] - px) ** 2 + (q[1] - py) ** 2; if (d < bd) { bd = d; best = i; } }
           o.onHover(best);
-        });
-        svg.addEventListener('pointerleave', () => o.onHover(-1));
+        }, () => o.onHover(-1));
       }
       if (o.poRysowaniu) o.poRysowaniu({ svg, rzut, szer, wys });
     });

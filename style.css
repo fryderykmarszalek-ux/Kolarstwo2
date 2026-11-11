@@ -164,5 +164,16 @@ body:not([data-widok="analiza"]) #tresc .s-widok > .s-nag-str { display: none; }
 .tp-cele .pierscien.tp-g1 { stroke: url(#tp-g1); } .tp-cele .pierscien.tp-g2 { stroke: url(#tp-g2); } .tp-cele .pierscien.tp-g3 { stroke: url(#tp-g3); }
 .tp-cele .pierscien-tor { stroke: var(--s-karta-2); }
 .tp-cele li small { white-space: normal; }
+/* pierścień 150 px obok listy potrzebuje ~310 px karty. Węższa (iPad poziomo, MacBook 13″ przy bocznym menu):
+   „Tydzień” ucięty, „76%” na tekście — więc pierścień nad listą, jak na telefonie */
+.s-karta:has(.tp-cele) { container-type: inline-size; }
+@container (max-width: 309px) {
+  .tp-cele { flex-direction: column; align-items: stretch; }
+  .tp-cele-r { align-self: center; }
+}
+/* telefon: „Postępy” nie mieściło się w pasku (brakowało 4 px na iPhonie 15 Pro, 22 px na SE 3. gen,
+   77 px na SE 1. gen) i trzeba było wiedzieć, że menu się przewija. Ciaśniej, a na najmniejszym bez logo. */
+@media (max-width: 420px) { .tp-dz-st em { white-space: normal; } .tp-nav a { padding: 9px 7px; } .tp-bok { gap: 10px; } }
+@media (max-width: 360px) { .tp-logo { display: none; } }
 body[data-widok="analiza"] .s-an-nag .s-okruszki { display: none; }
 body[data-widok="analiza"] .tp-gora { padding-bottom: 6px; }

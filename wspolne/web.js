@@ -48,8 +48,9 @@
   // ───── drobne klocki ─────
   S.idzDo = (j) => { location.hash = 'analiza/' + j.id; };
   S.klik = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === el) { e.preventDefault(); fn(); } }); return el; };
-  S.wpis = (j) => { const b = h('button', { type: 'button', class: 's-wpis ' + j.typ, title: j.nazwa, 'data-jazda': j.id }, h('b', { text: nazwa(j) }), h('small', { text: `${f.km(j.km)} km · ${f.czasHM(j.czas).replace(' min', '')}${j.moc ? ' · ' + j.moc + ' W' : ''}` })); b.addEventListener('click', () => S.idzDo(j)); return b; };
-  S.wpisPlan = (p) => h('div', { class: 's-wpis plan', title: 'Plan (przykład)' }, h('b', { text: p.tytul }), h('small', { text: 'plan · ' + p.opis }));
+  // data-krotko: to, co zostaje w kalendarzu na telefonie (kilometry jazdy / strefa planu) — web.css
+  S.wpis = (j) => { const b = h('button', { type: 'button', class: 's-wpis ' + j.typ, title: j.nazwa, 'data-jazda': j.id, 'data-krotko': String(Math.round(j.km)) }, h('b', { text: nazwa(j) }), h('small', { text: `${f.km(j.km)} km · ${f.czasHM(j.czas).replace(' min', '')}${j.moc ? ' · ' + j.moc + ' W' : ''}` })); b.addEventListener('click', () => S.idzDo(j)); return b; };
+  S.wpisPlan = (p) => h('div', { class: 's-wpis plan', title: 'Plan (przykład)', 'data-krotko': (p.opis.match(/Z\d/) || ['wolne'])[0] }, h('b', { text: p.tytul }), h('small', { text: 'plan · ' + p.opis }));
   S.karta = (tytul, o, ...tresc) => {
     o = o || {};
     const nag = tytul || o.akcje ? h('div', { class: 's-karta-nag' }, h('div', null, tytul ? h('h2', { class: 's-karta-t' }, o.ikona ? ik(o.ikona) : null, tytul) : null, o.opis ? h('p', { class: 's-karta-o', text: o.opis }) : null), o.akcje ? h('div', { class: 's-akcje' }, o.akcje) : null) : null;
@@ -345,7 +346,8 @@
 
     // strumienie + zaznaczenie
     const trasa = P.x.map((x, i) => [x, P.y[i]]);
-    const kStr = S.karta('Przebieg jazdy', { klasa: 's-c12', opis: 'Najedź, żeby zobaczyć punkt na mapie. Przeciągnij, żeby zaznaczyć fragment.' });
+    const palcem = global.matchMedia && matchMedia('(hover: none)').matches; // iPad, telefon: nie ma „najechania”
+    const kStr = S.karta('Przebieg jazdy', { klasa: 's-c12', opis: palcem ? 'Dotknij, żeby zobaczyć punkt na mapie. Przesuń palcem w poziomie, żeby zaznaczyć fragment.' : 'Najedź, żeby zobaczyć punkt na mapie. Przeciągnij, żeby zaznaczyć fragment.' });
     const odczyt = h('div', { class: 's-odczyt' }), strH = h('div', { class: 's-strumienie' });
     kStr.append(odczyt, strH);
     const kMapa = o.mapaZew ? null : S.karta('Trasa', { klasa: 's-c6' }), mapaEl = h('div', { class: 's-mapa ' + (o.klasaMapy || '') }); if (kMapa) kMapa.append(mapaEl);
@@ -488,7 +490,10 @@
     };
     W.rozmiar(host, (szer) => {
       if (svg) svg.remove();
-      m = { l: 104, r: 10, t: 8, gap: 14 };
+      // wąsko (telefon): nazwa pasa NAD pasem, z lewej zostają tylko liczby skali. Przy stałych 104 px
+      // margines zabierał 40% wykresu na iPhonie SE, a nazwa stykała się z liczbą skali.
+      const wasko = szer < 480;
+      m = wasko ? { l: 34, r: 6, t: 22, gap: 28 } : { l: 104, r: 10, t: 8, gap: 14 };
       H = m.t + LAN.reduce((a, l) => a + l.hh + m.gap, 0) + 18;
       svg = W.svg('svg', { width: szer, height: H, role: 'img', 'aria-label': 'Wysokość, prędkość, tętno i kadencja wzdłuż trasy' }); host.prepend(svg);
       x = W.skala(0, maxKm, m.l, szer - m.r);
@@ -501,7 +506,8 @@
         const y = W.skala(mn, mx, y0 + l.hh, y0);
         W.svg('line', { x1: m.l, x2: szer - m.r, y1: y0 + l.hh, y2: y0 + l.hh, class: 's-str-siatka' }, svg);
         W.svg('line', { x1: m.l, x2: szer - m.r, y1: y0, y2: y0, class: 's-str-siatka', opacity: 0.5 }, svg);
-        W.tekst(svg, 0, y0 + 13, l.n, { class: 's-str-l' }); W.tekst(svg, 0, y0 + 27, l.u, { class: 's-str-j' });
+        if (wasko) { const t = W.tekst(svg, m.l, y0 - 8, l.n, { class: 's-str-l' }); W.svg('tspan', { class: 's-str-j', dx: 5 }, t).textContent = l.u; }
+        else { W.tekst(svg, 0, y0 + 13, l.n, { class: 's-str-l' }); W.tekst(svg, 0, y0 + 27, l.u, { class: 's-str-j' }); }
         W.tekst(svg, m.l - 8, y0 + 10, f.liczba(mx - pad), { class: 's-str-t', 'text-anchor': 'end' }); W.tekst(svg, m.l - 8, y0 + l.hh - 2, f.liczba(mn + pad), { class: 's-str-t', 'text-anchor': 'end' });
         const pts = []; dane.forEach((v, i) => { if (v != null) pts.push([x(P.d[i]), y(v)]); });
         W.svg('path', { d: W.obszar(pts, y0 + l.hh, 'linia'), class: 's-str-obsz', fill: l.kol }, svg);
@@ -515,10 +521,16 @@
       const hit = W.svg('rect', { x: m.l, y: 0, width: szer - m.l - m.r, height: H, fill: 'transparent' }, svg);
       let start = null;
       const px = (e) => e.clientX - svg.getBoundingClientRect().left;
-      hit.addEventListener('pointerdown', (e) => { start = idxZ(px(e)); hit.setPointerCapture(e.pointerId); });
+      // Palcem: odczyt zostaje po oderwaniu i znika po stuknięciu poza wykresem (jak W.wskazuj
+      // w wykresy.js). Przewijanie w pionie przerywa gest („pointercancel”) — wtedy nie zaznaczamy.
+      hit.addEventListener('pointerdown', (e) => {
+        start = idxZ(px(e)); hit.setPointerCapture(e.pointerId);
+        if (e.pointerType === 'touch') { W.zamykajDotykiem(hit, () => { api.kursor(-1); o.onHover(null); }); api.kursor(start); o.onHover(start); }
+      });
       hit.addEventListener('pointermove', (e) => { const i = idxZ(px(e)); api.kursor(i); o.onHover(i); if (start != null && Math.abs(i - start) > 2) api.zaznacz([Math.min(start, i), Math.max(start, i)]); });
       hit.addEventListener('pointerup', (e) => { if (start == null) return; const i = idxZ(px(e)); o.onZakres(start, i); start = null; });
-      hit.addEventListener('pointerleave', () => { if (start == null) { api.kursor(-1); o.onHover(null); } });
+      hit.addEventListener('pointercancel', () => { start = null; });
+      hit.addEventListener('pointerleave', (e) => { if (start == null && e.pointerType !== 'touch') { api.kursor(-1); o.onHover(null); } });
       api.zaznacz(zaznaczony); if (kursorI >= 0) api.kursor(kursorI);
     });
     return api;
