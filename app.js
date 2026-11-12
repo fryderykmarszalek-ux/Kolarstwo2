@@ -25,12 +25,14 @@
     const wejscia = { imie: form.querySelector('#tp-imie'), nazwisko: form.querySelector('#tp-nazwisko') };
     const plcie = [...form.querySelectorAll('[data-plec]')];
     const podglad = form.querySelector('[data-podglad="inicjaly"]');
-    let plec = 'n', start = null;      // start = stan profilu w chwili wejścia w edycję
+    const kredka = form.querySelector('.tp-zdj-kredka'), usun = form.querySelector('.tp-zdj-usun');
+    const menu = form.querySelector('.tp-zdj-menu'), plik = form.querySelector('.tp-zdj-plik'), zdjBlad = form.querySelector('#tp-zdj-b');
+    let plec = 'n', zdjecie = null, start = null;      // start = stan profilu w chwili wejścia w edycję; zdjecie = robocze, do „Zapisz”
     const dotyk = window.matchMedia && matchMedia('(pointer: coarse)').matches;
 
     const widok = () => okno.dataset.widokOkna;
-    const stan = () => ({ imie: P.oczysc(wejscia.imie.value), nazwisko: P.oczysc(wejscia.nazwisko.value), plec });
-    const zmienione = () => { const s = stan(); return !!start && (s.imie !== start.imie || s.nazwisko !== start.nazwisko || s.plec !== start.plec); };
+    const stan = () => ({ imie: P.oczysc(wejscia.imie.value), nazwisko: P.oczysc(wejscia.nazwisko.value), plec, zdjecie });
+    const zmienione = () => { const s = stan(); return !!start && (s.imie !== start.imie || s.nazwisko !== start.nazwisko || s.plec !== start.plec || s.zdjecie !== start.zdjecie); };
 
     function ustawPlec(k, fokus) {
       plec = k;
@@ -49,8 +51,34 @@
     }
     function odswiezFormularz() {
       zapisz.disabled = !zmienione();
-      podglad.textContent = P.inicjaly(stan());      // awatar w edycji pokazuje inicjały na żywo, przed zapisem
+      // awatar w edycji pokazuje zmiany od razu (inicjały i zdjęcie); reszta strony dopiero po „Zapisz”
+      P.rysujAwatar(podglad, P.inicjaly(stan()), zdjecie);
+      usun.hidden = !zdjecie;                        // „Usuń profilowe” tylko wtedy, gdy jest co usuwać
     }
+
+    // ── zdjęcie profilowe: kredka → okienko → wybór pliku → podgląd ──
+    const menuOtwarte = () => !menu.hidden;
+    function zamknijMenu() { menu.hidden = true; kredka.setAttribute('aria-expanded', 'false'); }
+    function otworzMenu() {
+      zdjBlad.textContent = '';
+      menu.hidden = false; kredka.setAttribute('aria-expanded', 'true');
+      // okienko pod kredką, ale nigdy za prawą krawędzią okna
+      const rzad = kredka.parentElement;
+      menu.style.left = Math.max(0, Math.min(kredka.offsetLeft - 14, rzad.clientWidth - menu.offsetWidth)) + 'px';
+    }
+    kredka.addEventListener('click', () => { if (menuOtwarte()) zamknijMenu(); else otworzMenu(); });
+    plik.addEventListener('change', async () => {
+      const f = plik.files && plik.files[0];
+      plik.value = '';                               // ten sam plik da się wybrać drugi raz
+      if (!f) return;
+      zamknijMenu();
+      try { zdjecie = await P.przygotujZdjecie(f); zdjBlad.textContent = ''; }
+      catch (e) { zdjBlad.textContent = e.message; }
+      odswiezFormularz();
+    });
+    usun.addEventListener('click', () => { zdjecie = null; zdjBlad.textContent = ''; odswiezFormularz(); kredka.focus(); });
+    // stuknięcie gdziekolwiek obok okienka je zamyka
+    okno.addEventListener('pointerdown', (e) => { if (menuOtwarte() && !menu.contains(e.target) && !kredka.contains(e.target)) zamknijMenu(); }, true);
 
     function pokazWidok(w) {
       okno.dataset.widokOkna = w;
@@ -59,12 +87,13 @@
         wejscia.imie.value = start.imie; wejscia.nazwisko.value = start.nazwisko;
         ['imie', 'nazwisko'].forEach((n) => { licznik(n); blad(n, ''); });
         ustawPlec(start.plec);
+        zdjecie = start.zdjecie; zdjBlad.textContent = ''; zamknijMenu();
         odswiezFormularz();
         okno.querySelector('.tp-okno-tresc').scrollTop = 0;
         // na iPadzie/telefonie fokus w polu otwiera klawiaturę — tam fokus idzie na „wróć”
         (dotyk ? okno.querySelector('.tp-okno-wstecz') : wejscia.imie).focus();
       } else {
-        start = null;
+        start = null; zamknijMenu();
         okno.focus();      // fokus na samym oknie, nie na „Edit” — inaczej Safari rysuje wokół niego obwódkę
       }
     }
@@ -85,7 +114,12 @@
     okno.querySelector('.tp-okno-wstecz').addEventListener('click', () => pokazWidok('profil'));
     okno.querySelector('[data-akcja="anuluj"]').addEventListener('click', () => pokazWidok('profil'));
     // Esc w edycji cofa do profilu zamiast zamykać okno
-    okno.addEventListener('cancel', (e) => { if (widok() === 'edycja') { e.preventDefault(); pokazWidok('profil'); } });
+    // (gdy otwarte jest okienko zdjęcia, Esc zamyka najpierw tylko je)
+    okno.addEventListener('cancel', (e) => {
+      if (widok() !== 'edycja') return;
+      e.preventDefault();
+      if (menuOtwarte()) { zamknijMenu(); kredka.focus(); } else pokazWidok('profil');
+    });
     // dotknięcie przyciemnionego tła = zdarzenie na samym <dialog>, w punkcie poza jego prostokątem
     // (sam prostokąt nie wystarczy: kliknięcie z klawiatury ma współrzędne 0,0).
     // Przy niezapisanych zmianach tło NIE zamyka — przypadkowe stuknięcie obok nie kasuje tego, co wpisane.
@@ -114,7 +148,7 @@
       });
     });
 
-    // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko i płeć naraz ──
+    // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko, płeć i zdjęcie naraz ──
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const s = stan();

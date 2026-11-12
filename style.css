@@ -335,3 +335,45 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
   .tp-okno[data-widok-okna="profil"] .tp-okno-g h2 { font-size: 19px; }
 }
 @media (max-width: 360px) { .tp-okno[data-widok-okna="profil"] .tp-okno-g h2 { font-size: 17px; } }
+
+/* ───── zdjęcie profilowe (12.11.2026) ───── */
+.tp-awatar.ma-zdjecie { background-size: cover; background-position: center; background-repeat: no-repeat; color: transparent; }
+.tp-osoba-edycja { position: relative; gap: 10px; }
+.tp-osoba-edycja .tp-awatar-duzy { margin-right: 4px; }
+
+/* kredka: SAMA kredka — bez tła, obwódki i kształtu (prośba Fryderyka). Jasnoszara, po najechaniu
+   odrobinę ciemniejsza. Pole trafienia 40×40 jest niewidoczne. */
+.tp-zdj-kredka { all: unset; box-sizing: border-box; cursor: pointer; flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+  color: #AEB6C3; transition: color .15s; -webkit-tap-highlight-color: transparent; }
+.tp-zdj-kredka svg { display: block; }
+@media (any-hover: hover) { .tp-zdj-kredka:hover { color: #7E8898; } }
+.tp-zdj-kredka:active, .tp-zdj-kredka[aria-expanded="true"] { color: #7E8898; }
+.tp-zdj-kredka:focus { outline: none; }
+.tp-zdj-kredka:focus-visible { color: #6B7586; }
+
+/* „Usuń profilowe” — cichy napis; po najechaniu czerwienieje, bo usuwa */
+.tp-zdj-usun { all: unset; box-sizing: border-box; cursor: pointer; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px;
+  font: 600 13px/1 var(--s-f); color: var(--s-tekst-3); transition: color .15s, background .15s; -webkit-tap-highlight-color: transparent; }
+.tp-zdj-usun i { font-size: 16px; }
+.tp-zdj-usun[hidden] { display: none; }      /* all: unset kasuje też ukrywanie atrybutem hidden */
+@media (any-hover: hover) { .tp-zdj-usun:hover { color: #C2363A; background: #FDF0F0; } }
+.tp-zdj-usun:active { color: #C2363A; background: #FBE4E4; }
+.tp-zdj-usun:focus { outline: none; }
+.tp-zdj-usun:focus-visible { color: #C2363A; background: #FDF0F0; }
+
+/* okienko wyboru — pod kredką */
+.tp-zdj-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 3; box-sizing: border-box; width: 272px; max-width: 100%; padding: 8px; border-radius: 16px;
+  background: var(--s-karta); box-shadow: 0 0 0 1px rgba(18, 24, 38, .07), 0 18px 40px -16px rgba(18, 24, 38, .38); animation: tp-zdj-wej .16s cubic-bezier(.2, .8, .2, 1); }
+.tp-zdj-menu[hidden] { display: none; }
+@keyframes tp-zdj-wej { from { opacity: 0; transform: translateY(-4px); } }
+.tp-zdj-menu-t { padding: 6px 10px 8px; font: 700 11.5px/1 var(--s-f); letter-spacing: .06em; text-transform: uppercase; color: var(--s-tekst-3); }
+.tp-zdj-wybierz { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 12px; cursor: pointer; transition: background .15s; -webkit-tap-highlight-color: transparent; }
+@media (any-hover: hover) { .tp-zdj-wybierz:hover { background: var(--s-karta-2); } }
+.tp-zdj-wybierz:active, .tp-zdj-wybierz:focus-within { background: var(--s-karta-2); }
+.tp-zdj-plik { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; opacity: 0; overflow: hidden; clip-path: inset(50%); }   /* niewidoczne, ale klikalne przez etykietę */
+.tp-zdj-ik { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--s-akcent-tlo); color: var(--s-akcent); font-size: 21px; }
+.tp-zdj-opis { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tp-zdj-opis b { font: 700 14px/1.2 var(--s-f); color: var(--s-tekst); }
+.tp-zdj-opis small { font: 500 12px/1.2 var(--s-f); color: var(--s-tekst-3); }
+.tp-zdj-blad { margin-top: 10px; }
+@media (prefers-reduced-motion: reduce) { .tp-zdj-menu { animation: none; } }

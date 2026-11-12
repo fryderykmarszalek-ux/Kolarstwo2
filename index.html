@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
   <div class="tp">
@@ -60,9 +60,23 @@
       <section class="tp-panel tp-panel-profil" aria-label="Athlete’s profile"></section>
       <!-- widok 2: edycja — imię, nazwisko, płeć; jeden „Zapisz” na dole zapisuje wszystko naraz -->
       <form class="tp-panel tp-panel-edycja" id="tp-profil-form" novalidate aria-label="Edycja profilu">
+        <!-- zdjęcie profilowe: kredka otwiera okienko wyboru; podgląd od razu tutaj, reszta strony dopiero po „Zapisz” -->
         <div class="tp-osoba tp-osoba-edycja">
           <span class="tp-awatar tp-awatar-duzy" aria-hidden="true" data-podglad="inicjaly">FM</span>
+          <button class="tp-zdj-kredka" type="button" aria-label="Zmień zdjęcie profilowe" aria-haspopup="dialog" aria-expanded="false" aria-controls="tp-zdj-menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15.4 4.2a2 2 0 0 1 2.8 0l1.6 1.6a2 2 0 0 1 0 2.8L8.6 19.8l-4.9 1.1 1.1-4.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.4 6.2l4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <button class="tp-zdj-usun" type="button" hidden><i class="ph ph-trash" aria-hidden="true"></i>Usuń profilowe</button>
+          <div class="tp-zdj-menu" id="tp-zdj-menu" role="dialog" aria-label="Zmień zdjęcie profilowe" hidden>
+            <p class="tp-zdj-menu-t">Zdjęcie profilowe</p>
+            <label class="tp-zdj-wybierz">
+              <input class="tp-zdj-plik" type="file" accept="image/*">
+              <span class="tp-zdj-ik" aria-hidden="true"><i class="ph ph-image-square"></i></span>
+              <span class="tp-zdj-opis"><b>Wybierz zdjęcie</b><small>Zdjęcia, Pliki albo aparat</small></span>
+            </label>
+          </div>
         </div>
+        <p class="tp-blad tp-zdj-blad" id="tp-zdj-b" role="alert"></p>
         <div class="tp-pola">
           <div class="tp-pole">
             <div class="tp-pole-g"><label for="tp-imie">Imię</label><span class="tp-licznik" id="tp-imie-l" aria-live="polite">0/30</span></div>
@@ -94,10 +108,10 @@
     </footer>
   </dialog>
   <script src="wspolne/dane.js?v=6"></script>
-  <script src="wspolne/profil.js?v=1"></script>
+  <script src="wspolne/profil.js?v=2"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

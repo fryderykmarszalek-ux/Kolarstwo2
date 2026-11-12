@@ -193,6 +193,44 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   złapane** (brak odświeżenia po zapisie, przesuwające się opcje płci, brak limitu znaków);
   okno 464 kontroli na 15 ekranach; przegląd 21 urządzeń bez problemów; dotyk na wykresach bez zmian.
 
+### Zdjęcie profilowe (12.11.2026)
+
+- **Kredka po prawej od awatara w edycji — SAMA KREDKA.** Słowa Fryderyka: „żadnych kształtów
+  na niej, żadnej obwódki, nic. Sama jasnoszara kredka. Po najechaniu lekko ciemniejsza, ale
+  tylko ona.” Własny rysunek (inline SVG, bez kreski pod spodem — ta jest tylko przy „Edit”),
+  kolor `#AEB6C3`, po najechaniu `#7E8898`. **Zero tła, ramki, cienia i obrysu — w każdym
+  stanie**, także po dotknięciu i z klawiatury (`:focus-visible` zmienia tylko kolor). Pole
+  trafienia 40×40 jest niewidoczne. Ciemniejsza zostaje też, **póki okienko jest otwarte**
+  (`aria-expanded="true"`) — na dotyku to jedyny znak, skąd się wzięło; po zamknięciu wraca.
+- **Kredka otwiera okienko pod sobą** („Zdjęcie profilowe → Wybierz zdjęcie”). Jedna pozycja,
+  bo iPhone i iPad i tak pokazują po stuknięciu własny wybór: **Zdjęcia, Pliki albo aparat**
+  (`<input type="file" accept="image/*">`). Okienko nie wychodzi poza okno (przesuwa się
+  w lewo na wąskim ekranie). Zamyka: wybór pliku, ponowne stuknięcie kredki, stuknięcie obok,
+  Esc — **Esc najpierw zamyka samo okienko**, edycja zostaje.
+- **Podgląd od razu, strona dopiero po „Zapisz”** — decyzja Fryderyka. Wybrane zdjęcie
+  wskakuje do awatara w edycji; lewy dolny róg i nagłówek okna zmieniają się dopiero po
+  „Zapisz”. Anuluj/‹/Esc porzucają zdjęcie tak samo jak wpisane imię.
+- **„Usuń profilowe” po prawej od kredki, tylko gdy jest co usuwać.** Wraca do domyślnego,
+  czyli inicjałów — też dopiero po „Zapisz”. Szary napis, po najechaniu czerwienieje.
+- **Obróbka w przeglądarce, przed zapisem:** kwadrat wycięty ze ŚRODKA, zmniejszony do
+  **512×512**, JPEG 0,86 (przezroczysty PNG dostaje białe tło, nie czarne). Zdjęcie z aparatu
+  4000×3000 (830 kB) zmierzone: **48 kB** po obróbce — ale to był obraz sztuczny; prawdziwe
+  zdjęcie z dużą ilością szczegółów wyjdzie więcej, rzędu 100 kB. Zapora: 1,1 MB.
+  `localStorage` mieści ok. 5 MB, więc zapas jest.
+  HEIC z iPhone'a Safari czyta sam. Plik, który nie jest obrazem — komunikat pod awatarem,
+  nic się nie zmienia. Inicjały zostają w tekście awatara (czytnik ekranu), zdjęcie leży na nich
+  jako tło (`P.rysujAwatar`, klasa `ma-zdjecie`).
+- **Zapis tam, gdzie reszta profilu** (`k2.profil`, pole `zdjecie`: data URL albo `null`).
+  Wpis sprzed zdjęć wczytuje się dalej (brak pola = brak zdjęcia). **Na innych urządzeniach
+  zdjęcia nie będzie, dopóki nie powstanie baza w chmurze** — decyzja Fryderyka: bazę robimy,
+  gdy zakładka profilu będzie skończona w całości.
+- Sondy: zdjęcie 96 kontroli na 4 urządzeniach (iPad 1180, laptop, iPhone 15 Pro, iPhone SE),
+  w tym kontrola pikseli wycięcia (pasy czerwony–zielony–niebieski: brzegi i środek na swoim
+  miejscu) i przeładowanie strony. **Pięć celowo wstawionych błędów złapanych** (podgląd
+  przeciekający na stronę przed „Zapisz”, wycięcie z lewego brzegu zamiast ze środka, obwódka
+  na kredce, „Usuń” niepokazujące się, Esc zamykające całą edycję). Najechanie: 37 kontroli.
+  Przegląd 21 urządzeń — wynik identyczny co do linijki z wersją sprzed zdjęcia.
+
 ## 6. Otwarte, nierozstrzygnięte
 
 - **Prawdziwe dane** — strona stoi na przykładowych. Podłączenie danych ze starej strony
