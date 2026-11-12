@@ -17,25 +17,115 @@
 
   // ───── okno „Athlete’s profile” ─────
   // Natywny <dialog>: przeglądarka sama trzyma okno na wierzchu, blokuje resztę strony i obsługuje Esc.
+  // Dwa widoki w jednym oknie: „profil” i „edycja” (atrybut data-widok-okna na <dialog>).
   (function () {
     const okno = document.getElementById('tp-profil'), pole = document.querySelector('.tp-bok-ja'), html = document.documentElement;
-    if (!okno || !pole || !okno.showModal) return;
+    if (!okno || !pole || !okno.showModal || !window.P) return;
+    const form = okno.querySelector('#tp-profil-form'), zapisz = okno.querySelector('[type="submit"]');
+    const wejscia = { imie: form.querySelector('#tp-imie'), nazwisko: form.querySelector('#tp-nazwisko') };
+    const plcie = [...form.querySelectorAll('[data-plec]')];
+    const podglad = form.querySelector('[data-podglad="inicjaly"]');
+    let plec = 'n', start = null;      // start = stan profilu w chwili wejścia w edycję
+    const dotyk = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+
+    const widok = () => okno.dataset.widokOkna;
+    const stan = () => ({ imie: P.oczysc(wejscia.imie.value), nazwisko: P.oczysc(wejscia.nazwisko.value), plec });
+    const zmienione = () => { const s = stan(); return !!start && (s.imie !== start.imie || s.nazwisko !== start.nazwisko || s.plec !== start.plec); };
+
+    function ustawPlec(k, fokus) {
+      plec = k;
+      plcie.forEach((b) => { const on = b.dataset.plec === k; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; if (on && fokus) b.focus(); });
+    }
+    function licznik(n) {
+      const w = wejscia[n], l = form.querySelector(`#tp-${n}-l`), ile = Array.from(w.value).length;
+      l.textContent = `${ile}/${P.MAKS}`;
+      l.classList.toggle('pelny', ile >= P.MAKS);
+    }
+    function blad(n, tekst) {
+      const w = wejscia[n];
+      form.querySelector(`#tp-${n}-b`).textContent = tekst;
+      w.classList.toggle('zly', !!tekst);
+      if (tekst) w.setAttribute('aria-invalid', 'true'); else w.removeAttribute('aria-invalid');
+    }
+    function odswiezFormularz() {
+      zapisz.disabled = !zmienione();
+      podglad.textContent = P.inicjaly(stan());      // awatar w edycji pokazuje inicjały na żywo, przed zapisem
+    }
+
+    function pokazWidok(w) {
+      okno.dataset.widokOkna = w;
+      if (w === 'edycja') {
+        start = P.dane();
+        wejscia.imie.value = start.imie; wejscia.nazwisko.value = start.nazwisko;
+        ['imie', 'nazwisko'].forEach((n) => { licznik(n); blad(n, ''); });
+        ustawPlec(start.plec);
+        odswiezFormularz();
+        okno.querySelector('.tp-okno-tresc').scrollTop = 0;
+        // na iPadzie/telefonie fokus w polu otwiera klawiaturę — tam fokus idzie na „wróć”
+        (dotyk ? okno.querySelector('.tp-okno-wstecz') : wejscia.imie).focus();
+      } else {
+        start = null;
+        okno.querySelector('.tp-edytuj').focus();
+      }
+    }
+
+    // ── otwieranie i zamykanie ──
     pole.addEventListener('click', () => {
       if (okno.open) return;
       // strona pod oknem przestaje się przewijać; szerokość znikającego suwaka oddajemy marginesem, żeby nic nie skoczyło
       const suwak = window.innerWidth - html.clientWidth;
       html.classList.add('tp-okno-otwarte');
       if (suwak > 0) document.body.style.paddingRight = suwak + 'px';
+      okno.dataset.widokOkna = 'profil'; start = null;
       okno.showModal();
     });
-    okno.querySelector('.tp-okno-x').addEventListener('click', () => okno.close());
+    okno.querySelector('.tp-okno-x').addEventListener('click', () => okno.close());   // × zamyka całe okno; niezapisane zmiany przepadają
+    okno.querySelector('.tp-edytuj').addEventListener('click', () => pokazWidok('edycja'));
+    okno.querySelector('.tp-okno-wstecz').addEventListener('click', () => pokazWidok('profil'));
+    okno.querySelector('[data-akcja="anuluj"]').addEventListener('click', () => pokazWidok('profil'));
+    // Esc w edycji cofa do profilu zamiast zamykać okno
+    okno.addEventListener('cancel', (e) => { if (widok() === 'edycja') { e.preventDefault(); pokazWidok('profil'); } });
     // dotknięcie przyciemnionego tła = zdarzenie na samym <dialog>, w punkcie poza jego prostokątem
-    // (sam prostokąt nie wystarczy: kliknięcie z klawiatury ma współrzędne 0,0)
+    // (sam prostokąt nie wystarczy: kliknięcie z klawiatury ma współrzędne 0,0).
+    // Przy niezapisanych zmianach tło NIE zamyka — przypadkowe stuknięcie obok nie kasuje tego, co wpisane.
     okno.addEventListener('click', (e) => {
       const r = okno.getBoundingClientRect();
-      if (e.target === okno && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) okno.close();
+      if (e.target === okno && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) && !zmienione()) okno.close();
     });
-    okno.addEventListener('close', () => { html.classList.remove('tp-okno-otwarte'); document.body.style.paddingRight = ''; });
+    okno.addEventListener('close', () => { html.classList.remove('tp-okno-otwarte'); document.body.style.paddingRight = ''; start = null; });
+
+    // ── pola imienia i nazwiska ──
+    ['imie', 'nazwisko'].forEach((n) => {
+      const w = wejscia[n];
+      w.addEventListener('input', () => { licznik(n); if (w.classList.contains('zly')) blad(n, P.sprawdz(n, w.value)); odswiezFormularz(); });
+      w.addEventListener('blur', () => { if (widok() === 'edycja' && w.value !== '') blad(n, P.sprawdz(n, w.value)); });
+    });
+    wejscia.imie.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); wejscia.nazwisko.focus(); } });
+
+    // ── płeć: trzy opcje zawsze widoczne, na stałych miejscach; strzałki jak w każdej grupie wyboru ──
+    plcie.forEach((b, i) => {
+      b.addEventListener('click', () => { ustawPlec(b.dataset.plec); odswiezFormularz(); });
+      b.addEventListener('keydown', (e) => {
+        const krok = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (!krok) return;
+        e.preventDefault();
+        ustawPlec(plcie[(i + krok + plcie.length) % plcie.length].dataset.plec, true); odswiezFormularz();
+      });
+    });
+
+    // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko i płeć naraz ──
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const s = stan();
+      const bledy = { imie: P.sprawdz('imie', s.imie), nazwisko: P.sprawdz('nazwisko', s.nazwisko) };
+      blad('imie', bledy.imie); blad('nazwisko', bledy.nazwisko);
+      const pierwszy = ['imie', 'nazwisko'].find((n) => bledy[n]);
+      if (pierwszy) { wejscia[pierwszy].focus(); return; }
+      const w = P.zapisz(s);
+      if (!w.ok) return;
+      okno.classList.toggle('bez-zapisu', !w.trwale);   // tryb prywatny: zapis tylko do zamknięcia karty
+      pokazWidok('profil');
+    });
   })();
 
   // ───── „Jak nogi?” zmienia propozycję na jutro ─────
@@ -77,7 +167,7 @@
     return h('section', { class: 'tp-dzien s-c8' },
       h('div', { class: 'tp-dz-l' },
         h('p', { class: 'tp-dz-d', text: `${A.wielka(f.dzienTyg(K.dzis))}, ${f.data(K.dzis)}` }),
-        h('h1', { text: `${A.powitanie()}, ${A.imie}` }),
+        h('h1', null, `${A.powitanie()}, `, h('span', { 'data-profil': 'imie', text: A.imie })),   // imię z profilu — zmienia się po zapisie
         h('p', { class: 'tp-dz-o', text: `${F.nazwa}. ${F.opis}` }),
         h('div', { class: 'tp-dz-st' },
           h('div', null, h('small', { text: 'Forma' }), h('b', { text: f.liczba(F.ctl) }), h('em', { text: `${f.znak(Math.round(F.zmiana7))} w 7 dni` })),

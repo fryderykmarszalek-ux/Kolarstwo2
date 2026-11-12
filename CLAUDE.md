@@ -107,7 +107,9 @@ ekranem, płynne przewijanie), a porównanie ze starą wersją bez jej czcionki 
 Fryderyk: pole w lewym dolnym rogu „jest kluczowe dla strony”, ma być **widoczne cały czas**,
 nosić napis **Athlete’s profile** (po angielsku, jego wybór) i po dotknięciu otwierać okno
 na środku, z × w prawym górnym rogu, na pierwszym planie, **ze stroną widoczną w tle**.
-Co ma być w oknie — jeszcze nie powiedział. **Okno jest puste celowo; nie wypełniać z własnej inicjatywy.**
+Treść okna (12.11.2026): widok profilu (duży awatar + imię i nazwisko) i widok edycji (niżej).
+**Poza tym okno jest puste celowo; nie dokładać sekcji z własnej inicjatywy.** JOIN był tylko
+wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fryderyka.
 
 - **Dlaczego pole znikało:** pasek boczny miał `height: 100vh`, a w Safari na iPadzie „100vh”
   to wysokość ekranu BEZ paska adresu. Przy rozwiniętym pasku dół menu wypadał pod ekran.
@@ -131,6 +133,40 @@ Co ma być w oknie — jeszcze nie powiedział. **Okno jest puste celowo; nie wy
   przegląd powtórzony 12.11 z prawdziwym rozmiarem: 21 urządzeń, 0 problemów.
 - **Dynamicznego paska Safari nie da się odtworzyć w Chromium** — `100dvh` sprawdzone tylko
   jako dwa stałe rozmiary okna. Ostateczny test to iPad Fryderyka.
+
+### Edycja profilu (12.11.2026)
+
+- **„Edit”** — jasnoszara pigułka z własną kredką (kredka + kreska, którą „pisze”, inline SVG
+  w `index.html`), **tuż za tytułem** „Athlete’s profile”. Prośba Fryderyka: własny rysunek, nie gotowa ikona.
+- Kliknięcie przełącza **TO SAMO okno** w widok edycji (`data-widok-okna="edycja"` na `<dialog>`),
+  nie otwiera nowego. Nagłówek: ‹ wróć, „Edytuj profil”, ×.
+- **Imię i nazwisko — osobne pola, limit 30 znaków każde** (`maxlength` + licznik „8/30”).
+  Dozwolone: litery każdego alfabetu, a między nimi spacja, myślnik albo apostrof
+  („Anna-Maria”, „O’Neill”). Puste i z cyframi — komunikat pod polem, nic się nie zapisuje.
+  Pismo 16 px, żeby iPhone nie powiększał strony.
+- **Płeć: Mężczyzna · Kobieta · Niezdefiniowana** — jeden pasek, wszystkie trzy ZAWSZE widoczne
+  i na STAŁYCH miejscach, między nimi kropka. Wybrana: ciemna i powiększona (`scale(1.12)`),
+  pozostałe jasne. Wszystkie mają tę samą grubość pisma, więc zmiana wyboru nie przesuwa
+  niczego — sprawdzone co 1 px od 320 do 1180 dla każdego wyboru (0 przesunięć). Pismo płynne
+  z szerokości okna, tak żeby powiększona opcja zostawiała ≥ 4,9 px do kropki.
+  **Płeć na razie nic nie znaczy** — rola przyjdzie później (Fryderyk: przyda się, gdy stroną
+  zacznie się posługiwać tata albo ktoś znajomy).
+- **Jedno „Zapisz” na dole okna zapisuje wszystko naraz.** Wyłączone, póki nic się nie zmieniło.
+  Anuluj, ‹, Esc — wracają do profilu bez zapisu. × zamyka okno. Stuknięcie w tło przy
+  niezapisanych zmianach NIE zamyka (przypadkowe stuknięcie nie kasuje wpisanego).
+- **Awatar w edycji zostaje** (taki jak w lewym dolnym rogu) — przyda się w następnym zadaniu.
+  Inicjały w nim zmieniają się na żywo przy pisaniu; reszta strony dopiero po zapisie.
+- **Jedno źródło: `wspolne/profil.js`** (ładowany przed `apka.js`). Każde miejsce z imieniem ma
+  atrybut `data-profil="imie|nazwisko|pelne|inicjaly"` i po zapisie zmienia się samo, bez
+  przeładowania: inicjały w lewym dolnym rogu, w nagłówku okna i w awatarze, imię i nazwisko
+  w profilu, powitanie na pulpicie. **Nowe miejsce z imieniem = ten sam atrybut.**
+- **Zapis: `localStorage` tej przeglądarki** (`k2.profil`). Okno mówi to wprost („Zapis w tej
+  przeglądarce”), a gdy przeglądarka zapisu odmawia — na czerwono. Inne urządzenia widzą
+  wartości domyślne z `dane.js`, dopóki nie będzie serwera. Druga karta tej samej przeglądarki
+  przełącza się sama (zdarzenie `storage`).
+- Sondy: edycja 140 kontroli na 5 urządzeniach (mysz i dotyk), **trzy celowo wstawione błędy
+  złapane** (brak odświeżenia po zapisie, przesuwające się opcje płci, brak limitu znaków);
+  okno 464 kontroli na 15 ekranach; przegląd 21 urządzeń bez problemów; dotyk na wykresach bez zmian.
 
 ## 6. Otwarte, nierozstrzygnięte
 

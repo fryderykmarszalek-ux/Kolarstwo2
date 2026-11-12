@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
   <div class="tp">
@@ -27,7 +27,7 @@
       </nav>
       <div class="tp-bok-cel"></div>
       <button class="tp-bok-ja" type="button" aria-haspopup="dialog" aria-controls="tp-profil" aria-label="Athlete’s profile">
-        <span class="tp-awatar" aria-hidden="true">FM</span>
+        <span class="tp-awatar" aria-hidden="true" data-profil="inicjaly">FM</span>
         <b>Athlete’s profile</b>
       </button>
     </aside>
@@ -40,19 +40,67 @@
       <footer class="tp-stopka">Kolarstwo 2 · styl Trener Pro · dane przykładowe, segmenty i rekordy ze starej strony</footer>
     </div>
   </div>
-  <!-- Okno „Athlete’s profile”: otwiera je pole w lewym dolnym rogu (.tp-bok-ja). Treść dojdzie później. -->
-  <dialog class="tp-okno" id="tp-profil" aria-labelledby="tp-profil-t">
+  <!-- Okno „Athlete’s profile”: otwiera je pole w lewym dolnym rogu (.tp-bok-ja).
+       Dwa widoki w JEDNYM oknie: profil i edycja (przełącza je kredka „Edit”). Kod: app.js. -->
+  <dialog class="tp-okno" id="tp-profil" aria-labelledby="tp-profil-t" data-widok-okna="profil">
     <header class="tp-okno-g">
-      <span class="tp-awatar" aria-hidden="true">FM</span>
-      <h2 id="tp-profil-t">Athlete’s profile</h2>
+      <button class="tp-okno-wstecz" type="button" aria-label="Wróć do profilu bez zapisywania"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
+      <span class="tp-awatar tp-okno-awatar" aria-hidden="true" data-profil="inicjaly">FM</span>
+      <h2 id="tp-profil-t"><span class="tp-tyt-profil">Athlete’s profile</span><span class="tp-tyt-edycja">Edytuj profil</span></h2>
+      <button class="tp-edytuj" type="button" aria-label="Edytuj profil">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.6 3.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.9.9.9-3.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M11 5.5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M11.5 17h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".55"/></svg>
+        <span>Edit</span>
+      </button>
       <button class="tp-okno-x" type="button" aria-label="Zamknij"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
     </header>
-    <div class="tp-okno-tresc"></div>
+    <div class="tp-okno-tresc">
+      <!-- widok 1: profil -->
+      <section class="tp-panel tp-panel-profil" aria-label="Profil">
+        <div class="tp-osoba">
+          <span class="tp-awatar tp-awatar-duzy" aria-hidden="true" data-profil="inicjaly">FM</span>
+          <p class="tp-osoba-imie" data-profil="pelne">Fryderyk Marszałek</p>
+        </div>
+      </section>
+      <!-- widok 2: edycja — imię, nazwisko, płeć; jeden „Zapisz” na dole zapisuje wszystko naraz -->
+      <form class="tp-panel tp-panel-edycja" id="tp-profil-form" novalidate aria-label="Edycja profilu">
+        <div class="tp-osoba tp-osoba-edycja">
+          <span class="tp-awatar tp-awatar-duzy" aria-hidden="true" data-podglad="inicjaly">FM</span>
+        </div>
+        <div class="tp-pola">
+          <div class="tp-pole">
+            <div class="tp-pole-g"><label for="tp-imie">Imię</label><span class="tp-licznik" id="tp-imie-l" aria-live="polite">0/30</span></div>
+            <input id="tp-imie" name="imie" type="text" maxlength="30" autocomplete="given-name" autocapitalize="words" spellcheck="false" enterkeyhint="next" aria-describedby="tp-imie-l tp-imie-b">
+            <p class="tp-blad" id="tp-imie-b" role="alert"></p>
+          </div>
+          <div class="tp-pole">
+            <div class="tp-pole-g"><label for="tp-nazwisko">Nazwisko</label><span class="tp-licznik" id="tp-nazwisko-l" aria-live="polite">0/30</span></div>
+            <input id="tp-nazwisko" name="nazwisko" type="text" maxlength="30" autocomplete="family-name" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-describedby="tp-nazwisko-l tp-nazwisko-b">
+            <p class="tp-blad" id="tp-nazwisko-b" role="alert"></p>
+          </div>
+        </div>
+        <div class="tp-pole">
+          <div class="tp-pole-g"><span id="tp-plec-t">Płeć</span></div>
+          <div class="tp-plec" role="radiogroup" aria-labelledby="tp-plec-t">
+            <button type="button" role="radio" data-plec="m">Mężczyzna</button>
+            <i class="tp-plec-kropka" aria-hidden="true"></i>
+            <button type="button" role="radio" data-plec="k">Kobieta</button>
+            <i class="tp-plec-kropka" aria-hidden="true"></i>
+            <button type="button" role="radio" data-plec="n">Niezdefiniowana</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <footer class="tp-okno-st">
+      <p class="tp-okno-uwaga"><i class="ph ph-info" aria-hidden="true"></i>Zapis w tej przeglądarce</p>
+      <button class="tp-przycisk" type="button" data-akcja="anuluj">Anuluj</button>
+      <button class="tp-przycisk glowny" type="submit" form="tp-profil-form" disabled>Zapisz</button>
+    </footer>
   </dialog>
   <script src="wspolne/dane.js?v=6"></script>
+  <script src="wspolne/profil.js?v=1"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
