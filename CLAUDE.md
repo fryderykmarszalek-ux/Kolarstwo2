@@ -275,6 +275,31 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   stare kolumny bez minimów). Zdjęcie 96, okno 448, edycja 140, najechanie 45 — bez błędów;
   przegląd 21 urządzeń identyczny co do linijki z wersją sprzed zmian.
 
+### Płeć pod imieniem i pytanie przed usunięciem zdjęcia (12.11.2026)
+
+- **Pod imieniem i nazwiskiem w oknie profilu stoi wybrana płeć** (`data-profil="plec"`,
+  zmienia się sama po zapisie). „Mężczyzna”, „Kobieta”, a przy trzeciej opcji **„Płeć
+  niezdefiniowana”** — samo „Niezdefiniowana” pod nazwiskiem nie mówiłoby, czego dotyczy.
+  Szaro, mniejszym pismem. W edycji schowana.
+- Nagłówek to **siatka**: szeroko „imię | Edit”, pod spodem płeć; **wąsko (≤ 480 px) imię, płeć,
+  „Edit” linię niżej**, a × przypięty do góry. Pierwsza wersja (flex) ściskała imię do
+  „Frydery / k” na iPhonie SE, a z samym zawijaniem „Edit” wchodził między imię i płeć.
+  Imię łamie się tylko między wyrazami albo na myślniku — sprawdzone co 10 px od 320 do 1400
+  dla dwóch imion (218 z 218).
+- **„Usuń profilowe” najpierw pyta**: małe okno na środku, „Usunąć zdjęcie profilowe?”, **Nie**
+  i czerwone **Tak, usuń**. Nie, Esc i dotknięcie obok = Nie. Po „Tak” zdjęcie znika z podglądu,
+  a **na stronie dopiero po „Zapisz”** — ta sama zasada co przy wyborze zdjęcia; okno mówi to
+  wprost. Fokus po otwarciu na samym okienku (bez obwódki na „Nie”).
+- Sondy: 43 kontrole (płeć i pytanie) na 3 urządzeniach, **cztery celowo wstawione błędy
+  złapane** (usuwanie bez pytania, „Nie” usuwające, tło jako „Tak”, podpis płci nieodświeżany).
+
+### Pusta część okna profilu — co ma tam trafić
+
+Fryderyk (12.11.2026): **tylko dane zdrowotne i fizyczne, informacje o nim — nie analizy
+treningów.** Lista pomysłów do wyboru: `docs/profil-pomysly.md` (85 pozycji z źródłami).
+**Nic z niej nie jest jeszcze decyzją** — wybiera Fryderyk. **Dane zdrowotne nigdy do `dane.js`
+ani żadnego pliku w repo** — repo jest publiczne.
+
 ## 6. Otwarte, nierozstrzygnięte
 
 - **Prawdziwe dane** — strona stoi na przykładowych. Podłączenie danych ze starej strony

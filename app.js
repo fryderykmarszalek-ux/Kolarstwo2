@@ -90,7 +90,24 @@
       catch (e) { zdjBlad.textContent = e.message; }
       odswiezFormularz();
     });
-    usun.addEventListener('click', () => { zdjecie = null; zdjBlad.textContent = ''; odswiezFormularz(); kredka.focus(); });
+    // „Usuń profilowe” najpierw pyta (prośba Fryderyka 12.11.2026). Tak = zdjęcie znika z podglądu; na stronie — po „Zapisz”.
+    // Nie, Esc i dotknięcie obok okienka zostawiają wszystko jak było.
+    const pyt = document.getElementById('tp-pyt-usun');
+    usun.addEventListener('click', () => {
+      if (!pyt || !pyt.showModal) { zdjecie = null; zdjBlad.textContent = ''; odswiezFormularz(); kredka.focus(); return; }
+      pyt.returnValue = ''; pyt.showModal(); pyt.focus();     // fokus na samym okienku — bez obwódki na „Nie”
+    });
+    if (pyt) {
+      pyt.querySelectorAll('[data-odp]').forEach((b) => b.addEventListener('click', () => pyt.close(b.dataset.odp)));
+      pyt.addEventListener('click', (e) => {
+        const r = pyt.getBoundingClientRect();
+        if (e.target === pyt && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) pyt.close('nie');
+      });
+      pyt.addEventListener('close', () => {
+        if (pyt.returnValue === 'tak') { zdjecie = null; zdjBlad.textContent = ''; odswiezFormularz(); kredka.focus(); }
+        else if (!usun.hidden) usun.focus();
+      });
+    }
     // stuknięcie gdziekolwiek obok okienka je zamyka
     okno.addEventListener('pointerdown', (e) => { if (menuOtwarte() && !menu.contains(e.target) && !kredka.contains(e.target)) zamknijMenu(); }, true);
 

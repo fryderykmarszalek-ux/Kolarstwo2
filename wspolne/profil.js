@@ -4,7 +4,7 @@
  * zanim cokolwiek je przeczyta (np. powitanie „Dobry wieczór, Fryderyk” na pulpicie).
  *
  * Gdzie strona pokazuje profil, element dostaje atrybut data-profil:
- *   data-profil="imie" | "nazwisko" | "pelne" | "inicjaly"
+ *   data-profil="imie" | "nazwisko" | "pelne" | "inicjaly" | "plec"
  * P.odswiez() wpisuje do nich aktualne wartości — po zapisie zmienia się WSZYSTKO
  * naraz, bez przeładowania strony. Nowe miejsce z imieniem = ten sam atrybut, nic więcej.
  *
@@ -39,6 +39,8 @@
   const P = {};
   P.MAKS = MAKS;
   P.PLCIE = PLCIE;
+  // podpis pod imieniem w oknie profilu — samo „Niezdefiniowana” pod nazwiskiem nie mówiłoby, czego dotyczy
+  P.PLCIE_PODPIS = { m: 'Mężczyzna', k: 'Kobieta', n: 'Płeć niezdefiniowana' };
 
   // spacje z brzegów out, podwójne spacje → jedna
   P.oczysc = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
@@ -157,7 +159,7 @@
   P.dane = () => ({ ...biezacy });
 
   P.odswiez = (korzen) => {
-    const w = { imie: biezacy.imie, nazwisko: biezacy.nazwisko, pelne: `${biezacy.imie} ${biezacy.nazwisko}`, inicjaly: P.inicjaly(biezacy) };
+    const w = { imie: biezacy.imie, nazwisko: biezacy.nazwisko, pelne: `${biezacy.imie} ${biezacy.nazwisko}`, inicjaly: P.inicjaly(biezacy), plec: P.PLCIE_PODPIS[biezacy.plec] };
     (korzen || document).querySelectorAll('[data-profil]').forEach((el) => {
       if (el.dataset.profil === 'inicjaly') return P.rysujAwatar(el, w.inicjaly, biezacy.zdjecie);
       const v = w[el.dataset.profil];

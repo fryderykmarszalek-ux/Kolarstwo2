@@ -418,3 +418,44 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-data-m select.zly { border-color: var(--s-hr); background: #FFF6F6; }
 .tp-wiek { font: 600 12px/1 var(--s-f); color: var(--s-tekst-3); font-variant-numeric: tabular-nums; }
 @container (max-width: 419px) { .tp-data { gap: 6px; } .tp-data input { padding: 0 6px; } .tp-data-m select { padding: 0 26px 0 10px; } .tp-data-m i { right: 10px; } }
+
+/* ───── płeć pod imieniem w oknie profilu (12.11.2026, prośba Fryderyka) ─────
+   Imię z „Edit” w jednej linii, pod nimi wybrana płeć — „Edit” zostaje na wysokości imienia, nie skacze na środek dwóch linii. */
+.tp-okno-kto { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.tp-okno-kto-r { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tp-okno[data-widok-okna="profil"] .tp-okno-kto-r .tp-edytuj { margin-left: 0; }
+.tp-okno-plec { font: 600 14px/1.2 var(--s-f); color: var(--s-tekst-3); }
+.tp-okno[data-widok-okna="edycja"] .tp-okno-plec { display: none; }
+@media (max-width: 640px) { .tp-okno-plec { font-size: 13px; } .tp-okno-kto-r { gap: 10px; } }
+
+/* ───── pytanie „Usunąć zdjęcie profilowe?” — małe okno nad edycją ───── */
+.tp-pyt { box-sizing: border-box; width: min(360px, calc(100vw - 32px)); max-width: none; margin: auto; padding: 26px 24px 20px; border: 0; border-radius: 22px;
+  background: var(--s-karta); color: var(--s-tekst); text-align: center; box-shadow: 0 30px 70px -24px rgba(18, 24, 38, .45); }
+.tp-pyt[open] { animation: tp-okno-wej .2s cubic-bezier(.2, .8, .2, 1); }
+.tp-pyt:focus { outline: none; }
+.tp-pyt::backdrop { background: rgba(18, 24, 38, .32); animation: tp-tlo-wej .2s ease-out; }
+.tp-pyt-ik { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; background: #FDF0F0; color: #C2363A; font-size: 24px; }
+.tp-pyt h3 { font: 800 18px/1.25 var(--s-f); letter-spacing: -.01em; }
+.tp-pyt p { margin-top: 8px; font: 500 13.5px/1.45 var(--s-f); color: var(--s-tekst-2); }
+.tp-pyt-st { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+.tp-pyt-st .tp-przycisk { width: 100%; background: var(--tp-szary-1); color: var(--s-tekst); }
+@media (any-hover: hover) { .tp-pyt-st .tp-przycisk:not(.groz):hover { background: var(--tp-szary-2); } }
+.tp-pyt-st .tp-przycisk:not(.groz):active { background: var(--tp-szary-3); }
+.tp-przycisk.groz { background: #D93A3F; color: #fff; box-shadow: 0 6px 14px -6px rgba(217, 58, 63, .6); }
+.tp-pyt-st .tp-przycisk.groz { background: #D93A3F; color: #fff; }
+@media (any-hover: hover) { .tp-pyt-st .tp-przycisk.groz:hover { background: #BF2F34; color: #fff; box-shadow: 0 8px 18px -6px rgba(217, 58, 63, .7); } }
+.tp-pyt-st .tp-przycisk.groz:active { background: #B02A2F; }
+@media (prefers-reduced-motion: reduce) { .tp-pyt[open], .tp-pyt::backdrop { animation: none; } }
+/* Układ siatką: szeroko „imię | Edit” i pod spodem płeć; wąsko (≤ 480 px) imię, płeć, a „Edit” linię niżej.
+   Pierwsza wersja (flex) ściskała imię do „Frydery / k” na iPhonie SE, a z zawijaniem „Edit” wchodził między imię i płeć. */
+.tp-okno-kto { display: grid; grid-template-columns: minmax(0, auto) auto; grid-template-areas: "imie edit" "plec plec"; justify-content: start; align-items: center; column-gap: 12px; row-gap: 5px; }
+.tp-okno-kto-r { display: contents; }
+.tp-okno-kto h2 { grid-area: imie; overflow-wrap: break-word; min-width: 0; }
+.tp-okno-kto .tp-edytuj { grid-area: edit; justify-self: start; }
+.tp-okno-plec { grid-area: plec; }
+@media (max-width: 480px) {
+  .tp-okno-kto { grid-template-columns: minmax(0, 1fr); grid-template-areas: "imie" "plec" "edit"; }
+  .tp-okno-kto .tp-edytuj { margin-top: 6px; }
+}
+/* wąsko nagłówek profilu ma trzy linie — × zostaje w prawym GÓRNYM rogu, a nie na środku wysokości */
+@media (max-width: 480px) { .tp-okno[data-widok-okna="profil"] .tp-okno-x { align-self: flex-start; } }
