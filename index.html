@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <div class="tp">
@@ -26,10 +26,10 @@
         <a href="#postepy" data-widok="postepy"><i class="ph ph-chart-line-up" aria-hidden="true"></i><span>Postępy</span></a>
       </nav>
       <div class="tp-bok-cel"></div>
-      <div class="tp-bok-ja">
+      <button class="tp-bok-ja" type="button" aria-haspopup="dialog" aria-controls="tp-profil" aria-label="Athlete’s profile">
         <span class="tp-awatar" aria-hidden="true">FM</span>
-        <span><b>Fryderyk Marszałek</b><small>dane przykładowe</small></span>
-      </div>
+        <b>Athlete’s profile</b>
+      </button>
     </aside>
     <div class="tp-tresc">
       <header class="tp-gora">
@@ -40,10 +40,19 @@
       <footer class="tp-stopka">Kolarstwo 2 · styl Trener Pro · dane przykładowe, segmenty i rekordy ze starej strony</footer>
     </div>
   </div>
+  <!-- Okno „Athlete’s profile”: otwiera je pole w lewym dolnym rogu (.tp-bok-ja). Treść dojdzie później. -->
+  <dialog class="tp-okno" id="tp-profil" aria-labelledby="tp-profil-t">
+    <header class="tp-okno-g">
+      <span class="tp-awatar" aria-hidden="true">FM</span>
+      <h2 id="tp-profil-t">Athlete’s profile</h2>
+      <button class="tp-okno-x" type="button" aria-label="Zamknij"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+    </header>
+    <div class="tp-okno-tresc"></div>
+  </dialog>
   <script src="wspolne/dane.js?v=6"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

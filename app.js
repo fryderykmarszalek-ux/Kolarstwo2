@@ -15,6 +15,29 @@
     h('span', { class: 'tp-pig' }, ik('trend-up', 'bold'), 'Forma ', h('b', { text: f.liczba(F.ctl) })),
     h('span', { class: 'tp-pig' }, ik('battery-medium', 'bold'), 'Świeżość ', h('b', { text: f.znak(Math.round(F.tsb)) })));
 
+  // ───── okno „Athlete’s profile” ─────
+  // Natywny <dialog>: przeglądarka sama trzyma okno na wierzchu, blokuje resztę strony i obsługuje Esc.
+  (function () {
+    const okno = document.getElementById('tp-profil'), pole = document.querySelector('.tp-bok-ja'), html = document.documentElement;
+    if (!okno || !pole || !okno.showModal) return;
+    pole.addEventListener('click', () => {
+      if (okno.open) return;
+      // strona pod oknem przestaje się przewijać; szerokość znikającego suwaka oddajemy marginesem, żeby nic nie skoczyło
+      const suwak = window.innerWidth - html.clientWidth;
+      html.classList.add('tp-okno-otwarte');
+      if (suwak > 0) document.body.style.paddingRight = suwak + 'px';
+      okno.showModal();
+    });
+    okno.querySelector('.tp-okno-x').addEventListener('click', () => okno.close());
+    // dotknięcie przyciemnionego tła = zdarzenie na samym <dialog>, w punkcie poza jego prostokątem
+    // (sam prostokąt nie wystarczy: kliknięcie z klawiatury ma współrzędne 0,0)
+    okno.addEventListener('click', (e) => {
+      const r = okno.getBoundingClientRect();
+      if (e.target === okno && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) okno.close();
+    });
+    okno.addEventListener('close', () => { html.classList.remove('tp-okno-otwarte'); document.body.style.paddingRight = ''; });
+  })();
+
   // ───── „Jak nogi?” zmienia propozycję na jutro ─────
   const NOGI = [
     { k: 'swieze', s: 'Świeże', i: 'smiley', d: 8 },

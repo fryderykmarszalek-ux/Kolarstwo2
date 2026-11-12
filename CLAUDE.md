@@ -27,6 +27,7 @@ Nie podważać jej argumentem, że coś działa, choć brzydko wygląda.
 |---|---|
 | Styl **Trener Pro** z rundy 3. Pozostałe style i przełącznik poszły do `archiwum/runda-3/` | 11.11.2026 |
 | **Zero zewnętrznych serwerów** — ikony i czcionka leżą w repo (§3) | 11.11.2026 |
+| **Pole profilu „Athlete’s profile”** (lewy dolny róg) jest kluczowe, **widoczne zawsze** i otwiera okno na pierwszym planie (§5a) | 12.11.2026 |
 
 **Wszystko inne to placeholdery.** Układ kart, treść pulpitu, wykresy, teksty, plan,
 wyzwania — Fryderyk zapowiedział, że całość „pewnie będzie wyglądała kompletnie inaczej”.
@@ -100,6 +101,36 @@ za krawędzią, **0** tekstu wylewającego się z pudełka, **0** błędów JS.
 Sonda pilnowała też sama siebie: dwa razy „błąd” był błędem testu (`elementFromPoint` poza
 ekranem, płynne przewijanie), a porównanie ze starą wersją bez jej czcionki zawyżało różnice.
 **Każdą nową kontrolę sprawdzać najpierw na znanym błędzie.**
+
+## 5a. Pole profilu i okno „Athlete’s profile” (12.11.2026)
+
+Fryderyk: pole w lewym dolnym rogu „jest kluczowe dla strony”, ma być **widoczne cały czas**,
+nosić napis **Athlete’s profile** (po angielsku, jego wybór) i po dotknięciu otwierać okno
+na środku, z × w prawym górnym rogu, na pierwszym planie, **ze stroną widoczną w tle**.
+Co ma być w oknie — jeszcze nie powiedział. **Okno jest puste celowo; nie wypełniać z własnej inicjatywy.**
+
+- **Dlaczego pole znikało:** pasek boczny miał `height: 100vh`, a w Safari na iPadzie „100vh”
+  to wysokość ekranu BEZ paska adresu. Przy rozwiniętym pasku dół menu wypadał pod ekran.
+  Teraz `100dvh` (to, co naprawdę widać). **Nie wracać do samego `100vh` na elementach
+  przyklejonych do wysokości ekranu.**
+- **Wąski ekran (≤ 1000 px, górne menu):** pole zostaje jako sam awatar po prawej stronie paska —
+  „widoczne zawsze” dotyczy też telefonu i iPada pionowo. Żeby zmieścić awatar, zakładki są
+  ciaśniej, a logo znika do 480 px (prowadzi tam, gdzie „Dzisiaj”). Sprawdzone co 1 px
+  od 320 do 1000: wszystkie cztery zakładki i awatar mieszczą się bez przewijania.
+- **Okno to natywny `<dialog>` + `showModal()`** (`#tp-profil`, kod w `app.js`): przeglądarka sama
+  trzyma je na wierzchu, blokuje resztę strony, obsługuje Esc i oddaje fokus polu po zamknięciu.
+  Zamyka: ×, Esc, dotknięcie przyciemnionego tła. Strona pod spodem nie przewija się i nie
+  skacze (szerokość znikającego suwaka wraca jako margines).
+- Efekt najechania tylko w `@media (hover: hover)` — na dotyku „hover” zostaje po stuknięciu
+  i pole stało szare pod otwartym oknem.
+- Sonda: 15 ekranów × (widoczność pola na starcie i po przewinięciu, napis, otwieranie
+  dotykiem/myszą/Enterem, środek ekranu, ×, Esc, tło, brak skoku strony) = 449 kontroli, 0 błędów.
+- **Pułapka sondy:** urządzenie Playwrighta „iPad (gen 11) landscape” ma 944×656 px, nie 1180×820.
+  iPad Fryderyka ma 1180×820 (ok. 1180×700 przy rozwiniętym pasku Safari) — testować tym
+  rozmiarem wprost. Wcześniejsze wpisy „iPad 1180” w §5 dotyczyły w praktyce 944 px;
+  przegląd powtórzony 12.11 z prawdziwym rozmiarem: 21 urządzeń, 0 problemów.
+- **Dynamicznego paska Safari nie da się odtworzyć w Chromium** — `100dvh` sprawdzone tylko
+  jako dwa stałe rozmiary okna. Ostateczny test to iPad Fryderyka.
 
 ## 6. Otwarte, nierozstrzygnięte
 
