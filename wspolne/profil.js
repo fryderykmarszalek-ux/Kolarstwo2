@@ -32,7 +32,7 @@
   const KLUCZ = 'k2.profil';
   const MAKS = 30;
   const PLCIE = { m: 'Mężczyzna', k: 'Kobieta', n: 'Niezdefiniowana' };
-  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, talia: null, cialoData: null };
+  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, talia: null, cialoData: null, masy: [] };
   const BOK = 1024;                // bok zapisanego zdjęcia w pikselach — ostre na Retinie także w powiększeniu (do 440 px na ekranie)
   const MAKS_ZDJ = 1500000;        // zapora na długość data URL (≈ 1,1 MB); 1024×1024 JPEG to zwykle 100–300 kB
 
@@ -114,8 +114,28 @@
     if (n < od || n > do_) return { blad: `Zakres ${od}–${do_} ${POMIARY[pole][2]}`, wartosc: null };
     return { blad: '', wartosc: n };
   };
+  // ── dziennik masy ciała: [{ d: 'RRRR-MM-DD', kg }], rosnąco po dacie, najwyżej jeden pomiar na dzień ──
+  // „masa” w profilu to zawsze OSTATNI pomiar z dziennika — jedno źródło tej liczby, nie dwa.
+  const ISO = /^\d{4}-\d{2}-\d{2}$/;
+  const wpisPoprawny = (x) => x && typeof x === 'object' && typeof x.d === 'string' && ISO.test(x.d) && P.sprawdzDate(+x.d.slice(8), +x.d.slice(5, 7), x.d.slice(0, 4)).wartosc === x.d
+    && typeof x.kg === 'number' && isFinite(x.kg) && x.kg >= POMIARY.masa[0] && x.kg <= POMIARY.masa[1];
+  // kopia posortowana po dacie; przy dwóch wpisach z jednego dnia wygrywa późniejszy w tablicy
+  P.normujMasy = (lista) => {
+    const dni = new Map();
+    (lista || []).forEach((x) => { if (wpisPoprawny(x)) dni.set(x.d, { d: x.d, kg: Math.round(x.kg * 10) / 10 }); });
+    return [...dni.values()].sort((a, b) => (a.d < b.d ? -1 : 1));
+  };
+  // tekst z pola daty (RRRR-MM-DD z <input type="date">) → { blad, wartosc }
+  P.sprawdzDzien = (tekst) => {
+    const v = String(tekst || '').trim();
+    if (!v) return { blad: 'Wybierz datę', wartosc: null };
+    if (!ISO.test(v)) return { blad: 'Nieprawidłowa data', wartosc: null };
+    return P.sprawdzDate(+v.slice(8), +v.slice(5, 7), v.slice(0, 4));
+  };
+
   const pomiarPoprawny = (pole, n) => n == null || (typeof n === 'number' && isFinite(n) && n >= POMIARY[pole][0] && n <= POMIARY[pole][1]);
   P.liczba = (n) => String(Math.round(n * 10) / 10).replace('.', ',');     // 68.5 → „68,5”
+  P.kg = (n) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');  // masa zawsze z jednym miejscem: 69 → „69,0”
 
   // pełne lata na dziś (urodzeni 29 lutego kończą rok 1 marca w latach nieprzestępnych)
   P.wiek = (u, dzis) => {
@@ -133,7 +153,8 @@
 
   function poprawny(p) {
     return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie) && urodzinyPoprawne(p.urodziny)
-      && pomiarPoprawny('wzrost', p.wzrost) && pomiarPoprawny('masa', p.masa) && pomiarPoprawny('talia', p.talia) && (p.cialoData == null || /^\d{4}-\d{2}-\d{2}$/.test(p.cialoData));
+      && pomiarPoprawny('wzrost', p.wzrost) && pomiarPoprawny('masa', p.masa) && pomiarPoprawny('talia', p.talia) && (p.cialoData == null || /^\d{4}-\d{2}-\d{2}$/.test(p.cialoData))
+      && Array.isArray(p.masy) && p.masy.every(wpisPoprawny);
   }
 
   // Wybrany plik → kwadrat ze środka, 512×512, JPEG. Obietnica zwraca data URL albo błąd z komunikatem po polsku.
@@ -172,14 +193,24 @@
     if (el.style.backgroundImage !== tlo) el.style.backgroundImage = tlo;
   };
 
+  // „masa” i „masaData” zawsze z ostatniego pomiaru w dzienniku
+  function zMasa(p) {
+    const o = p.masy[p.masy.length - 1];
+    p.masa = o ? o.kg : null; p.masaData = o ? o.d : null;
+    return p;
+  }
+
   function wczytaj() {
     try {
       const p = JSON.parse(global.localStorage.getItem(KLUCZ) || 'null');
       // wpis sprzed zdjęć, daty urodzenia albo pomiarów ciała — dalej ważny, brakujące pola są puste
       if (p) ['zdjecie', 'urodziny', 'wzrost', 'masa', 'talia', 'cialoData'].forEach((k) => { if (p[k] === undefined) p[k] = null; });
-      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, masa: p.masa, talia: p.talia, cialoData: p.cialoData };
+      // zapis sprzed dziennika: jedna masa → jeden pomiar z dniem ostatniego zapisu sekcji
+      if (p && !Array.isArray(p.masy)) p.masy = typeof p.masa === 'number' ? [{ d: p.cialoData || String(p.zapisano || '').slice(0, 10) || dzisISO(), kg: p.masa }] : [];
+      if (p) p.masy = P.normujMasy(p.masy);
+      if (poprawny(p)) return zMasa({ imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, talia: p.talia, cialoData: p.cialoData, masy: p.masy });
     } catch (e) { /* brak schowka albo zepsuty wpis — domyślne */ }
-    return { ...DOMYSLNY };
+    return zMasa({ ...DOMYSLNY, masy: [] });
   }
 
   let biezacy = wczytaj();
@@ -193,7 +224,7 @@
     if (global.A) global.A.imie = biezacy.imie;
   }
 
-  P.dane = () => ({ ...biezacy });
+  P.dane = () => ({ ...biezacy, masy: biezacy.masy.map((x) => ({ ...x })) });
 
   P.odswiez = (korzen) => {
     const w = { imie: biezacy.imie, nazwisko: biezacy.nazwisko, pelne: `${biezacy.imie} ${biezacy.nazwisko}`, inicjaly: P.inicjaly(biezacy), plec: P.PLCIE_PODPIS[biezacy.plec] };
@@ -208,12 +239,22 @@
   P.zapisz = (nowy) => {
     // pola, których „nowy” nie podaje, zostają jak były — każda sekcja profilu zapisuje tylko swoje
     const p = { ...biezacy };
-    Object.keys(DOMYSLNY).forEach((k) => { if (nowy[k] !== undefined) p[k] = nowy[k]; });
+    Object.keys(DOMYSLNY).forEach((k) => { if (nowy[k] !== undefined && k !== 'masa' && k !== 'masy') p[k] = nowy[k]; });
     p.imie = P.oczysc(p.imie); p.nazwisko = P.oczysc(p.nazwisko);
+    // masa: albo cały dziennik („masy”), albo jedna liczba („masa”) = pomiar z dzisiaj (zastępuje dzisiejszy)
+    if (nowy.masy !== undefined) {
+      if (!Array.isArray(nowy.masy) || !nowy.masy.every(wpisPoprawny)) return { ok: false, trwale: false };
+      p.masy = P.normujMasy(nowy.masy);
+    } else if (nowy.masa !== undefined) {
+      const bez = p.masy.filter((x) => x.d !== dzisISO());
+      p.masy = nowy.masa == null ? bez : P.normujMasy([...bez, { d: dzisISO(), kg: nowy.masa }]);
+    }
+    zMasa(p);
     if (!poprawny(p)) return { ok: false, trwale: false };
     biezacy = p;
     let trwale = true;
-    try { global.localStorage.setItem(KLUCZ, JSON.stringify({ wersja: 1, ...p, zapisano: new Date().toISOString() })); }
+    const doZapisu = { wersja: 1, ...p, zapisano: new Date().toISOString() }; delete doZapisu.masaData;
+    try { global.localStorage.setItem(KLUCZ, JSON.stringify(doZapisu)); }
     catch (e) { trwale = false; }
     rozeslij();
     P.odswiez();

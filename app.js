@@ -37,7 +37,13 @@
     // sekcje profilu: id → { tytul, form, otworz(), zmienione(), fokus() }. Zapis robi sama sekcja w „submit” swojego formularza.
     const sekcje = {};
     const tytulWidoku = okno.querySelector('#tp-tyt-widoku'), wstecz = okno.querySelector('.tp-okno-wstecz'), tresc = okno.querySelector('.tp-okno-tresc');
-    const brudne = () => (widok() === 'edycja' ? zmienione() : sekcje[widok()] ? sekcje[widok()].zmienione() : false);
+    const brudne = () => {
+      if (widok() === 'edycja') return zmienione();
+      const sk = sekcje[widok()];
+      return !!sk && (sk.zmienione() || (!!sk.rodzic && sekcje[sk.rodzic].zmienione()));
+    };
+    // ‹, Anuluj i Esc: z widoku-dziecka wracamy do rodzica (jego wpisane pola zostają), z reszty do profilu
+    const cofnijWidok = () => { const sk = sekcje[widok()]; if (sk && sk.rodzic) pokazWidok(sk.rodzic, { powrot: true }); else pokazWidok('profil'); };
     const data = () => P.sprawdzDate(ur.d.value, ur.m.value, ur.r.value);
     // surowy zapis trzech pól — „zmienione” musi widzieć także datę wpisaną w połowie, nie tylko poprawną
     const urSurowo = () => `${+ur.d.value || ur.d.value}|${ur.m.value}|${ur.r.value}`;
@@ -116,16 +122,17 @@
     // stuknięcie gdziekolwiek obok okienka je zamyka
     okno.addEventListener('pointerdown', (e) => { if (menuOtwarte() && !menu.contains(e.target) && !kredka.contains(e.target)) zamknijMenu(); }, true);
 
-    function pokazWidok(w) {
-      const sk = sekcje[w];
+    function pokazWidok(w, opcje) {
+      const sk = sekcje[w], powrot = !!(opcje && opcje.powrot);
       okno.dataset.widokOkna = w;
       tytulWidoku.textContent = sk ? sk.tytul : 'Edytuj profil';
       zapisz.setAttribute('form', sk ? sk.form.id : form.id);    // jedno „Zapisz” w stopce — zawsze dla otwartego widoku
       if (sk) {
         start = null; zamknijMenu();
-        sk.otworz();
-        tresc.scrollTop = 0;
-        (dotyk ? wstecz : sk.fokus()).focus();    // na dotyku fokus w polu otwierałby klawiaturę
+        sk.otworz(powrot);
+        if (!powrot) tresc.scrollTop = 0;
+        if (powrot && sk.fokusPowrotu) sk.fokusPowrotu().focus();
+        else (dotyk ? wstecz : sk.fokus()).focus();    // na dotyku fokus w polu otwierałby klawiaturę
       } else if (w === 'edycja') {
         start = P.dane();
         wejscia.imie.value = start.imie; wejscia.nazwisko.value = start.nazwisko;
@@ -158,15 +165,15 @@
     });
     okno.querySelector('.tp-okno-x').addEventListener('click', () => okno.close());   // × zamyka całe okno; niezapisane zmiany przepadają
     okno.querySelector('.tp-edytuj').addEventListener('click', () => pokazWidok('edycja'));
-    wstecz.addEventListener('click', () => pokazWidok('profil'));
+    wstecz.addEventListener('click', cofnijWidok);
     okno.querySelectorAll('.tp-sekcja').forEach((b) => b.addEventListener('click', () => { if (sekcje[b.dataset.sekcja]) pokazWidok(b.dataset.sekcja); }));
-    okno.querySelector('[data-akcja="anuluj"]').addEventListener('click', () => pokazWidok('profil'));
+    okno.querySelector('[data-akcja="anuluj"]').addEventListener('click', cofnijWidok);
     // Esc w edycji i w sekcji cofa do profilu zamiast zamykać okno
     // (gdy otwarte jest okienko zdjęcia, Esc zamyka najpierw tylko je)
     okno.addEventListener('cancel', (e) => {
       if (widok() === 'profil') return;
       e.preventDefault();
-      if (menuOtwarte()) { zamknijMenu(); kredka.focus(); } else pokazWidok('profil');
+      if (menuOtwarte()) { zamknijMenu(); kredka.focus(); } else cofnijWidok();
     });
     // dotknięcie przyciemnionego tła = zdarzenie na samym <dialog>, w punkcie poza jego prostokątem
     // (sam prostokąt nie wystarczy: kliknięcie z klawiatury ma współrzędne 0,0).
@@ -228,8 +235,10 @@
     (function () {
       const f = okno.querySelector('#tp-cialo-form');
       if (!f || !window.BMI || !window.TALIA) return;
-      const POLA = ['wzrost', 'masa', 'talia'];
-      const pola = { wzrost: f.querySelector('#tp-wzrost'), masa: f.querySelector('#tp-masa'), talia: f.querySelector('#tp-talia') };
+      const POLA = ['wzrost', 'talia'];                 // masa nie jest polem — to ostatni pomiar z dziennika (przycisk niżej)
+      const pola = { wzrost: f.querySelector('#tp-wzrost'), talia: f.querySelector('#tp-talia') };
+      const masaPole = f.querySelector('#tp-masa-pole'), masaW = f.querySelector('#tp-masa-w');
+      const masa = () => P.dane().masa;
       const karta = f.querySelector('#tp-bmi'), kartaT = f.querySelector('#tp-whtr'), kiedy = f.querySelector('#tp-cialo-kiedy');
       const opis = okno.querySelector('[data-sekcja-opis="cialo"]');
       let st = null;                               // stan w chwili wejścia w sekcję
@@ -277,7 +286,7 @@
       // Karta BMI ma zawsze ten sam szkielet: etykieta, liczba, werdykt; pod spodem skala i dwa wskaźniki.
       // Gdy czegoś brakuje, w miejscu werdyktu stoi krótka, wyszarzona informacja — bez zdań-wyjaśnień.
       function rysujBmi() {
-        const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, { bmi, o } = ocena(w, m);
+        const w = odczyt('wzrost').wartosc, m = masa(), { bmi, o } = ocena(w, m);
         karta.dataset.stan = o.stan;
         const glowa = glowaKarty('BMI', bmi ? b1(bmi) : '—');
         if (o.stan !== 'ok') {
@@ -301,7 +310,7 @@
       // Druga karta: talia/wzrost (NICE). Ten sam szkielet co BMI. Pole talii jest opcjonalne, więc bez niego
       // karta stoi wyszarzona z „Wymaga obwodu talii” — przelicznik BMI działa niezależnie od niej.
       function rysujWhtr() {
-        const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, t = odczyt('talia').wartosc, p = P.dane();
+        const w = odczyt('wzrost').wartosc, m = masa(), t = odczyt('talia').wartosc, p = P.dane();
         const o = TALIA.ocen({ talia: t, wzrost: w, bmi: BMI.oblicz(w, m), wiekLat: P.wiek(p.urodziny) });
         kartaT.dataset.stan = o.stan;
         const glowa = glowaKarty('WHtR', o.whtr != null ? b2(o.whtr) : '—');
@@ -317,12 +326,18 @@
         kartaT.replaceChildren(glowa, skalaWhtr(o.whtr),
           h('dl', { class: 'tp-bmi-wsk' }, wsk('Norma · NICE', '0,40–0,49'), wsk('Cel · NICE', `< ${P.liczba(o.cel)} cm`)));
       }
-      function odswiez() { zapisz.disabled = !zmienione(); rysujBmi(); rysujWhtr(); }
+      function rysujMase() {
+        const m = masa();
+        masaPole.classList.toggle('pusty', m == null);
+        masaW.replaceChildren(...(m == null ? [ik('plus', 'bold'), 'Dodaj'] : [h('b', { text: P.kg(m) }), h('small', { text: 'kg' })]));
+      }
+      function odswiez() { zapisz.disabled = !zmienione(); rysujMase(); rysujBmi(); rysujWhtr(); }
+      masaPole.addEventListener('click', () => pokazWidok('waga'));
 
       // opis pod nazwą sekcji na liście — z danych ZAPISANYCH, nie z tego, co akurat wpisane
       function rysujOpis() {
         const p = P.dane(), { bmi, o } = ocena(p.wzrost, p.masa);
-        const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.liczba(p.masa)} kg` : null,
+        const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.kg(p.masa)} kg` : null,
           p.talia != null ? `talia ${P.liczba(p.talia)} cm` : null, bmi ? `BMI ${b1(bmi)}${o.stan === 'ok' ? ' · ' + o.nazwa.toLowerCase() : ''}` : null].filter(Boolean);
         opis.classList.toggle('pusty', !czesci.length);
         opis.textContent = czesci.length ? czesci.join(' · ') : 'Nie uzupełniono';
@@ -338,8 +353,7 @@
         });
         w.addEventListener('blur', () => { if (widok() === 'cialo') blad(n, odczyt(n).blad); });
       });
-      pola.wzrost.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pola.masa.focus(); } });
-      pola.masa.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pola.talia.focus(); } });
+      pola.wzrost.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pola.talia.focus(); } });
 
       f.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -348,7 +362,7 @@
         const zly = POLA.find((n) => v[n].blad);
         if (zly) { pola[zly].focus(); return; }
         const nic = POLA.every((n) => v[n].wartosc == null);
-        const wynik = P.zapisz({ wzrost: v.wzrost.wartosc, masa: v.masa.wartosc, talia: v.talia.wartosc, cialoData: nic ? null : P.dzis() });
+        const wynik = P.zapisz({ wzrost: v.wzrost.wartosc, talia: v.talia.wartosc, cialoData: nic ? null : P.dzis() });
         if (!wynik.ok) return;
         okno.classList.toggle('bez-zapisu', !wynik.trwale);
         pokazWidok('profil');
@@ -356,7 +370,9 @@
 
       sekcje.cialo = {
         tytul: 'Budowa ciała', form: f, zmienione, fokus: () => pola.wzrost,
-        otworz() {
+        fokusPowrotu: () => masaPole,
+        otworz(powrot) {
+          if (powrot && st) { odswiez(); return; }          // powrót z dziennika: wpisane pola zostają, odświeża się masa i oceny
           st = P.dane();
           POLA.forEach((n) => { pola[n].value = tekst(st[n]); blad(n, ''); });
           kiedy.textContent = st.cialoData ? `Zaktualizowano ${f2(st.cialoData)}` : '';
@@ -366,6 +382,230 @@
       const f2 = (iso) => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
       window.addEventListener('k2:profil', rysujOpis);
       rysujOpis();
+    })();
+
+    // ───── dziennik masy ciała ─────
+    // Pomiary { d, kg } — jeden na dzień, dodawane nieregularnie. Zmiany (dodanie, poprawka, usunięcie) są robocze
+    // do wspólnego „Zapisz”; Anuluj, ‹ i Esc je porzucają. Oś pozioma to PRAWDZIWY czas: odstęp między punktami
+    // jest proporcjonalny do liczby dni, a przerwa dłuższa niż PRZERWA_DNI rysuje się przerywaną linią.
+    (function () {
+      const f = okno.querySelector('#tp-waga-form'), arkusz = document.getElementById('tp-pomiar');
+      if (!f || !arkusz || !arkusz.showModal) return;
+      const PRZERWA_DNI = 30, DZIEN = 864e5;
+      const ZAKRESY = { '3m': 92, '1r': 366, all: null };
+      const el = {
+        liczba: f.querySelector('#tp-waga-liczba'), data: f.querySelector('#tp-waga-data'), zm: f.querySelector('#tp-waga-zm'),
+        wyk: f.querySelector('#tp-waga-wyk'), stat: f.querySelector('#tp-waga-stat'), lista: f.querySelector('#tp-waga-lista'),
+        dodaj: f.querySelector('.tp-waga-dodaj'), zakres: [...f.querySelectorAll('[data-zakres]')],
+        toast: f.querySelector('#tp-toast'), toastT: f.querySelector('#tp-toast-t'), cofnij: f.querySelector('#tp-toast-cofnij'),
+      };
+      const ar = {
+        form: arkusz.querySelector('form'), tytul: arkusz.querySelector('#tp-pomiar-t'), d: arkusz.querySelector('#tp-pomiar-d'), kg: arkusz.querySelector('#tp-pomiar-kg'),
+        db: arkusz.querySelector('#tp-pomiar-db'), kgb: arkusz.querySelector('#tp-pomiar-kgb'), jest: arkusz.querySelector('#tp-pomiar-jest'),
+        ok: arkusz.querySelector('#tp-pomiar-ok'), usun: arkusz.querySelector('.tp-pomiar-usun'),
+      };
+      let robocze = [], st = [], zakres = 'all', wybrany = null, edytowany = null, cofnijDane = null, cofnijZegar = 0, rys = null;
+
+      const doDnia = (iso) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)) / DZIEN;
+      const zDnia = (n) => new Date(n * DZIEN).toISOString().slice(0, 10);
+      const dataPL = (iso, o) => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)).toLocaleDateString('pl-PL', o || { day: 'numeric', month: 'short', year: 'numeric' });
+      const kg = (n) => P.kg(n);                                   // masa zawsze z jednym miejscem: „69,0”
+      const znak = (n) => (n > 0.04 ? '+' : n < -0.04 ? '−' : '±') + P.kg(Math.abs(n));
+      const zmienione = () => JSON.stringify(robocze) !== JSON.stringify(st);
+      const odswiezZapisz = () => { if (widok() === 'waga') zapisz.disabled = !zmienione(); };
+
+      // punkty widoczne w wybranym zakresie (licząc wstecz od dziś)
+      const wZakresie = () => { const dni = ZAKRESY[zakres]; if (!dni) return robocze; const od = doDnia(P.dzis()) - dni; return robocze.filter((x) => doDnia(x.d) >= od); };
+      const poprzedni = (x) => { const i = robocze.findIndex((y) => y.d === x.d); return i > 0 ? robocze[i - 1] : null; };
+
+      // ── nagłówek: ostatni pomiar albo pomiar wskazany na wykresie ──
+      function rysujNaglowek() {
+        const x = wybrany || robocze[robocze.length - 1];
+        el.liczba.textContent = x ? kg(x.kg) : '—';
+        el.data.textContent = x ? dataPL(x.d) : '';
+        f.classList.toggle('bez-pomiarow', !robocze.length);
+        const p = x && poprzedni(x);
+        el.zm.textContent = p ? `${znak(x.kg - p.kg)} kg od ${dataPL(p.d, { day: 'numeric', month: 'short' })}` : '';
+        el.zm.hidden = !p;
+        f.classList.toggle('wskazany', !!wybrany);
+      }
+
+      // ── wykres: linia z punktami na osi prawdziwego czasu ──
+      function rysujWykres(szer) {
+        const pts = wZakresie(), H = szer < 480 ? 190 : 230, m = { l: 14, r: 44, t: 18, b: 30 };
+        el.wyk.replaceChildren();
+        rys = null;
+        if (!pts.length) {
+          el.wyk.append(h('div', { class: 'tp-waga-pusto', style: { height: H + 'px' } }, h('span', { class: 'tp-waga-pusto-ik' }, ik('chart-line-up')),
+            h('b', { text: robocze.length ? 'Brak pomiarów w tym okresie' : 'Brak pomiarów' })));
+          return;
+        }
+        const dzis = doDnia(P.dzis()), dni = ZAKRESY[zakres];
+        let x0 = dni ? dzis - dni : doDnia(pts[0].d), x1 = dzis;
+        if (x1 - x0 < 28) x0 = x1 - 28;
+        const v = pts.map((p) => p.kg), lo = Math.min(...v), hi = Math.max(...v), pad = Math.max(0.8, (hi - lo) * 0.22);
+        const tk = W.ticki(lo - pad, hi + pad, szer < 480 ? 3 : 4), y0 = Math.min(tk[0], lo - pad * 0.6), y1 = Math.max(tk[tk.length - 1], hi + pad * 0.6);
+        const X = W.skala(x0, x1, m.l + 10, szer - m.r - 10), Y = W.skala(y0, y1, H - m.b, m.t);
+        const svg = W.svg('svg', { width: szer, height: H, viewBox: `0 0 ${szer} ${H}`, class: 'tp-waga-svg', role: 'img', tabindex: 0,
+          'aria-label': `Masa ciała: ${pts.length} pomiarów od ${dataPL(pts[0].d)} do ${dataPL(pts[pts.length - 1].d)}, od ${kg(lo)} do ${kg(hi)} kg` });
+        const defs = W.svg('defs', null, svg), gr = W.svg('linearGradient', { id: 'tp-waga-gr', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+        W.svg('stop', { offset: '0', class: 'tp-waga-gr-0' }, gr); W.svg('stop', { offset: '1', class: 'tp-waga-gr-1' }, gr);
+        // siatka i oś Y po prawej
+        const gs = W.svg('g', { class: 'tp-waga-siatka' }, svg);
+        tk.filter((t) => t >= y0 && t <= y1).forEach((t) => {
+          W.svg('line', { x1: m.l, x2: szer - m.r, y1: Y(t), y2: Y(t) }, gs);
+          W.tekst(gs, szer - m.r + 8, Y(t) + 4, P.liczba(t), { class: 'tp-waga-os' });
+        });
+        // oś X: początki miesięcy (krótki zakres: tygodnie)
+        const gx = W.svg('g', { class: 'tp-waga-osx' }, svg), znaczniki = [];
+        if (x1 - x0 <= 45) {
+          // krótki okres: podpisy co tydzień, a gdy na tydzień przypada mniej niż ~58 px — co dwa
+          const krokD = (szer - m.l - m.r) / ((x1 - x0) / 7) < 58 ? 14 : 7;
+          for (let d = Math.ceil(x0 / 7) * 7 + 4; d <= x1; d += krokD) znaczniki.push([d, dataPL(zDnia(d), { day: 'numeric', month: 'short' })]);
+        }
+        else {
+          const a = new Date(x0 * DZIEN), mies = [];
+          for (let r = a.getUTCFullYear(), k = a.getUTCMonth() + 1; ; k++) { const t = Date.UTC(r, k, 1) / DZIEN; if (t > x1) break; mies.push(t); }
+          const krok = Math.max(1, Math.ceil(mies.length / Math.max(2, Math.floor((szer - m.l - m.r) / 64))));
+          mies.filter((_, i) => i % krok === 0).forEach((t) => { const d = new Date(t * DZIEN), sty = d.getUTCMonth() === 0;
+            znaczniki.push([t, d.toLocaleDateString('pl-PL', { month: 'short', timeZone: 'UTC' }).replace('.', '') + (sty ? ' ' + d.getUTCFullYear() : '')]); });
+        }
+        znaczniki.forEach(([d, t]) => { W.svg('line', { x1: X(d), x2: X(d), y1: H - m.b, y2: H - m.b + 5 }, gx); W.tekst(gx, X(d), H - 9, t, { 'text-anchor': 'middle' }); });
+        W.svg('line', { x1: m.l, x2: szer - m.r, y1: H - m.b, y2: H - m.b, class: 'tp-waga-baza' }, gx);
+        // dane: wypełnienie, odcinki (przerwa > 30 dni = przerywana), punkty
+        const xy = pts.map((p) => [X(doDnia(p.d)), Y(p.kg)]), gd = W.svg('g', { class: 'tp-waga-dane' }, svg);
+        let bieg = [xy[0]];
+        const zamknijBieg = () => { if (bieg.length > 1) W.svg('path', { d: W.obszar(bieg, H - m.b), class: 'tp-waga-pole', fill: 'url(#tp-waga-gr)' }, gd); };
+        for (let i = 1; i < xy.length; i++) { if (doDnia(pts[i].d) - doDnia(pts[i - 1].d) > PRZERWA_DNI) { zamknijBieg(); bieg = []; } bieg.push(xy[i]); }
+        zamknijBieg();
+        for (let i = 1; i < xy.length; i++) {
+          const luka = doDnia(pts[i].d) - doDnia(pts[i - 1].d) > PRZERWA_DNI;
+          W.svg('line', { x1: xy[i - 1][0], y1: xy[i - 1][1], x2: xy[i][0], y2: xy[i][1], class: 'tp-waga-linia' + (luka ? ' luka' : '') }, gd);
+        }
+        const krzyz = W.svg('line', { class: 'tp-waga-krzyz', y1: m.t - 6, y2: H - m.b, x1: 0, x2: 0, visibility: 'hidden' }, svg);
+        // ostatni pomiar wyróżniony: większy, z pierścieniem w kolorze tła (bieżąca wartość)
+        const kropki = xy.map(([x, y], i) => W.svg('circle', { cx: x, cy: y, r: i === xy.length - 1 ? 6 : 4, class: 'tp-waga-pkt' + (i === xy.length - 1 ? ' ost' : '') }, gd));
+        const wyb = W.svg('circle', { r: 7, class: 'tp-waga-wyb', cx: 0, cy: 0, visibility: 'hidden' }, svg);
+        el.wyk.append(svg);
+        rys = { pts, xy, kropki, krzyz, wyb, svg };
+        zaznacz(wybrany);
+      }
+      // zaznaczenie zmienia atrybuty, nie przerysowuje wykresu (bez migania animacji)
+      function zaznacz(x) {
+        wybrany = x && rys && rys.pts.includes(x) ? x : null;
+        if (rys) {
+          const i = wybrany ? rys.pts.indexOf(wybrany) : -1;
+          [rys.krzyz, rys.wyb].forEach((e) => e.setAttribute('visibility', i < 0 ? 'hidden' : 'visible'));
+          if (i >= 0) { rys.krzyz.setAttribute('x1', rys.xy[i][0]); rys.krzyz.setAttribute('x2', rys.xy[i][0]); rys.wyb.setAttribute('cx', rys.xy[i][0]); rys.wyb.setAttribute('cy', rys.xy[i][1]); }
+          rys.svg.classList.toggle('wskazany', i >= 0);
+        }
+        rysujNaglowek();
+      }
+      const najblizszy = (px) => { let b = 0; rys.xy.forEach(([x], i) => { if (Math.abs(x - px) < Math.abs(rys.xy[b][0] - px)) b = i; }); return rys.pts[b]; };
+      W.wskazuj(el.wyk, (e) => { if (!rys) return; const r = rys.svg.getBoundingClientRect(); zaznacz(najblizszy(e.clientX - r.left)); }, () => zaznacz(null));
+      el.wyk.addEventListener('keydown', (e) => {
+        if (!rys || !['ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) return;
+        e.preventDefault(); if (e.key === 'Escape') { e.stopPropagation(); return zaznacz(null); }
+        const i = wybrany ? rys.pts.indexOf(wybrany) : rys.pts.length;
+        zaznacz(rys.pts[A.clamp(i + (e.key === 'ArrowLeft' ? -1 : 1), 0, rys.pts.length - 1)]);
+      });
+
+      // ── wskaźniki zakresu: zmiana, najniższa, najwyższa ──
+      function rysujStat() {
+        const pts = wZakresie();
+        el.stat.hidden = pts.length < 2;
+        if (pts.length < 2) return el.stat.replaceChildren();
+        const v = pts.map((p) => p.kg), w = (e, t) => h('div', null, h('dt', { text: e }), h('dd', { text: t }));
+        el.stat.replaceChildren(w('Zmiana', `${znak(v[v.length - 1] - v[0])} kg`), w('Min.', `${kg(Math.min(...v))} kg`), w('Maks.', `${kg(Math.max(...v))} kg`));
+      }
+
+      // ── lista: od najnowszego, pogrupowana miesiącami; wiersz otwiera edycję ──
+      function rysujListe() {
+        const grupy = new Map();
+        [...robocze].reverse().forEach((x) => { const k = x.d.slice(0, 7); if (!grupy.has(k)) grupy.set(k, []); grupy.get(k).push(x); });
+        el.lista.replaceChildren(...[...grupy].map(([k, xs]) => h('section', { class: 'tp-waga-mies' },
+          h('h4', { text: A.wielka(dataPL(k + '-01', { month: 'long', year: 'numeric' }).replace(' r.', '')) }),
+          h('ul', null, ...xs.map((x) => { const p = poprzedni(x);
+            return h('li', null, h('button', { type: 'button', class: 'tp-waga-wiersz', 'data-d': x.d, 'aria-label': `${dataPL(x.d)}, ${kg(x.kg)} kg. Edytuj` },
+              h('span', { class: 'tp-waga-dzien' }, h('b', { text: String(+x.d.slice(8)) }), h('small', { text: dataPL(x.d, { weekday: 'short' }).replace('.', '') })),
+              h('span', { class: 'tp-waga-kg' }, h('b', { text: kg(x.kg) }), h('small', { text: 'kg' })),
+              h('span', { class: 'tp-waga-roz', text: p ? znak(x.kg - p.kg) : '' }),
+              ik('caret-right', 'bold', 'tp-waga-s'))); })))));
+      }
+      el.lista.addEventListener('click', (e) => { const b = e.target.closest('.tp-waga-wiersz'); if (b) otworzArkusz(robocze.find((x) => x.d === b.dataset.d)); });
+
+      function rysujWszystko() {
+        el.zakres.forEach((b) => { const on = b.dataset.zakres === zakres; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; });
+        rysujNaglowek(); rysujStat(); rysujListe();
+        if (el.wyk.clientWidth) rysujWykres(Math.round(el.wyk.clientWidth));
+        odswiezZapisz();
+      }
+      W.rozmiar(el.wyk, (szer) => { if (widok() === 'waga') rysujWykres(szer); });
+      el.zakres.forEach((b) => b.addEventListener('click', () => { zakres = b.dataset.zakres; wybrany = null; rysujWszystko(); }));
+
+      // ── arkusz pomiaru: data (domyślnie dziś) + masa; ten sam dzień = zastąpienie ──
+      function sprawdzArkusz(pokazBledy) {
+        const d = P.sprawdzDzien(ar.d.value), m = P.sprawdzPomiar('masa', ar.kg.value), pusta = !ar.kg.value.trim();
+        const kolizja = d.wartosc && robocze.find((x) => x.d === d.wartosc && (!edytowany || x.d !== edytowany.d));
+        ar.jest.textContent = kolizja ? `Ten dzień ma już pomiar ${kg(kolizja.kg)} kg` : '';
+        ar.ok.textContent = kolizja ? 'Zastąp' : edytowany ? 'Gotowe' : 'Dodaj';
+        if (pokazBledy) {
+          ar.db.textContent = d.blad; ar.d.classList.toggle('zly', !!d.blad);
+          ar.kgb.textContent = pusta ? 'Wpisz masę ciała' : m.blad; ar.kg.classList.toggle('zly', pusta || !!m.blad);
+        }
+        return { d: d.wartosc, kg: pusta ? null : m.wartosc, ok: !!d.wartosc && !pusta && !m.blad };
+      }
+      function otworzArkusz(x) {
+        edytowany = x || null;
+        ar.tytul.textContent = x ? 'Edytuj pomiar' : 'Nowy pomiar';
+        ar.d.max = P.dzis(); ar.d.value = x ? x.d : P.dzis();
+        ar.kg.value = x ? kg(x.kg) : (robocze.length ? '' : '');
+        ar.kg.placeholder = !x && robocze.length ? kg(robocze[robocze.length - 1].kg) : '';
+        ar.usun.hidden = !x;
+        [ar.db, ar.kgb].forEach((p) => { p.textContent = ''; }); [ar.d, ar.kg].forEach((i) => i.classList.remove('zly'));
+        sprawdzArkusz(false);
+        arkusz.showModal();
+        (dotyk ? arkusz : ar.kg).focus();
+      }
+      el.dodaj.addEventListener('click', () => otworzArkusz(null));
+      ar.d.addEventListener('input', () => sprawdzArkusz(!!ar.db.textContent));
+      ar.d.addEventListener('change', () => sprawdzArkusz(!!ar.db.textContent));
+      ar.kg.addEventListener('input', () => { const c = ar.kg.value.replace(/[^\d.,]/g, ''); if (c !== ar.kg.value) ar.kg.value = c; sprawdzArkusz(!!ar.kgb.textContent); });
+      arkusz.querySelector('[data-odp="anuluj"]').addEventListener('click', () => arkusz.close());
+      arkusz.addEventListener('click', (e) => { const r = arkusz.getBoundingClientRect(); if (e.target === arkusz && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) arkusz.close(); });
+      ar.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const w = sprawdzArkusz(true);
+        if (!w.ok) { (ar.d.classList.contains('zly') ? ar.d : ar.kg).focus(); return; }
+        robocze = P.normujMasy([...robocze.filter((x) => x !== edytowany && x.d !== w.d), { d: w.d, kg: w.kg }]);
+        wybrany = null; arkusz.close(); rysujWszystko();
+      });
+      ar.usun.addEventListener('click', () => {
+        const x = edytowany; if (!x) return;
+        cofnijDane = robocze; robocze = robocze.filter((y) => y !== x);
+        wybrany = null; arkusz.close(); rysujWszystko();
+        el.toastT.textContent = `Usunięto pomiar z ${dataPL(x.d, { day: 'numeric', month: 'short' })}`;
+        el.toast.hidden = false; clearTimeout(cofnijZegar); cofnijZegar = setTimeout(() => { el.toast.hidden = true; }, 6000);
+      });
+      el.cofnij.addEventListener('click', () => { if (cofnijDane) { robocze = cofnijDane; cofnijDane = null; } el.toast.hidden = true; rysujWszystko(); });
+
+      f.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const wynik = P.zapisz({ masy: robocze });
+        if (!wynik.ok) return;
+        okno.classList.toggle('bez-zapisu', !wynik.trwale);
+        pokazWidok('cialo', { powrot: true });
+      });
+
+      sekcje.waga = {
+        tytul: 'Masa ciała', form: f, rodzic: 'cialo', zmienione, fokus: () => el.dodaj,
+        otworz() {
+          st = P.dane().masy; robocze = st.map((x) => ({ ...x }));
+          wybrany = null; edytowany = null; cofnijDane = null; el.toast.hidden = true;
+          rysujWszystko();
+          requestAnimationFrame(() => { if (el.wyk.clientWidth) rysujWykres(Math.round(el.wyk.clientWidth)); });
+        },
+      };
     })();
 
     // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko, płeć, zdjęcie i datę urodzenia naraz ──

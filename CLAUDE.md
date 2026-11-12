@@ -413,6 +413,54 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   celowo wstawionych błędów złapanych**; obie skale i wskaźniki bez nakładania i obcinania
   w 545 kombinacjach (320–1400 px); strażnik „bez notatek” 882/882; pozostałe sondy bez zmian.
 
+### Dziennik masy ciała (12.11.2026)
+
+- **Masa jest dziennikiem, nie jedną liczbą.** `masy: [{ d: 'RRRR-MM-DD', kg }]`, rosnąco, **jeden pomiar
+  na dzień** (decyzja Fryderyka: „sam dzień wystarczy”). „Masa” w profilu = zawsze OSTATNI pomiar —
+  jedno źródło tej liczby. Zapis sprzed dziennika (jedno pole `masa`) wczytuje się jako jeden pomiar
+  z dniem `cialoData`. `P.normujMasy` sortuje, scala dni i zaokrągla do 0,1 kg.
+- **W „Budowie ciała” masa nie jest polem tekstowym**, tylko polem-przyciskiem (wartość + ›), które
+  otwiera dziennik. BMI i opis sekcji liczą się z ostatniego pomiaru.
+- **Dziennik to widok-dziecko** (`sekcje.waga`, `rodzic: 'cialo'`): ‹, Anuluj i Esc wracają do
+  „Budowy ciała”, a nie do profilu, i **wpisane tam niezapisane pola zostają** (`otworz(powrot)`).
+  Tło nie zamyka okna, gdy brudny jest dziennik ALBO jego rodzic. Rejestr sekcji obsługuje to
+  ogólnie — kolejne widoki-dzieci dostają to samo za darmo.
+- **Zapis jak wszędzie: zmiany robocze do wspólnego „Zapisz”.** Dodanie, poprawka i usunięcie
+  zmieniają wykres i listę od razu, w danych lądują dopiero po „Zapisz”; Anuluj porzuca wszystko.
+- **Wybrany układ (A) — po porównaniu trzech na zrzutach** (A: pole pod linią + kafelki + lista
+  miesiącami; B: sama linia, puste punkty, wskaźniki w pasku; C: niski wykres + oś czasu jako lista).
+  A wygrał, bo pole urywa się na przerwie (brak pomiarów widać od razu), a kafelki mówią tym samym
+  językiem co karty BMI/WHtR. Z B wzięty wyróżniony ostatni punkt. B i C usunięte z kodu.
+- **Układ:** nagłówek = duża liczba, data, pigułka „−0,3 kg od 24 paź”, przycisk „+ Dodaj”; karta
+  z przełącznikiem zakresu (3 mies. · 1 rok · Wszystko, domyślnie Wszystko) i wykresem; kafelki
+  Zmiana / Min. / Maks. dla zakresu (od 2 pomiarów); lista od najnowszego, miesiącami: dzień +
+  skrót dnia tygodnia, masa, różnica do poprzedniego pomiaru, ›.
+- **Wykres — zasady, nie kosmetyka:**
+  - **oś pozioma to prawdziwy czas** (odstęp ∝ liczbie dni), bo pomiary są nieregularne; prawy brzeg
+    = dziś; oś Y dopasowana do danych (linia, nie słupek), podpisy po prawej;
+  - **odcinki proste**, bez wygładzania — wygładzanie zmyślałoby wartości między rzadkimi pomiarami;
+  - **przerwa > 30 dni (`PRZERWA_DNI`) = linia kropkowana i bez pola pod nią**;
+  - jedna barwa (`--s-akcent`), punkty z pierścieniem w kolorze tła, ostatni większy;
+  - **wskazanie palcem/myszą/strzałkami zmienia NAGŁÓWEK** (liczba, data, różnica) — odczyt nad
+    wykresem, nie dymek pod palcem; zmiana atrybutów, bez przerysowania; Esc zdejmuje wskazanie;
+  - podpisy osi czasu: miesiące (styczeń z rokiem), w krótkim okresie tygodnie, rzedną, gdy
+    brakuje miejsca. Bez trendów i prognoz.
+- **Arkusz pomiaru** (`<dialog id="tp-pomiar">`): data (natywne pole daty, domyślnie dziś, max dziś)
+  i masa (podpowiedź = ostatni pomiar). Dzień z pomiarem → „Ten dzień ma już pomiar 68,5 kg” i przycisk
+  „Zastąp”. Edycja: „Edytuj pomiar”, „Gotowe”, „Usuń” po lewej; przeniesienie na inny dzień działa.
+  **Usunięcie bez pytania, z paskiem „Usunięto pomiar z 7 lis · Cofnij”** (6 s) — szybsze niż okienko,
+  a pomyłka odwracalna (plus Anuluj całego dziennika).
+- **Masa zawsze z jednym miejscem po przecinku** (`P.kg`: „69,0”, nie „69”).
+- **Pole daty w Chromium pokazuje „11/12/2026”** — to format testowej przeglądarki; Safari z polskim
+  językiem pokaże „12 lis 2026”. Sprawdzić na iPadzie.
+- Sondy: dziennik 178 kontroli na 4 urządzeniach (oczekiwania liczone w sondzie z danych przykładowych,
+  m.in. proporcja odstępów do dni, liczba odcinków przerywanych, wskaźniki dla każdego zakresu),
+  **osiem celowo wstawionych błędów złapanych** (oś po indeksie zamiast czasu, brak przerw, Anuluj
+  zapisujące, dubel dnia, martwe „Cofnij”, zakres ignorowany, rodzic nieodświeżony po powrocie,
+  nagłówek ślepy na wskazanie); układ 336 kombinacji (4 zestawy danych × 28 szerokości × 3 zakresy)
+  bez nakładania i obcinania; sekcja przebudowana na masę z dziennika 145; strażnik „bez notatek”
+  1681 (skróty typu „3 mies.” dozwolone); najechanie 71.
+
 ### Pusta część okna profilu — co ma tam trafić
 
 Fryderyk (12.11.2026): **tylko dane zdrowotne i fizyczne, informacje o nim — nie analizy

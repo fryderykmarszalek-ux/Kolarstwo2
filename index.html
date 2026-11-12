@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
   <div class="tp">
@@ -144,7 +144,7 @@
           <p class="tp-blad" id="tp-ur-b" role="alert"></p>
         </div>
       </form>
-      <!-- widok 3: Budowa ciała — wzrost, masa, obwód talii (opcjonalny). Dwa przeliczniki na żywo:
+      <!-- widok 3: Budowa ciała — wzrost, masa (z dziennika), obwód talii (opcjonalny). Dwa przeliczniki na żywo:
            BMI oceniane siatką WHO (wspolne/bmi.js) i talia/wzrost według NICE (wspolne/talia.js) -->
       <form class="tp-panel tp-panel-sekcja tp-panel-cialo" id="tp-cialo-form" novalidate aria-label="Budowa ciała">
         <div class="tp-pola tp-pola-cialo">
@@ -154,9 +154,9 @@
             <p class="tp-blad" id="tp-wzrost-b" role="alert"></p>
           </div>
           <div class="tp-pole">
-            <div class="tp-pole-g"><label for="tp-masa">Masa ciała</label></div>
-            <div class="tp-jedn"><input id="tp-masa" name="masa" type="text" inputmode="decimal" maxlength="5" autocomplete="off" enterkeyhint="next" aria-describedby="tp-masa-b"><span aria-hidden="true">kg</span></div>
-            <p class="tp-blad" id="tp-masa-b" role="alert"></p>
+            <div class="tp-pole-g"><span id="tp-masa-t">Masa ciała</span></div>
+            <!-- masa = ostatni pomiar z dziennika; dotknięcie otwiera dziennik (widok „waga”) -->
+            <button class="tp-masa-pole" id="tp-masa-pole" type="button" aria-labelledby="tp-masa-t tp-masa-w"><span class="tp-masa-w" id="tp-masa-w"></span><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button>
           </div>
           <div class="tp-pole tp-pole-talia">
             <div class="tp-pole-g"><label for="tp-talia">Obwód talii</label><span class="tp-opcja">Opcjonalnie</span></div>
@@ -167,6 +167,27 @@
         <p class="tp-cialo-kiedy" id="tp-cialo-kiedy"></p>
         <div class="tp-bmi" id="tp-bmi" aria-live="polite"></div>
         <div class="tp-bmi tp-whtr" id="tp-whtr" aria-live="polite"></div>
+      </form>
+      <!-- widok 4: dziennik masy ciała — otwierany z „Budowy ciała”; zmiany zapisuje wspólne „Zapisz” -->
+      <form class="tp-panel tp-panel-sekcja tp-panel-waga" id="tp-waga-form" novalidate aria-label="Masa ciała">
+        <div class="tp-waga-g">
+          <div class="tp-waga-hero" aria-live="polite">
+            <div class="tp-waga-l"><b id="tp-waga-liczba">—</b><span>kg</span></div>
+            <p class="tp-waga-pod"><span id="tp-waga-data"></span><span class="tp-waga-zm" id="tp-waga-zm"></span></p>
+          </div>
+          <button class="tp-waga-dodaj" type="button"><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Dodaj</span></button>
+        </div>
+        <div class="tp-waga-karta">
+          <div class="tp-waga-zakres" role="radiogroup" aria-label="Zakres">
+            <button type="button" role="radio" data-zakres="3m">3 mies.</button>
+            <button type="button" role="radio" data-zakres="1r">1 rok</button>
+            <button type="button" role="radio" data-zakres="all">Wszystko</button>
+          </div>
+          <div class="tp-waga-wyk" id="tp-waga-wyk"></div>
+        </div>
+        <dl class="tp-waga-stat" id="tp-waga-stat"></dl>
+        <div class="tp-waga-lista" id="tp-waga-lista"></div>
+        <div class="tp-toast" id="tp-toast" role="status" hidden><span id="tp-toast-t"></span><button type="button" id="tp-toast-cofnij">Cofnij</button></div>
       </form>
     </div>
     <footer class="tp-okno-st">
@@ -184,17 +205,39 @@
       <button class="tp-przycisk groz" type="button" data-odp="tak">Tak, usuń</button>
     </div>
   </dialog>
+  <!-- nowy / edytowany pomiar masy: data (domyślnie dziś) i masa; jeden pomiar na dzień -->
+  <dialog class="tp-arkusz" id="tp-pomiar" aria-labelledby="tp-pomiar-t" tabindex="-1">
+    <form id="tp-pomiar-form" novalidate>
+      <h3 id="tp-pomiar-t">Nowy pomiar</h3>
+      <div class="tp-pole">
+        <div class="tp-pole-g"><label for="tp-pomiar-d">Data</label></div>
+        <input id="tp-pomiar-d" type="date" required aria-describedby="tp-pomiar-db">
+        <p class="tp-blad" id="tp-pomiar-db" role="alert"></p>
+        <p class="tp-pomiar-jest" id="tp-pomiar-jest"></p>
+      </div>
+      <div class="tp-pole">
+        <div class="tp-pole-g"><label for="tp-pomiar-kg">Masa ciała</label></div>
+        <div class="tp-jedn"><input id="tp-pomiar-kg" type="text" inputmode="decimal" maxlength="5" autocomplete="off" enterkeyhint="done" aria-describedby="tp-pomiar-kgb"><span aria-hidden="true">kg</span></div>
+        <p class="tp-blad" id="tp-pomiar-kgb" role="alert"></p>
+      </div>
+      <div class="tp-arkusz-st">
+        <button class="tp-pomiar-usun" type="button" hidden><i class="ph ph-trash" aria-hidden="true"></i>Usuń</button>
+        <button class="tp-przycisk" type="button" data-odp="anuluj">Anuluj</button>
+        <button class="tp-przycisk glowny" type="submit" id="tp-pomiar-ok">Dodaj</button>
+      </div>
+    </form>
+  </dialog>
   <!-- powiększone zdjęcie profilowe: samo kółko na środku; dotknięcie gdziekolwiek poza kółkiem zamyka -->
   <dialog class="tp-lupa" id="tp-lupa" aria-label="Zdjęcie profilowe" tabindex="-1">
     <span class="tp-awatar tp-lupa-a" data-profil="inicjaly">FM</span>
   </dialog>
   <script src="wspolne/dane.js?v=6"></script>
-  <script src="wspolne/profil.js?v=7"></script>
+  <script src="wspolne/profil.js?v=8"></script>
   <script src="wspolne/bmi.js?v=1"></script>
   <script src="wspolne/talia.js?v=1"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>
