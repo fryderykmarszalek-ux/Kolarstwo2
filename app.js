@@ -17,7 +17,8 @@
 
   // ───── okno „Athlete’s profile” ─────
   // Natywny <dialog>: przeglądarka sama trzyma okno na wierzchu, blokuje resztę strony i obsługuje Esc.
-  // Dwa widoki w jednym oknie: „profil” i „edycja” (atrybut data-widok-okna na <dialog>).
+  // Widoki w jednym oknie (atrybut data-widok-okna na <dialog>): „profil” z listą sekcji, „edycja”
+  // i po jednym widoku na sekcję (rejestr „sekcje”). Każdy widok poza profilem ma na dole wspólne „Zapisz”.
   (function () {
     const okno = document.getElementById('tp-profil'), pole = document.querySelector('.tp-bok-ja'), html = document.documentElement;
     if (!okno || !pole || !okno.showModal || !window.P) return;
@@ -33,6 +34,10 @@
     const dotyk = window.matchMedia && matchMedia('(pointer: coarse)').matches;
 
     const widok = () => okno.dataset.widokOkna;
+    // sekcje profilu: id → { tytul, form, otworz(), zmienione(), fokus() }. Zapis robi sama sekcja w „submit” swojego formularza.
+    const sekcje = {};
+    const tytulWidoku = okno.querySelector('#tp-tyt-widoku'), wstecz = okno.querySelector('.tp-okno-wstecz'), tresc = okno.querySelector('.tp-okno-tresc');
+    const brudne = () => (widok() === 'edycja' ? zmienione() : sekcje[widok()] ? sekcje[widok()].zmienione() : false);
     const data = () => P.sprawdzDate(ur.d.value, ur.m.value, ur.r.value);
     // surowy zapis trzech pól — „zmienione” musi widzieć także datę wpisaną w połowie, nie tylko poprawną
     const urSurowo = () => `${+ur.d.value || ur.d.value}|${ur.m.value}|${ur.r.value}`;
@@ -112,8 +117,16 @@
     okno.addEventListener('pointerdown', (e) => { if (menuOtwarte() && !menu.contains(e.target) && !kredka.contains(e.target)) zamknijMenu(); }, true);
 
     function pokazWidok(w) {
+      const sk = sekcje[w];
       okno.dataset.widokOkna = w;
-      if (w === 'edycja') {
+      tytulWidoku.textContent = sk ? sk.tytul : 'Edytuj profil';
+      zapisz.setAttribute('form', sk ? sk.form.id : form.id);    // jedno „Zapisz” w stopce — zawsze dla otwartego widoku
+      if (sk) {
+        start = null; zamknijMenu();
+        sk.otworz();
+        tresc.scrollTop = 0;
+        (dotyk ? wstecz : sk.fokus()).focus();    // na dotyku fokus w polu otwierałby klawiaturę
+      } else if (w === 'edycja') {
         start = P.dane();
         wejscia.imie.value = start.imie; wejscia.nazwisko.value = start.nazwisko;
         ['imie', 'nazwisko'].forEach((n) => { licznik(n); blad(n, ''); });
@@ -123,9 +136,9 @@
         ur.d.value = u ? String(+u.slice(8)) : ''; ur.m.value = u ? String(+u.slice(5, 7)) : ''; ur.r.value = u ? u.slice(0, 4) : '';
         bladDaty('');
         odswiezFormularz();
-        okno.querySelector('.tp-okno-tresc').scrollTop = 0;
+        tresc.scrollTop = 0;
         // na iPadzie/telefonie fokus w polu otwiera klawiaturę — tam fokus idzie na „wróć”
-        (dotyk ? okno.querySelector('.tp-okno-wstecz') : wejscia.imie).focus();
+        (dotyk ? wstecz : wejscia.imie).focus();
       } else {
         start = null; zamknijMenu();
         okno.focus();      // fokus na samym oknie, nie na „Edit” — inaczej Safari rysuje wokół niego obwódkę
@@ -145,12 +158,13 @@
     });
     okno.querySelector('.tp-okno-x').addEventListener('click', () => okno.close());   // × zamyka całe okno; niezapisane zmiany przepadają
     okno.querySelector('.tp-edytuj').addEventListener('click', () => pokazWidok('edycja'));
-    okno.querySelector('.tp-okno-wstecz').addEventListener('click', () => pokazWidok('profil'));
+    wstecz.addEventListener('click', () => pokazWidok('profil'));
+    okno.querySelectorAll('.tp-sekcja').forEach((b) => b.addEventListener('click', () => { if (sekcje[b.dataset.sekcja]) pokazWidok(b.dataset.sekcja); }));
     okno.querySelector('[data-akcja="anuluj"]').addEventListener('click', () => pokazWidok('profil'));
-    // Esc w edycji cofa do profilu zamiast zamykać okno
+    // Esc w edycji i w sekcji cofa do profilu zamiast zamykać okno
     // (gdy otwarte jest okienko zdjęcia, Esc zamyka najpierw tylko je)
     okno.addEventListener('cancel', (e) => {
-      if (widok() !== 'edycja') return;
+      if (widok() === 'profil') return;
       e.preventDefault();
       if (menuOtwarte()) { zamknijMenu(); kredka.focus(); } else pokazWidok('profil');
     });
@@ -159,7 +173,7 @@
     // Przy niezapisanych zmianach tło NIE zamyka — przypadkowe stuknięcie obok nie kasuje tego, co wpisane.
     okno.addEventListener('click', (e) => {
       const r = okno.getBoundingClientRect();
-      if (e.target === okno && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) && !zmienione()) okno.close();
+      if (e.target === okno && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) && !brudne()) okno.close();
     });
     okno.addEventListener('close', () => { html.classList.remove('tp-okno-otwarte'); document.body.style.paddingRight = ''; start = null; });
 
@@ -206,6 +220,131 @@
       });
       lupa.addEventListener('close', () => { if (okno.open) okno.focus(); });   // fokus na oknie, bez obwódki na awatarze
     }
+
+
+    // ───── sekcja „Budowa ciała”: wzrost, masa, BMI ─────
+    // BMI nie jest zapisywane — liczy się z pól na żywo. Ocena: wspolne/bmi.js (siatki WHO), wiek i płeć z profilu.
+    (function () {
+      const f = okno.querySelector('#tp-cialo-form');
+      if (!f || !window.BMI) return;
+      const pola = { wzrost: f.querySelector('#tp-wzrost'), masa: f.querySelector('#tp-masa') };
+      const karta = f.querySelector('#tp-bmi'), kiedy = f.querySelector('#tp-cialo-kiedy');
+      const opis = okno.querySelector('[data-sekcja-opis="cialo"]');
+      let st = null;                               // stan w chwili wejścia w sekcję
+      const tekst = (n) => (n == null ? '' : P.liczba(n));
+      const norm = (v) => v.trim().replace('.', ',');
+      const zmienione = () => !!st && (norm(pola.wzrost.value) !== tekst(st.wzrost) || norm(pola.masa.value) !== tekst(st.masa));
+      const odczyt = (n) => P.sprawdzPomiar(n, pola[n].value);
+      const blad = (n, t) => {
+        f.querySelector(`#tp-${n}-b`).textContent = t;
+        pola[n].classList.toggle('zly', !!t);
+        if (t) pola[n].setAttribute('aria-invalid', 'true'); else pola[n].removeAttribute('aria-invalid');
+      };
+      // ocena BMI dla danych z profilu (data urodzenia, płeć) i podanych pomiarów
+      const ocena = (wzrost, masa) => {
+        const p = P.dane(), bmi = BMI.oblicz(wzrost, masa);
+        return { bmi, o: BMI.ocen({ bmi, plec: p.plec, wiekMies: P.wiekMies(p.urodziny), wiekLat: P.wiek(p.urodziny) }), p };
+      };
+      const b1 = (n) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');   // BMI i progi zawsze z jednym miejscem: „30,0”
+      const IKONY = { dobrze: 'check-circle', uwaga: 'warning-circle', zle: 'warning' };
+
+      // skala: cztery strefy na jednej liniowej osi BMI; koniec osi to nie granica, tylko miejsce, gdzie przestajemy rysować
+      function skala(bmi, pr) {
+        const od = pr.niedowaga - 6, do_ = pr.otylosc + 7, x = (v) => (100 * (A.clamp(v, od, do_) - od)) / (do_ - od);
+        const strefy = [['Niedowaga', od, pr.niedowaga], ['Norma', pr.niedowaga, pr.nadwaga], ['Nadwaga', pr.nadwaga, pr.otylosc], ['Otyłość', pr.otylosc, do_]];
+        return h('div', { class: 'tp-bmi-skala', role: 'img', 'aria-label': `Skala BMI: niedowaga poniżej ${b1(pr.niedowaga)}, norma do ${b1(pr.nadwaga)}, nadwaga do ${b1(pr.otylosc)}, powyżej otyłość. Twój wynik: ${b1(bmi)}.` },
+          h('div', { class: 'tp-bmi-tor' },
+            ...strefy.map(([n, a, b], i) => h('i', { class: i === 1 ? 'norma' : '', style: { left: x(a) + '%', width: x(b) - x(a) + '%' } })),
+            h('b', { class: 'tp-bmi-znak', style: { left: x(bmi) + '%' } })),
+          h('div', { class: 'tp-bmi-progi' }, ...[pr.niedowaga, pr.nadwaga, pr.otylosc].map((v) => h('span', { style: { left: x(v) + '%' }, text: b1(v) }))),
+          h('div', { class: 'tp-bmi-strefy' }, ...strefy.map(([n, a, b]) => h('span', { style: { left: (x(a) + x(b)) / 2 + '%' }, text: n }))));
+      }
+      const info = (ikona, ...dzieci) => h('p', { class: 'tp-bmi-info' }, ik(ikona), h('span', null, ...dzieci));
+
+      function rysujBmi() {
+        const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, { bmi, o, p } = ocena(w, m);
+        karta.dataset.stan = o.stan;
+        if (!bmi) {
+          const czego = !w && !m ? 'Wpisz wzrost i masę ciała.' : !w ? 'Brakuje jeszcze wzrostu.' : 'Brakuje jeszcze masy ciała.';
+          karta.replaceChildren(h('div', { class: 'tp-bmi-pusty' }, h('span', { class: 'tp-bmi-pusty-ik', 'aria-hidden': 'true' }, ik('calculator')),
+            h('div', null, h('b', { text: 'BMI policzy się samo' }), h('small', { text: czego }))));
+          return;
+        }
+        const glowa = h('div', { class: 'tp-bmi-g' }, h('div', { class: 'tp-bmi-l' }, h('small', { text: 'BMI' }), h('b', { text: b1(bmi) })));
+        const zrodlo = (t) => h('p', { class: 'tp-bmi-zrodlo', text: t + ' BMI nie odróżnia mięśni od tłuszczu — to orientacja, nie diagnoza.' });
+        if (o.stan !== 'ok') {
+          const brak = {
+            'brak-wieku': 'Żeby ocenić ten wynik, potrzebna jest data urodzenia — te same liczby znaczą co innego w wieku 15 i 40 lat. Dodasz ją w profilu, pod „Edit”.',
+            'brak-plci': 'W wieku 13–18 lat ocena zależy od płci: WHO ma osobne siatki dla chłopców i dziewcząt. Wybierz płeć w profilu, pod „Edit”.',
+            'poza-wiekiem': 'Ocena jest dostępna dla wieku od 13 do 99 lat.',
+          }[o.stan];
+          karta.replaceChildren(glowa, info('info', brak), zrodlo('Wzór: masa [kg] ÷ wzrost [m]².'));
+          return;
+        }
+        glowa.append(h('span', { class: 'tp-bmi-werdykt', 'data-poziom': o.poziom }, ik(IKONY[o.poziom], 'fill'), o.nazwa));
+        const zakres = `${b1(o.progi.niedowaga)}–${b1(o.progi.nadwaga)}`;
+        let zdanie, skad;
+        if (o.zrodlo === 'who2007') {
+          const c = Math.round(o.centyl), skrajny = c < 1 || c > 99;
+          zdanie = h('p', { class: 'tp-bmi-opis' }, `${p.plec === 'm' ? 'Dla chłopaka' : 'Dla dziewczyny'} w wieku ${P.wiekSlownie(p.urodziny)} norma to BMI `, h('b', { text: zakres }), '. ',
+            skrajny ? ['Twój wynik jest ', h('b', { text: c < 1 ? 'poniżej 1. centyla' : 'powyżej 99. centyla' }), ' próby wzorcowej WHO.']
+              : ['Twój wynik to ', h('b', { text: c + '. centyl' }), `: na 100 rówieśników z próby wzorcowej WHO ${c} ma BMI niższe.`]);
+          skad = 'Źródło: siatki WHO 2007 dla wieku 5–19 lat (wiek co do miesiąca, osobno dla płci).';
+        } else {
+          zdanie = h('p', { class: 'tp-bmi-opis' }, 'Dla dorosłych norma to BMI ', h('b', { text: '18,5–24,9' }), ' — taka sama w każdym wieku i dla obu płci.');
+          skad = 'Źródło: klasyfikacja WHO dla dorosłych.';
+        }
+        karta.replaceChildren(glowa, skala(bmi, o.progi), zdanie, zrodlo(skad));
+      }
+      function odswiez() { zapisz.disabled = !zmienione(); rysujBmi(); }
+
+      // opis pod nazwą sekcji na liście — z danych ZAPISANYCH, nie z tego, co akurat wpisane
+      function rysujOpis() {
+        const p = P.dane(), { bmi, o } = ocena(p.wzrost, p.masa);
+        const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.liczba(p.masa)} kg` : null];
+        opis.classList.toggle('pusty', p.wzrost == null && p.masa == null);
+        if (p.wzrost == null && p.masa == null) opis.textContent = 'Wzrost, masa ciała i BMI — do uzupełnienia';
+        else if (!bmi) opis.textContent = `${czesci[0] || czesci[1]} · ${p.wzrost == null ? 'wzrost' : 'masa ciała'} do uzupełnienia`;
+        else opis.textContent = `${czesci.join(' · ')} · BMI ${b1(bmi)}${o.stan === 'ok' ? ' · ' + o.nazwa.toLowerCase() : ''}`;
+      }
+
+      ['wzrost', 'masa'].forEach((n) => {
+        const w = pola[n];
+        w.addEventListener('input', () => {
+          const c = w.value.replace(/[^\d.,]/g, '');
+          if (c !== w.value) w.value = c;
+          if (w.classList.contains('zly')) blad(n, odczyt(n).blad);
+          odswiez();
+        });
+        w.addEventListener('blur', () => { if (widok() === 'cialo') blad(n, odczyt(n).blad); });
+      });
+      pola.wzrost.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pola.masa.focus(); } });
+
+      f.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const w = odczyt('wzrost'), m = odczyt('masa');
+        blad('wzrost', w.blad); blad('masa', m.blad);
+        if (w.blad || m.blad) { pola[w.blad ? 'wzrost' : 'masa'].focus(); return; }
+        const wynik = P.zapisz({ wzrost: w.wartosc, masa: m.wartosc, cialoData: w.wartosc == null && m.wartosc == null ? null : P.dzis() });
+        if (!wynik.ok) return;
+        okno.classList.toggle('bez-zapisu', !wynik.trwale);
+        pokazWidok('profil');
+      });
+
+      sekcje.cialo = {
+        tytul: 'Budowa ciała', form: f, zmienione, fokus: () => pola.wzrost,
+        otworz() {
+          st = P.dane();
+          pola.wzrost.value = tekst(st.wzrost); pola.masa.value = tekst(st.masa);
+          blad('wzrost', ''); blad('masa', '');
+          kiedy.textContent = st.cialoData ? `Ostatni zapis: ${f2(st.cialoData)}` : '';
+          odswiez();
+        },
+      };
+      const f2 = (iso) => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+      window.addEventListener('k2:profil', rysujOpis);
+      rysujOpis();
+    })();
 
     // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko, płeć, zdjęcie i datę urodzenia naraz ──
     form.addEventListener('submit', (e) => {

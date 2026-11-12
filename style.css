@@ -234,9 +234,9 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-okno-wstecz:active { background: var(--s-karta-2); }
 .tp-okno-wstecz:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 1px; }
 .tp-tyt-edycja { display: none; }
-.tp-okno[data-widok-okna="edycja"] .tp-okno-wstecz { display: grid; }
-.tp-okno[data-widok-okna="edycja"] .tp-okno-awatar, .tp-okno[data-widok-okna="edycja"] .tp-edytuj, .tp-okno[data-widok-okna="edycja"] .tp-tyt-profil { display: none; }
-.tp-okno[data-widok-okna="edycja"] .tp-tyt-edycja { display: inline; }
+.tp-okno:not([data-widok-okna="profil"]) .tp-okno-wstecz { display: grid; }
+.tp-okno:not([data-widok-okna="profil"]) .tp-okno-awatar, .tp-okno:not([data-widok-okna="profil"]) .tp-edytuj, .tp-okno:not([data-widok-okna="profil"]) .tp-tyt-profil { display: none; }
+.tp-okno:not([data-widok-okna="profil"]) .tp-tyt-edycja { display: inline; }
 
 /* „Edit” — jasnoszara pigułka z kredką (własny rysunek: kredka i kreska, którą „pisze”) */
 .tp-edytuj { all: unset; box-sizing: border-box; cursor: pointer; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px 0 10px; border-radius: 999px;
@@ -251,7 +251,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 
 /* widoki */
 .tp-panel { display: none; }
-.tp-okno[data-widok-okna="profil"] .tp-panel-profil, .tp-okno[data-widok-okna="edycja"] .tp-panel-edycja { display: block; animation: tp-panel-wej .22s cubic-bezier(.2, .8, .2, 1); }
+.tp-okno[data-widok-okna="profil"] .tp-panel-profil, .tp-okno[data-widok-okna="edycja"] .tp-panel-edycja, .tp-okno[data-widok-okna="cialo"] .tp-panel-cialo { display: block; animation: tp-panel-wej .22s cubic-bezier(.2, .8, .2, 1); }
 @keyframes tp-panel-wej { from { opacity: 0; transform: translateX(10px); } }
 .tp-osoba { display: flex; align-items: center; gap: 18px; }
 .tp-awatar-duzy { width: 72px; height: 72px; font: 800 24px/1 var(--s-f); letter-spacing: .01em; }
@@ -296,7 +296,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 
 /* stopka okna: widoczna tylko w edycji; „Zapisz” zapisuje wszystko naraz */
 .tp-okno-st { display: none; flex: none; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 18px 14px 24px; box-shadow: 0 -1px 0 var(--s-linia); }
-.tp-okno[data-widok-okna="edycja"] .tp-okno-st { display: flex; }
+.tp-okno:not([data-widok-okna="profil"]) .tp-okno-st { display: flex; }
 .tp-okno-uwaga { margin-right: auto; display: flex; align-items: center; gap: 6px; font: 500 12px/1.3 var(--s-f); color: var(--s-tekst-3); }
 .tp-okno-uwaga i { font-size: 15px; }
 .tp-okno.bez-zapisu .tp-okno-uwaga { color: #B4232A; }
@@ -387,7 +387,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-okno-awatar-p:active .tp-awatar { transform: scale(.96); }
 .tp-okno-awatar-p:focus { outline: none; }
 .tp-okno-awatar-p:focus-visible .tp-awatar { box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px var(--s-akcent); }
-.tp-okno[data-widok-okna="edycja"] .tp-okno-awatar-p { display: none; }
+.tp-okno:not([data-widok-okna="profil"]) .tp-okno-awatar-p { display: none; }
 
 /* okno na cały ekran, przezroczyste — każde dotknięcie trafia albo w kółko, albo w okno (a to je zamyka) */
 .tp-lupa { box-sizing: border-box; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 16px; border: 0; background: transparent; overflow: hidden; cursor: zoom-out; }
@@ -425,7 +425,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-okno-kto-r { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .tp-okno[data-widok-okna="profil"] .tp-okno-kto-r .tp-edytuj { margin-left: 0; }
 .tp-okno-plec { font: 600 14px/1.2 var(--s-f); color: var(--s-tekst-3); }
-.tp-okno[data-widok-okna="edycja"] .tp-okno-plec { display: none; }
+.tp-okno:not([data-widok-okna="profil"]) .tp-okno-plec { display: none; }
 @media (max-width: 640px) { .tp-okno-plec { font-size: 13px; } .tp-okno-kto-r { gap: 10px; } }
 
 /* ───── pytanie „Usunąć zdjęcie profilowe?” — małe okno nad edycją ───── */
@@ -459,3 +459,65 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 }
 /* wąsko nagłówek profilu ma trzy linie — × zostaje w prawym GÓRNYM rogu, a nie na środku wysokości */
 @media (max-width: 480px) { .tp-okno[data-widok-okna="profil"] .tp-okno-x { align-self: flex-start; } }
+
+/* ───── lista sekcji w oknie profilu (12.11.2026, szkic Fryderyka) ─────
+   Wiersz: nazwa, pod nią to, co zapisane; po prawej strzałka. Między wierszami cienka kreska.
+   Każdy wiersz otwiera swój widok w tym samym oknie. Nowa sekcja = nowy <li>, styl bez zmian. */
+.tp-sekcje { list-style: none; margin: -10px 0 0; padding: 0; }
+.tp-sekcje li + li { border-top: 1px solid var(--s-linia); }
+.tp-sekcja { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 14px; width: calc(100% + 24px); margin: 4px -12px; padding: 14px 12px; border-radius: 14px;
+  transition: background .15s; -webkit-tap-highlight-color: transparent; }
+.tp-sekcja-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.tp-sekcja-t b { font: 700 16px/1.2 var(--s-f); letter-spacing: -.01em; color: var(--s-tekst); }
+.tp-sekcja-t small { font: 500 13.5px/1.35 var(--s-f); color: var(--s-tekst-2); font-variant-numeric: tabular-nums; }
+.tp-sekcja-t small.pusty { color: var(--s-tekst-3); }
+.tp-sekcja-s { flex: none; font-size: 15px; color: var(--s-tekst-3); transition: color .15s, transform .15s; }
+@media (any-hover: hover) { .tp-sekcja:hover { background: var(--tp-szary-1); } .tp-sekcja:hover .tp-sekcja-s { color: var(--s-tekst); transform: translateX(3px); } }
+.tp-sekcja:active { background: var(--tp-szary-2); }
+.tp-sekcja:focus { outline: none; }
+.tp-sekcja:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: -2px; }
+
+/* ───── widok sekcji „Budowa ciała” ───── */
+.tp-panel-sekcja { container-type: inline-size; }
+.tp-pola.tp-pola-cialo { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }   /* dwa krótkie pola obok siebie także na telefonie */
+.tp-panel-sekcja .tp-pola .tp-pole { margin-top: 0; }
+.tp-jedn { position: relative; }
+.tp-jedn input { padding-right: 48px; font-variant-numeric: tabular-nums; }
+.tp-jedn span { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font: 600 14px/1 var(--s-f); color: var(--s-tekst-3); pointer-events: none; }
+.tp-cialo-kiedy { margin-top: 10px; font: 500 12px/1.3 var(--s-f); color: var(--s-tekst-3); }
+.tp-cialo-kiedy:empty { display: none; }
+
+/* karta BMI: liczba, werdykt (ikona + słowo, nigdy sama barwa), skala, zdanie, źródło */
+.tp-bmi { margin-top: 22px; padding: 20px; border-radius: 18px; background: var(--s-karta-2); border: 1.5px solid transparent; }
+.tp-bmi[data-stan="brak-bmi"] { background: transparent; border: 1.5px dashed var(--s-linia-2); }
+.tp-bmi-pusty { display: flex; align-items: center; gap: 14px; }
+.tp-bmi-pusty-ik { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--s-karta-2); color: var(--s-tekst-3); font-size: 22px; }
+.tp-bmi-pusty b { display: block; font: 700 15px/1.2 var(--s-f); color: var(--s-tekst); }
+.tp-bmi-pusty small { display: block; margin-top: 4px; font: 500 13px/1.35 var(--s-f); color: var(--s-tekst-3); }
+.tp-bmi-g { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 14px; }
+.tp-bmi-l { display: flex; align-items: baseline; gap: 10px; }
+.tp-bmi-l small { font: 700 12px/1 var(--s-f); letter-spacing: .08em; color: var(--s-tekst-3); }
+.tp-bmi-l b { font: 800 40px/1 var(--s-f); letter-spacing: -.03em; color: var(--s-tekst); font-variant-numeric: tabular-nums; }
+.tp-bmi-werdykt { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px 9px 11px; border-radius: 999px; font: 700 14px/1 var(--s-f); color: var(--s-tekst); background: #E1F4EA; }
+.tp-bmi-werdykt i { font-size: 18px; color: var(--s-ok); }
+.tp-bmi-werdykt[data-poziom="uwaga"] { background: #FBEFD6; } .tp-bmi-werdykt[data-poziom="uwaga"] i { color: #B8740A; }
+.tp-bmi-werdykt[data-poziom="zle"] { background: #FBE6E6; } .tp-bmi-werdykt[data-poziom="zle"] i { color: #D13438; }
+/* skala: strefa normy zielona, pozostałe neutralne; 2 px przerwy między strefami; znacznik = ciemna kropka z obwódką w kolorze tła */
+.tp-bmi-skala { margin-top: 22px; }
+.tp-bmi-tor { position: relative; height: 10px; }
+.tp-bmi-tor i { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border-inline: 1px solid var(--s-karta-2); background: var(--tp-szary-3); background-clip: padding-box; border-radius: 3px; }
+.tp-bmi-tor i:first-child { border-radius: 6px 3px 3px 6px; } .tp-bmi-tor i:nth-child(4) { border-radius: 3px 6px 6px 3px; }
+.tp-bmi-tor i.norma { background-color: var(--s-ok); }
+.tp-bmi-znak { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--s-tekst); box-shadow: 0 0 0 3px var(--s-karta-2), 0 3px 8px rgba(18, 24, 38, .3); transition: left .25s cubic-bezier(.2, .8, .2, 1); }
+.tp-bmi-progi, .tp-bmi-strefy { position: relative; }
+.tp-bmi-progi { height: 14px; margin-top: 9px; } .tp-bmi-strefy { height: 14px; margin-top: 3px; }
+.tp-bmi-progi span, .tp-bmi-strefy span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.tp-bmi-progi span { font: 700 11.5px/14px var(--s-f); color: var(--s-tekst-2); font-variant-numeric: tabular-nums; }
+.tp-bmi-strefy span { font: 600 11px/14px var(--s-f); color: var(--s-tekst-3); }
+.tp-bmi-opis { margin-top: 18px; font: 500 13.5px/1.5 var(--s-f); color: var(--s-tekst-2); }
+.tp-bmi-opis b { font-weight: 700; color: var(--s-tekst); white-space: nowrap; }
+.tp-bmi-info { display: flex; gap: 10px; margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--s-akcent-tlo); font: 500 13px/1.45 var(--s-f); color: var(--s-tekst-2); }
+.tp-bmi-info i { flex: none; margin-top: 1px; font-size: 17px; color: var(--s-akcent); }
+.tp-bmi-zrodlo { margin-top: 10px; font: 500 12px/1.45 var(--s-f); color: var(--s-tekst-3); }
+@container (max-width: 399px) { .tp-bmi { padding: 16px; } .tp-bmi-l b { font-size: 34px; } .tp-bmi-strefy span { font-size: 10.5px; } .tp-pola.tp-pola-cialo { gap: 0 10px; } }
+@media (prefers-reduced-motion: reduce) { .tp-bmi-znak, .tp-sekcja, .tp-sekcja-s { transition: none; } }

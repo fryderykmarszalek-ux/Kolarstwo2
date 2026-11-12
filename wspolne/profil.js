@@ -21,6 +21,10 @@
  *
  * Data urodzenia (12.11.2026): 'RRRR-MM-DD' albo null. Na razie nic nie liczy — pójdzie do bazy
  * i do jednej z zakładek treningowych (decyzja Fryderyka). P.wiek() daje pełne lata.
+ *
+ * Pomiary ciała (12.11.2026): wzrost [cm] i masa [kg] jako liczby albo null, cialoData = dzień ostatniej
+ * zmiany. BMI NIE jest zapisywane — liczy się z nich przy wyświetlaniu (wspolne/bmi.js).
+ * Żadnych wartości domyślnych w repo: to dane osobowe, a repo jest publiczne.
  */
 (function (global) {
   'use strict';
@@ -28,7 +32,7 @@
   const KLUCZ = 'k2.profil';
   const MAKS = 30;
   const PLCIE = { m: 'Mężczyzna', k: 'Kobieta', n: 'Niezdefiniowana' };
-  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null };
+  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, cialoData: null };
   const BOK = 1024;                // bok zapisanego zdjęcia w pikselach — ostre na Retinie także w powiększeniu (do 440 px na ekranie)
   const MAKS_ZDJ = 1500000;        // zapora na długość data URL (≈ 1,1 MB); 1024×1024 JPEG to zwykle 100–300 kB
 
@@ -81,6 +85,38 @@
   };
   const urodzinyPoprawne = (u) => u == null || (typeof u === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(u) && P.sprawdzDate(+u.slice(8), +u.slice(5, 7), u.slice(0, 4)).wartosc === u);
 
+  P.dzis = () => dzisISO();
+  // wiek w miesiącach tak, jak liczy go WHO: dni życia / 30,4375 (ułamkowy) — do siatek BMI 5–19 lat
+  P.wiekMies = (u, dzis) => {
+    if (!u) return null;
+    const t = dzisISO(dzis), dni = (Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8)) - Date.UTC(+u.slice(0, 4), +u.slice(5, 7) - 1, +u.slice(8))) / 864e5;
+    return dni / 30.4375;
+  };
+  // „16 lat i 2 mies.” — do zdań o wieku
+  P.wiekSlownie = (u, dzis) => {
+    if (!u) return '';
+    const t = dzisISO(dzis), lata = P.wiek(u, dzis);
+    let m = (+t.slice(5, 7)) - (+u.slice(5, 7)) - (t.slice(8) < u.slice(8) ? 1 : 0);
+    m = ((m % 12) + 12) % 12;
+    return P.lata(lata) + (m ? ` i ${m} mies.` : '');
+  };
+
+  // ── pomiary ciała: wzrost w cm (100–250), masa w kg (20–300); null = nieuzupełnione ──
+  const POMIARY = { wzrost: [100, 250, 'cm'], masa: [20, 300, 'kg'] };
+  P.POMIARY = POMIARY;
+  // tekst z pola → { blad, wartosc }. Przecinek albo kropka, najwyżej jedno miejsce po przecinku. Puste pole jest dozwolone.
+  P.sprawdzPomiar = (pole, tekst) => {
+    const v = String(tekst == null ? '' : tekst).trim().replace(',', '.');
+    if (!v) return { blad: '', wartosc: null };
+    const [od, do_] = POMIARY[pole], n = Number(v);
+    if (pole === 'wzrost' && /^[12][.]\d{1,2}$/.test(v)) return { blad: 'Wpisz wzrost w centymetrach, np. 178.', wartosc: null };
+    if (!/^\d{1,3}(?:\.\d)?$/.test(v)) return { blad: pole === 'wzrost' ? 'Wpisz liczbę, np. 178 albo 178,5.' : 'Wpisz liczbę, np. 68 albo 68,5.', wartosc: null };
+    if (n < od || n > do_) return { blad: pole === 'wzrost' ? `Wzrost w centymetrach: od ${od} do ${do_}.` : `Masa w kilogramach: od ${od} do ${do_}.`, wartosc: null };
+    return { blad: '', wartosc: n };
+  };
+  const pomiarPoprawny = (pole, n) => n == null || (typeof n === 'number' && isFinite(n) && n >= POMIARY[pole][0] && n <= POMIARY[pole][1]);
+  P.liczba = (n) => String(Math.round(n * 10) / 10).replace('.', ',');     // 68.5 → „68,5”
+
   // pełne lata na dziś (urodzeni 29 lutego kończą rok 1 marca w latach nieprzestępnych)
   P.wiek = (u, dzis) => {
     if (!u) return null;
@@ -96,7 +132,8 @@
   const zdjeciePoprawne = (z) => z == null || (typeof z === 'string' && z.startsWith('data:image/jpeg;base64,') && z.length < MAKS_ZDJ);
 
   function poprawny(p) {
-    return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie) && urodzinyPoprawne(p.urodziny);
+    return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie) && urodzinyPoprawne(p.urodziny)
+      && pomiarPoprawny('wzrost', p.wzrost) && pomiarPoprawny('masa', p.masa) && (p.cialoData == null || /^\d{4}-\d{2}-\d{2}$/.test(p.cialoData));
   }
 
   // Wybrany plik → kwadrat ze środka, 512×512, JPEG. Obietnica zwraca data URL albo błąd z komunikatem po polsku.
@@ -138,9 +175,9 @@
   function wczytaj() {
     try {
       const p = JSON.parse(global.localStorage.getItem(KLUCZ) || 'null');
-      if (p && p.zdjecie === undefined) p.zdjecie = null;      // wpis sprzed zdjęć (12.11.2026) — dalej ważny
-      if (p && p.urodziny === undefined) p.urodziny = null;    // wpis sprzed daty urodzenia — dalej ważny
-      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny };
+      // wpis sprzed zdjęć, daty urodzenia albo pomiarów ciała — dalej ważny, brakujące pola są puste
+      if (p) ['zdjecie', 'urodziny', 'wzrost', 'masa', 'cialoData'].forEach((k) => { if (p[k] === undefined) p[k] = null; });
+      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, masa: p.masa, cialoData: p.cialoData };
     } catch (e) { /* brak schowka albo zepsuty wpis — domyślne */ }
     return { ...DOMYSLNY };
   }
@@ -169,8 +206,10 @@
 
   // zwraca { ok, trwale }; trwale = false, gdy przeglądarka nie dała zapisać (np. tryb prywatny)
   P.zapisz = (nowy) => {
-    const p = { imie: P.oczysc(nowy.imie), nazwisko: P.oczysc(nowy.nazwisko), plec: nowy.plec, zdjecie: nowy.zdjecie === undefined ? biezacy.zdjecie : nowy.zdjecie,
-      urodziny: nowy.urodziny === undefined ? biezacy.urodziny : nowy.urodziny };
+    // pola, których „nowy” nie podaje, zostają jak były — każda sekcja profilu zapisuje tylko swoje
+    const p = { ...biezacy };
+    Object.keys(DOMYSLNY).forEach((k) => { if (nowy[k] !== undefined) p[k] = nowy[k]; });
+    p.imie = P.oczysc(p.imie); p.nazwisko = P.oczysc(p.nazwisko);
     if (!poprawny(p)) return { ok: false, trwale: false };
     biezacy = p;
     let trwale = true;

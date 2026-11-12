@@ -64,6 +64,8 @@ pasek przełącznika zdjęto w przeglądarce).
 ```
 index.html, style.css, app.js   strona (Trener Pro)
 wspolne/                        widoki, wykresy, dane przykładowe, ikony, czcionki
+wspolne/profil.js               profil zawodnika: jedno źródło imienia, zdjęcia, daty, pomiarów
+wspolne/bmi.js                  przelicznik BMI 13–99 lat: tabela WHO 2007 + progi WHO dla dorosłych
 archiwum/runda-{1,2,3}/         propozycje z rund, nietknięte (każda z własną kopią wspolne/)
 docs/burza-mozgow*.md           notatki z rund
 style/trener/index.html         przekierowanie ze starego adresu, zachowuje #widok
@@ -129,7 +131,8 @@ Treść okna (12.11.2026): **na górze okna awatar + imię i nazwisko + „Edit�
 „FM · Athlete’s profile” — poprawka Fryderyka z tego samego dnia), pod spodem na razie pusto;
 widok edycji opisany niżej. **Pole w lewym dolnym rogu: awatar, imię i nazwisko, pod nimi
 „Athlete’s profile”**, a strzałka › pokazuje, że się otwiera.
-**Poza tym okno jest puste celowo; nie dokładać sekcji z własnej inicjatywy.** JOIN był tylko
+**Pod nagłówkiem stoi lista sekcji (od 12.11.2026, niżej); nie dokładać sekcji z własnej inicjatywy —
+każdą zamawia Fryderyk.** JOIN był tylko
 wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fryderyka.
 
 - **Dlaczego pole znikało:** pasek boczny miał `height: 100vh`, a w Safari na iPadzie „100vh”
@@ -174,8 +177,9 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   pozostałe jasne. Wszystkie mają tę samą grubość pisma, więc zmiana wyboru nie przesuwa
   niczego — sprawdzone co 1 px od 320 do 1180 dla każdego wyboru (0 przesunięć). Pismo płynne
   z szerokości okna, tak żeby powiększona opcja zostawiała ≥ 4,9 px do kropki.
-  **Płeć na razie nic nie znaczy** — rola przyjdzie później (Fryderyk: przyda się, gdy stroną
-  zacznie się posługiwać tata albo ktoś znajomy).
+  **Płeć ma już jedną rolę (12.11.2026): ocena BMI w wieku 13–18 lat** — WHO ma osobne siatki dla
+  chłopców i dziewcząt. Dla dorosłych dalej nic nie zmienia. Reszta ról przyjdzie później
+  (Fryderyk: przyda się, gdy stroną zacznie się posługiwać tata albo ktoś znajomy).
 - **Jedno „Zapisz” na dole okna zapisuje wszystko naraz.** Wyłączone, póki nic się nie zmieniło.
   Anuluj, ‹, Esc — wracają do profilu bez zapisu. × zamyka okno. Stuknięcie w tło przy
   niezapisanych zmianach NIE zamyka (przypadkowe stuknięcie nie kasuje wpisanego).
@@ -292,6 +296,62 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   wprost. Fokus po otwarciu na samym okienku (bez obwódki na „Nie”).
 - Sondy: 43 kontrole (płeć i pytanie) na 3 urządzeniach, **cztery celowo wstawione błędy
   złapane** (usuwanie bez pytania, „Nie” usuwające, tło jako „Tak”, podpis płci nieodświeżany).
+
+### Lista sekcji w oknie profilu (12.11.2026, szkic Fryderyka)
+
+- **Wiersze oddzielone cienką kreską: nazwa, pod nią to, co zapisane, po prawej strzałka ›.**
+  Szkic był „mniej więcej”; liczba wierszy nieznana — nowa sekcja to nowy `<li>` w `.tp-sekcje`.
+- **ZASADA NA PRZYSZŁOŚĆ (słowa Fryderyka): każdy wiersz po kliknięciu otwiera widok z zapisem
+  „tak jak ostatnio”** — w TYM SAMYM oknie, z ‹ wróć, tytułem sekcji, × i stopką „Anuluj / Zapisz”.
+  „Zapisz” wyłączone bez zmian; Anuluj, ‹ i Esc wracają bez zapisu; tło przy niezapisanych
+  zmianach nie zamyka. Mechanizm: rejestr `sekcje` w `app.js`
+  (`{ tytul, form, otworz(), zmienione(), fokus() }`), `data-widok-okna="<id>"`, a przycisk
+  „Zapisz” przepina się atrybutem `form` na formularz otwartego widoku. **Nowa sekcja = wpis
+  w rejestrze + formularz + reguła CSS pokazująca panel; nie pisać drugiego okna.**
+- `P.zapisz()` **scala**: sekcja podaje tylko swoje pola, reszta profilu zostaje. Test łapie
+  wersję, w której edycja imienia kasowała pomiary.
+- Opis pod nazwą sekcji bierze się z danych ZAPISANYCH i odświeża na zdarzenie `k2:profil`.
+
+### Sekcja „Budowa ciała”: wzrost, masa, BMI (12.11.2026)
+
+- Nazwa moja („nazwij i skończ kod” — Fryderyk). Pola: **wzrost [cm, 100–250]** i **masa ciała
+  [kg, 20–300]**, przecinek albo kropka, jedno miejsce po przecinku; puste pole dozwolone.
+  „1,78” we wzroście daje podpowiedź o centymetrach. Pod polami „Ostatni zapis: data”.
+- **BMI NIE jest zapisywane** — liczy się z pól na żywo (wariant B ze starej strony). W zapisie:
+  `wzrost`, `masa`, `cialoData`. **Żadnych wartości domyślnych w repo** (dane osobowe).
+- **Braki pokazane wprost, nie zerami:** bez pomiarów przerywana karta „BMI policzy się samo”;
+  bez daty urodzenia sama liczba i zdanie, czego brakuje; nastolatek bez płci — to samo
+  z wyjaśnieniem; wiek poza 13–99 — „ocena od 13 do 99 lat”.
+- **OCENA NIE JEST MOJA — `wspolne/bmi.js`, źródła w nagłówku pliku:**
+  - **13–19 lat: WHO Growth Reference 2007** (BMI-for-age, wiek co do miesiąca, osobno dla płci).
+    Tabela L/M/S skopiowana MASZYNOWO z pliku `bfawho2007.txt` pakietu `anthroplus` (oficjalny
+    program WHO, GitHub `WorldHealthOrganization/anthroplus`); sposób liczenia przepisany z ich
+    kodu: wiek = dni/30,4375, interpolacja liniowa między miesiącami, poprawka poza ±3 SD.
+    Progi WHO: < −3 SD znaczna niedowaga, < −2 niedowaga, > +1 nadwaga, > +2 otyłość.
+  - **od 19 lat i 1 mies.: klasyfikacja WHO dla dorosłych** (18,5 / 25 / 30 / 35 / 40, < 16 znaczna
+    niedowaga), BMI zaokrąglone do 0,1 przed oceną. Siatka 2007 jest zbudowana tak, żeby w wieku
+    19 lat schodzić się z tymi progami (+1 SD = 25,4 / 25,0; +2 SD = 29,7) — przejście bez skoku.
+  - **NIE POPRAWIAĆ TABELI RĘCZNIE i nie „upraszczać” wzoru.** Zmiana jednej cyfry jest łapana
+    przez weryfikację (niżej).
+- **Weryfikacja przelicznika:** (1) 150 wierszy tabeli równe plikowi WHO; (2) **zestaw testowy
+  WHO z tego samego pakietu (`tests/testthat/test_dataset_who2007.rds`): 485 z 485 przypadków
+  w wieku 13–19 lat daje z-score zgodny co do 0,01**, w tym 32 poza ±3 SD; (3) punkty z publikacji
+  (de Onis 2007) dla 19 lat; (4) progi dorosłych na granicach; (5) centyl wobec biblioteki
+  statystycznej Pythona (różnica < 1e-5). Pięć celowo zepsutych wersji złapanych, w tym jedna
+  zmieniona cyfra w jednej komórce. Wartości w teście strony (chłopak 16 lat 2 mies.: norma
+  16,6–23,7, 64. centyl) policzone OSOBNO w Pythonie z pliku WHO — strona nie sprawdza sama siebie.
+- **Czego NIE ma i dlaczego:** siatek CDC (USA) i polskich OLAF — inne próby wzorcowe, dałyby
+  drugi, czasem sprzeczny werdykt. Jedno źródło = jedna odpowiedź. Jeśli Fryderyk zechce
+  drugiego źródła, to osobna decyzja. **Wiek 65+: WHO nie ma osobnych progów**, choć część badań
+  sugeruje łagodniejsze — nie dodawać z własnej inicjatywy.
+- Wygląd: duża liczba, werdykt jako pigułka **z ikoną i słowem** (nigdy sama barwa), skala
+  liniowa z czterema strefami (norma zielona, reszta neutralna, 2 px przerwy), znacznik-kropka,
+  progi pod skalą **dla tej osoby**, zdanie z normą i centylem, źródło i zastrzeżenie, że BMI
+  nie odróżnia mięśni od tłuszczu. BMI i progi zawsze z jednym miejscem po przecinku („30,0”).
+- Sondy: sekcja 153 kontrole na 4 urządzeniach (zegar strony ustawiony na 12.11.2026), **siedem
+  celowo wstawionych błędów złapanych**; podpisy skali bez nakładania w 144 kombinacjach wieku,
+  płci, masy i szerokości (najmniejszy odstęp 6,5 px); okno 448, edycja 140, zdjęcie 96, data 109,
+  pytanie 43, najechanie 53 — bez błędów; przegląd 21 urządzeń identyczny z poprzednim.
 
 ### Pusta część okna profilu — co ma tam trafić
 

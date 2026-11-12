@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   <div class="tp">
@@ -42,7 +42,7 @@
     </div>
   </div>
   <!-- Okno „Athlete’s profile”: otwiera je pole w lewym dolnym rogu (.tp-bok-ja).
-       Dwa widoki w JEDNYM oknie: profil i edycja (przełącza je kredka „Edit”). Kod: app.js. -->
+       Widoki w JEDNYM oknie: profil (z listą sekcji), edycja (kredka „Edit”) i po jednym na sekcję. Kod: app.js. -->
   <dialog class="tp-okno" id="tp-profil" aria-labelledby="tp-profil-t" data-widok-okna="profil" tabindex="-1">
     <header class="tp-okno-g">
       <button class="tp-okno-wstecz" type="button" aria-label="Wróć do profilu bez zapisywania"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
@@ -51,7 +51,7 @@
       <!-- imię i nazwisko z „Edit” w jednej linii, pod nimi wybrana płeć (12.11.2026) -->
       <div class="tp-okno-kto">
         <div class="tp-okno-kto-r">
-          <h2 id="tp-profil-t"><span class="tp-tyt-profil" data-profil="pelne">Fryderyk Marszałek</span><span class="tp-tyt-edycja">Edytuj profil</span></h2>
+          <h2 id="tp-profil-t"><span class="tp-tyt-profil" data-profil="pelne">Fryderyk Marszałek</span><span class="tp-tyt-edycja" id="tp-tyt-widoku">Edytuj profil</span></h2>
           <button class="tp-edytuj" type="button" aria-label="Edytuj profil">
             <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.6 3.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.9.9.9-3.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M11 5.5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M11.5 17h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".55"/></svg>
             <span>Edit</span>
@@ -64,7 +64,18 @@
     <div class="tp-okno-tresc">
       <!-- widok 1: profil -->
       <!-- treść profilu dojdzie później; awatar, imię i nazwisko stoją w nagłówku okna -->
-      <section class="tp-panel tp-panel-profil" aria-label="Athlete’s profile"></section>
+      <!-- lista sekcji: każdy wiersz otwiera swój widok w TYM SAMYM oknie, z „Zapisz” na dole jak w edycji.
+           Kolejne sekcje = kolejne <li>; opis pod nazwą wpisuje app.js z zapisanych danych. -->
+      <section class="tp-panel tp-panel-profil" aria-label="Athlete’s profile">
+        <ul class="tp-sekcje">
+          <li>
+            <button class="tp-sekcja" type="button" data-sekcja="cialo">
+              <span class="tp-sekcja-t"><b>Budowa ciała</b><small data-sekcja-opis="cialo">Wzrost, masa ciała i BMI</small></span>
+              <i class="ph-bold ph-caret-right tp-sekcja-s" aria-hidden="true"></i>
+            </button>
+          </li>
+        </ul>
+      </section>
       <!-- widok 2: edycja — imię, nazwisko, płeć; jeden „Zapisz” na dole zapisuje wszystko naraz -->
       <form class="tp-panel tp-panel-edycja" id="tp-profil-form" novalidate aria-label="Edycja profilu">
         <!-- zdjęcie profilowe: kredka otwiera okienko wyboru; podgląd od razu tutaj, reszta strony dopiero po „Zapisz” -->
@@ -134,6 +145,23 @@
           <p class="tp-blad" id="tp-ur-b" role="alert"></p>
         </div>
       </form>
+      <!-- widok 3: Budowa ciała — wzrost, masa; BMI liczy się na żywo i jest oceniane siatką WHO (wspolne/bmi.js) -->
+      <form class="tp-panel tp-panel-sekcja tp-panel-cialo" id="tp-cialo-form" novalidate aria-label="Budowa ciała">
+        <div class="tp-pola tp-pola-cialo">
+          <div class="tp-pole">
+            <div class="tp-pole-g"><label for="tp-wzrost">Wzrost</label></div>
+            <div class="tp-jedn"><input id="tp-wzrost" name="wzrost" type="text" inputmode="decimal" maxlength="5" placeholder="np. 178" autocomplete="off" enterkeyhint="next" aria-describedby="tp-wzrost-b"><span aria-hidden="true">cm</span></div>
+            <p class="tp-blad" id="tp-wzrost-b" role="alert"></p>
+          </div>
+          <div class="tp-pole">
+            <div class="tp-pole-g"><label for="tp-masa">Masa ciała</label></div>
+            <div class="tp-jedn"><input id="tp-masa" name="masa" type="text" inputmode="decimal" maxlength="5" placeholder="np. 68,5" autocomplete="off" enterkeyhint="done" aria-describedby="tp-masa-b"><span aria-hidden="true">kg</span></div>
+            <p class="tp-blad" id="tp-masa-b" role="alert"></p>
+          </div>
+        </div>
+        <p class="tp-cialo-kiedy" id="tp-cialo-kiedy"></p>
+        <div class="tp-bmi" id="tp-bmi" aria-live="polite"></div>
+      </form>
     </div>
     <footer class="tp-okno-st">
       <p class="tp-okno-uwaga"><i class="ph ph-info" aria-hidden="true"></i>Zapis w tej przeglądarce</p>
@@ -156,10 +184,11 @@
     <span class="tp-awatar tp-lupa-a" data-profil="inicjaly">FM</span>
   </dialog>
   <script src="wspolne/dane.js?v=6"></script>
-  <script src="wspolne/profil.js?v=4"></script>
+  <script src="wspolne/profil.js?v=5"></script>
+  <script src="wspolne/bmi.js?v=1"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>
