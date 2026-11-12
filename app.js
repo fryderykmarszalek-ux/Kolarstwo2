@@ -27,12 +27,18 @@
     const podglad = form.querySelector('[data-podglad="inicjaly"]');
     const kredka = form.querySelector('.tp-zdj-kredka'), usun = form.querySelector('.tp-zdj-usun');
     const menu = form.querySelector('.tp-zdj-menu'), plik = form.querySelector('.tp-zdj-plik'), zdjBlad = form.querySelector('#tp-zdj-b');
+    const ur = { d: form.querySelector('#tp-ur-d'), m: form.querySelector('#tp-ur-m'), r: form.querySelector('#tp-ur-r') };
+    const urGrupa = form.querySelector('.tp-data'), urBlad = form.querySelector('#tp-ur-b'), wiekEl = form.querySelector('#tp-wiek');
     let plec = 'n', zdjecie = null, start = null;      // start = stan profilu w chwili wejścia w edycję; zdjecie = robocze, do „Zapisz”
     const dotyk = window.matchMedia && matchMedia('(pointer: coarse)').matches;
 
     const widok = () => okno.dataset.widokOkna;
-    const stan = () => ({ imie: P.oczysc(wejscia.imie.value), nazwisko: P.oczysc(wejscia.nazwisko.value), plec, zdjecie });
-    const zmienione = () => { const s = stan(); return !!start && (s.imie !== start.imie || s.nazwisko !== start.nazwisko || s.plec !== start.plec || s.zdjecie !== start.zdjecie); };
+    const data = () => P.sprawdzDate(ur.d.value, ur.m.value, ur.r.value);
+    // surowy zapis trzech pól — „zmienione” musi widzieć także datę wpisaną w połowie, nie tylko poprawną
+    const urSurowo = () => `${+ur.d.value || ur.d.value}|${ur.m.value}|${ur.r.value}`;
+    const urZDaty = (u) => (u ? `${+u.slice(8)}|${+u.slice(5, 7)}|${u.slice(0, 4)}` : '||');
+    const stan = () => ({ imie: P.oczysc(wejscia.imie.value), nazwisko: P.oczysc(wejscia.nazwisko.value), plec, zdjecie, urodziny: data().wartosc });
+    const zmienione = () => { const s = stan(); return !!start && (s.imie !== start.imie || s.nazwisko !== start.nazwisko || s.plec !== start.plec || s.zdjecie !== start.zdjecie || urSurowo() !== urZDaty(start.urodziny)); };
 
     function ustawPlec(k, fokus) {
       plec = k;
@@ -54,6 +60,14 @@
       // awatar w edycji pokazuje zmiany od razu (inicjały i zdjęcie); reszta strony dopiero po „Zapisz”
       P.rysujAwatar(podglad, P.inicjaly(stan()), zdjecie);
       usun.hidden = !zdjecie;                        // „Usuń profilowe” tylko wtedy, gdy jest co usuwać
+      // wiek obok etykiety — tylko przy dacie poprawnej w całości
+      const w = data().wartosc;
+      wiekEl.textContent = w ? P.lata(P.wiek(w)) : '';
+      ur.m.classList.toggle('pusty', !ur.m.value);   // „Miesiąc” w pustym wyborze szary jak podpowiedź w polu
+    }
+    function bladDaty(tekst) {
+      urBlad.textContent = tekst;
+      [ur.d, ur.m, ur.r].forEach((x) => x.classList.toggle('zly', !!tekst));
     }
 
     // ── zdjęcie profilowe: kredka → okienko → wybór pliku → podgląd ──
@@ -88,6 +102,9 @@
         ['imie', 'nazwisko'].forEach((n) => { licznik(n); blad(n, ''); });
         ustawPlec(start.plec);
         zdjecie = start.zdjecie; zdjBlad.textContent = ''; zamknijMenu();
+        const u = start.urodziny;
+        ur.d.value = u ? String(+u.slice(8)) : ''; ur.m.value = u ? String(+u.slice(5, 7)) : ''; ur.r.value = u ? u.slice(0, 4) : '';
+        bladDaty('');
         odswiezFormularz();
         okno.querySelector('.tp-okno-tresc').scrollTop = 0;
         // na iPadzie/telefonie fokus w polu otwiera klawiaturę — tam fokus idzie na „wróć”
@@ -137,6 +154,19 @@
     });
     wejscia.imie.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); wejscia.nazwisko.focus(); } });
 
+    // ── data urodzenia: dzień i rok same cyfry, miesiąc z listy; błąd pokazujemy dopiero po wyjściu z całej grupy ──
+    [ur.d, ur.r].forEach((x) => x.addEventListener('input', () => {
+      const c = x.value.replace(/\D/g, '');
+      if (c !== x.value) x.value = c;
+    }));
+    [ur.d, ur.m, ur.r].forEach((x) => x.addEventListener(x === ur.m ? 'change' : 'input', () => {
+      if (urBlad.textContent) bladDaty(data().blad);
+      odswiezFormularz();
+    }));
+    urGrupa.addEventListener('focusout', (e) => { if (widok() === 'edycja' && !urGrupa.contains(e.relatedTarget)) bladDaty(data().blad); });
+    ur.d.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ur.m.focus(); } });
+    ur.r.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ur.r.blur(); } });
+
     // ── płeć: trzy opcje zawsze widoczne, na stałych miejscach; strzałki jak w każdej grupie wyboru ──
     plcie.forEach((b, i) => {
       b.addEventListener('click', () => { ustawPlec(b.dataset.plec); odswiezFormularz(); });
@@ -148,7 +178,19 @@
       });
     });
 
-    // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko, płeć i zdjęcie naraz ──
+    // ── powiększenie awatara: dotknięcie kółka w profilu → to samo kółko duże na środku ekranu ──
+    // Zamyka dotknięcie GDZIEKOLWIEK poza kółkiem (liczone po okręgu, nie po kwadracie — róg kwadratu to już tło) i Esc.
+    const lupa = document.getElementById('tp-lupa'), lupaA = lupa && lupa.querySelector('.tp-lupa-a');
+    if (lupa && lupa.showModal) {
+      okno.querySelector('.tp-okno-awatar-p').addEventListener('click', () => { lupa.showModal(); lupa.focus(); });
+      lupa.addEventListener('click', (e) => {
+        const r = lupaA.getBoundingClientRect(), x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2);
+        if (Math.hypot(x, y) > r.width / 2) lupa.close();
+      });
+      lupa.addEventListener('close', () => { if (okno.open) okno.focus(); });   // fokus na oknie, bez obwódki na awatarze
+    }
+
+    // ── Zapisz: jedno dotknięcie zapisuje imię, nazwisko, płeć, zdjęcie i datę urodzenia naraz ──
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const s = stan();
@@ -156,6 +198,9 @@
       blad('imie', bledy.imie); blad('nazwisko', bledy.nazwisko);
       const pierwszy = ['imie', 'nazwisko'].find((n) => bledy[n]);
       if (pierwszy) { wejscia[pierwszy].focus(); return; }
+      const bd = data().blad;
+      bladDaty(bd);
+      if (bd) { (ur.d.value && ur.m.value ? ur.r : ur.d.value ? ur.m : ur.d).focus(); return; }
       const w = P.zapisz(s);
       if (!w.ok) return;
       okno.classList.toggle('bez-zapisu', !w.trwale);   // tryb prywatny: zapis tylko do zamknięcia karty

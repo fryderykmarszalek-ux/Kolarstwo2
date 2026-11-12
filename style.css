@@ -377,3 +377,44 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-zdj-opis small { font: 500 12px/1.2 var(--s-f); color: var(--s-tekst-3); }
 .tp-zdj-blad { margin-top: 10px; }
 @media (prefers-reduced-motion: reduce) { .tp-zdj-menu { animation: none; } }
+
+/* ───── powiększenie awatara (12.11.2026, prośba Fryderyka) ─────
+   Awatar na górze okna profilu jest przyciskiem: po najechaniu dostaje tę samą obwódkę co awatar w lewym
+   dolnym rogu, kursor „lupa”. Dotknięcie → okno #tp-lupa: samo kółko na środku, tło przyciemnione i rozmyte. */
+.tp-okno-awatar-p { all: unset; box-sizing: border-box; flex: none; display: block; border-radius: 50%; cursor: zoom-in; -webkit-tap-highlight-color: transparent; }
+.tp-okno-awatar-p .tp-awatar { transition: box-shadow .15s, transform .15s; }
+@media (any-hover: hover) { .tp-okno-awatar-p:hover .tp-awatar { box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px #BFD1F5; } }
+.tp-okno-awatar-p:active .tp-awatar { transform: scale(.96); }
+.tp-okno-awatar-p:focus { outline: none; }
+.tp-okno-awatar-p:focus-visible .tp-awatar { box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px var(--s-akcent); }
+.tp-okno[data-widok-okna="edycja"] .tp-okno-awatar-p { display: none; }
+
+/* okno na cały ekran, przezroczyste — każde dotknięcie trafia albo w kółko, albo w okno (a to je zamyka) */
+.tp-lupa { box-sizing: border-box; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 16px; border: 0; background: transparent; overflow: hidden; cursor: zoom-out; }
+.tp-lupa[open] { display: grid; place-items: center; }
+.tp-lupa:focus { outline: none; }
+.tp-lupa::backdrop { background: rgba(12, 16, 26, .58); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); animation: tp-tlo-wej .22s ease-out; }
+.tp-lupa-a { --bok: min(440px, 78vw, 64vh); width: var(--bok); height: var(--bok); font: 800 calc(var(--bok) * .3)/1 var(--s-f); letter-spacing: .01em; cursor: default;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, .92), 0 40px 90px -30px rgba(0, 0, 0, .65); }
+.tp-lupa[open] .tp-lupa-a { animation: tp-lupa-wej .32s cubic-bezier(.2, .9, .25, 1.05); }
+@keyframes tp-lupa-wej { from { opacity: 0; transform: scale(.45); } }
+@media (prefers-reduced-motion: reduce) { .tp-lupa[open] .tp-lupa-a, .tp-lupa::backdrop { animation: none; } }
+
+/* ───── data urodzenia (12.11.2026): dzień · miesiąc · rok w jednym rzędzie ───── */
+/* minima kolumn z najdłuższego napisu (zmierzone w Plus Jakarta Sans 600 16 px): „Dzień” 42 px, „Październik” 87 px,
+   „2010” 39 px — plus wypełnienie. Poniżej tego napis byłby ucięty; na iPhonie SE (pole 264 px) zostaje ~16 px zapasu. */
+.tp-data { display: grid; grid-template-columns: minmax(58px, 1fr) minmax(126px, 2.4fr) minmax(54px, 1.1fr); gap: 10px; }
+.tp-data input { text-align: center; font-variant-numeric: tabular-nums; }
+.tp-data input::placeholder, .tp-pole input::placeholder { color: var(--s-tekst-3); font-weight: 600; opacity: 1; }
+.tp-data-m { position: relative; display: block; min-width: 0; }
+.tp-data-m select { box-sizing: border-box; display: block; width: 100%; height: 48px; margin: 0; padding: 0 36px 0 14px; border-radius: 12px; border: 1.5px solid transparent; outline: none; cursor: pointer;
+  background: var(--s-karta-2); color: var(--s-tekst); font: 600 16px/1 var(--s-f); -webkit-appearance: none; appearance: none; text-overflow: ellipsis;
+  transition: border-color .15s, background .15s, box-shadow .15s; }
+.tp-data-m select.pusty { color: var(--s-tekst-3); }
+.tp-data-m select option { color: var(--s-tekst); }
+.tp-data-m i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--s-tekst-3); pointer-events: none; transition: color .15s; }
+@media (any-hover: hover) { .tp-data-m select:hover:not(:focus) { border-color: var(--s-linia-2); } .tp-data-m:hover i { color: var(--s-tekst-2); } }
+.tp-data-m select:focus { background: var(--s-karta); border-color: var(--s-akcent); box-shadow: 0 0 0 4px rgba(47, 111, 235, .12); }
+.tp-data-m select.zly { border-color: var(--s-hr); background: #FFF6F6; }
+.tp-wiek { font: 600 12px/1 var(--s-f); color: var(--s-tekst-3); font-variant-numeric: tabular-nums; }
+@container (max-width: 419px) { .tp-data { gap: 6px; } .tp-data input { padding: 0 6px; } .tp-data-m select { padding: 0 26px 0 10px; } .tp-data-m i { right: 10px; } }

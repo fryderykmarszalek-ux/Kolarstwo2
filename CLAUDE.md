@@ -213,9 +213,11 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
 - **„Usuń profilowe” po prawej od kredki, tylko gdy jest co usuwać.** Wraca do domyślnego,
   czyli inicjałów — też dopiero po „Zapisz”. Szary napis, po najechaniu czerwienieje.
 - **Obróbka w przeglądarce, przed zapisem:** kwadrat wycięty ze ŚRODKA, zmniejszony do
-  **512×512**, JPEG 0,86 (przezroczysty PNG dostaje białe tło, nie czarne). Zdjęcie z aparatu
-  4000×3000 (830 kB) zmierzone: **48 kB** po obróbce — ale to był obraz sztuczny; prawdziwe
-  zdjęcie z dużą ilością szczegółów wyjdzie więcej, rzędu 100 kB. Zapora: 1,1 MB.
+  **1024×1024** (do 12.11 było 512 — za mało, odkąd zdjęcie da się powiększyć do 440 px na
+  Retinie; zdjęcie zapisane wcześniej zostaje w 512, ostrzejsze będzie po ponownym wyborze;
+  mniejszego niż 1024 nie powiększamy), JPEG 0,86 (przezroczysty PNG dostaje białe tło, nie czarne). Zdjęcie z aparatu
+  4000×3000 (830 kB) przy 512 dawało **48 kB** — ale to był obraz sztuczny; prawdziwe
+  zdjęcie przy 1024 wyjdzie rzędu 150–300 kB. Zapora: 1,1 MB (powyżej JPEG 0,7).
   `localStorage` mieści ok. 5 MB, więc zapas jest.
   HEIC z iPhone'a Safari czyta sam. Plik, który nie jest obrazem — komunikat pod awatarem,
   nic się nie zmienia. Inicjały zostają w tekście awatara (czytnik ekranu), zdjęcie leży na nich
@@ -230,6 +232,48 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   przeciekający na stronę przed „Zapisz”, wycięcie z lewego brzegu zamiast ze środka, obwódka
   na kredce, „Usuń” niepokazujące się, Esc zamykające całą edycję). Najechanie: 37 kontroli.
   Przegląd 21 urządzeń — wynik identyczny co do linijki z wersją sprzed zdjęcia.
+
+### Powiększenie awatara (12.11.2026)
+
+- **Awatar na górze okna profilu jest przyciskiem** — prośba Fryderyka. Dotknięcie pokazuje
+  to samo kółko duże na środku ekranu (`<dialog id="tp-lupa">`, `min(440px, 78vw, 64vh)`), tło
+  przyciemnione i rozmyte, okno profilu zostaje pod spodem. Bez zdjęcia pokazuje duże inicjały.
+- **Zamyka dotknięcie GDZIEKOLWIEK poza kółkiem — liczone po OKRĘGU**, nie po kwadracie
+  (róg kwadratu wokół kółka wygląda jak tło, więc ma działać jak tło). Dotknięcie samego kółka
+  nic nie robi. Esc zamyka samo powiększenie, nie okno profilu.
+- Najechanie: ta sama obwódka co przy awatarze w lewym dolnym rogu i kursor „lupa” (`zoom-in`).
+  Tylko w widoku profilu; w edycji awatar nagłówka jest schowany. Dla Tab awatar stoi
+  przed „Edit”.
+
+### Data urodzenia (12.11.2026)
+
+- **Ostatnie pole edycji, pod płcią: Dzień · Miesiąc · Rok w jednym rzędzie.** Dzień i rok to pola
+  z klawiaturą cyfrową (inne znaki wypadają przy pisaniu), miesiąc to lista z nazwami — bez
+  pomyłki „który to był miesiąc”. Na iPadzie/iPhonie lista otwiera systemowe kółko.
+- **Pusta data jest dozwolona** (nieustawiona = `null`). Niepełna — nie: „Uzupełnij dzień,
+  miesiąc i rok — albo zostaw wszystkie trzy puste.”
+- Sprawdzane: data musi istnieć w kalendarzu (lata przestępne — „Luty 2011 ma 28 dni.”),
+  rok ≥ 1900, czterocyfrowy, **nie z przyszłości** (wobec zegara urządzenia).
+- **Błąd pojawia się dopiero po wyjściu z trzech pól**, a znika na żywo przy poprawianiu —
+  nie krzyczymy w połowie wpisywania. „Zapisz” z błędną datą nic nie zapisuje i stawia fokus
+  na polu do poprawy.
+- **Wiek obok etykiety** („16 lat”, polska odmiana: rok/lata/lat) — tylko przy dacie poprawnej
+  w całości. To kontrola wpisu, nie nowa sekcja. `P.wiek()` liczy pełne lata (urodzeni 29 lutego
+  kończą rok 1 marca w latach nieprzestępnych) — **pod przyszłą zakładkę treningową**, do której
+  data ma trafić (decyzja Fryderyka; „to jeszcze kupa czasu”).
+- Zapis w `k2.profil` jako `urodziny: "RRRR-MM-DD"` albo `null`; wpis sprzed daty wczytuje się dalej.
+  **W `dane.js` NIE MA domyślnej daty urodzenia** — repo jest publiczne, a to dana osobowa;
+  Fryderyk wpisuje ją sam na stronie.
+- **Szerokości kolumn z najdłuższego napisu**, zmierzone: „Dzień” 42 px, „Październik” 87 px,
+  „2010” 39 px (Plus Jakarta Sans 600 16 px). Pierwsza wersja ucinała „Październik” na iPhonie SE
+  i podpowiedź „Dzień” do ~390 px szerokości — złapane miarą, nie okiem. Teraz `minmax()` na
+  każdej kolumnie; sprawdzone od 320 do 1180 px. **Zmieniając krój albo nazwy, zmierzyć od nowa.**
+- Pismo 16 px także na liście miesięcy — przy mniejszym iPhone powiększa stronę po dotknięciu.
+- Sondy: data + powiększenie 109 kontroli na 4 urządzeniach; **sześć celowo wstawionych błędów
+  złapanych** (zamykanie przy dotknięciu kółka, zamykanie w obrysie kwadratu zamiast okręgu,
+  brak kontroli przyszłości, brak kontroli długości miesiąca, „Zapisz” ślepy na zmianę daty,
+  stare kolumny bez minimów). Zdjęcie 96, okno 448, edycja 140, najechanie 45 — bez błędów;
+  przegląd 21 urządzeń identyczny co do linijki z wersją sprzed zmian.
 
 ## 6. Otwarte, nierozstrzygnięte
 

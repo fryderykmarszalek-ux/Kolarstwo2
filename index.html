@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
   <div class="tp">
@@ -46,7 +46,8 @@
   <dialog class="tp-okno" id="tp-profil" aria-labelledby="tp-profil-t" data-widok-okna="profil" tabindex="-1">
     <header class="tp-okno-g">
       <button class="tp-okno-wstecz" type="button" aria-label="Wróć do profilu bez zapisywania"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
-      <span class="tp-awatar tp-okno-awatar" aria-hidden="true" data-profil="inicjaly">FM</span>
+      <!-- dotknięcie awatara w profilu powiększa go na środku ekranu (okno #tp-lupa) -->
+      <button class="tp-okno-awatar-p" type="button" aria-label="Powiększ zdjęcie profilowe" aria-haspopup="dialog" aria-controls="tp-lupa"><span class="tp-awatar tp-okno-awatar" aria-hidden="true" data-profil="inicjaly">FM</span></button>
       <h2 id="tp-profil-t"><span class="tp-tyt-profil" data-profil="pelne">Fryderyk Marszałek</span><span class="tp-tyt-edycja">Edytuj profil</span></h2>
       <button class="tp-edytuj" type="button" aria-label="Edytuj profil">
         <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.6 3.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.9.9.9-3.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M11 5.5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M11.5 17h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".55"/></svg>
@@ -99,6 +100,33 @@
             <button type="button" role="radio" data-plec="n">Niezdefiniowana</button>
           </div>
         </div>
+        <!-- data urodzenia: dzień, miesiąc, rok — pusta = nieustawiona; wiek liczy się na żywo obok etykiety -->
+        <div class="tp-pole">
+          <div class="tp-pole-g"><span id="tp-ur-t">Data urodzenia</span><span class="tp-wiek" id="tp-wiek" aria-live="polite"></span></div>
+          <div class="tp-data" role="group" aria-labelledby="tp-ur-t" aria-describedby="tp-ur-b">
+            <input id="tp-ur-d" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="Dzień" aria-label="Dzień" autocomplete="bday-day" enterkeyhint="next">
+            <span class="tp-data-m">
+              <select id="tp-ur-m" aria-label="Miesiąc" autocomplete="bday-month">
+              <option value="">Miesiąc</option>
+              <option value="1">Styczeń</option>
+              <option value="2">Luty</option>
+              <option value="3">Marzec</option>
+              <option value="4">Kwiecień</option>
+              <option value="5">Maj</option>
+              <option value="6">Czerwiec</option>
+              <option value="7">Lipiec</option>
+              <option value="8">Sierpień</option>
+              <option value="9">Wrzesień</option>
+              <option value="10">Październik</option>
+              <option value="11">Listopad</option>
+              <option value="12">Grudzień</option>
+              </select>
+              <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+            </span>
+            <input id="tp-ur-r" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Rok" aria-label="Rok" autocomplete="bday-year" enterkeyhint="done">
+          </div>
+          <p class="tp-blad" id="tp-ur-b" role="alert"></p>
+        </div>
       </form>
     </div>
     <footer class="tp-okno-st">
@@ -107,11 +135,15 @@
       <button class="tp-przycisk glowny" type="submit" form="tp-profil-form" disabled>Zapisz</button>
     </footer>
   </dialog>
+  <!-- powiększone zdjęcie profilowe: samo kółko na środku; dotknięcie gdziekolwiek poza kółkiem zamyka -->
+  <dialog class="tp-lupa" id="tp-lupa" aria-label="Zdjęcie profilowe" tabindex="-1">
+    <span class="tp-awatar tp-lupa-a" data-profil="inicjaly">FM</span>
+  </dialog>
   <script src="wspolne/dane.js?v=6"></script>
-  <script src="wspolne/profil.js?v=2"></script>
+  <script src="wspolne/profil.js?v=3"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

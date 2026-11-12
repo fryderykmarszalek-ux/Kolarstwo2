@@ -16,8 +16,11 @@
  * decyzja Fryderyka z 12.11.2026, rola przyjdzie później.
  *
  * Zdjęcie profilowe (12.11.2026): kwadrat wycięty ze środka wybranego obrazu, zmniejszony do
- * 512×512 i zapisany jako JPEG (data URL, ok. 30–80 kB). null = brak zdjęcia, awatar pokazuje
+ * 1024×1024 (do 12.11 było 512 — za mało na powiększenie) i zapisany jako JPEG (data URL). null = brak zdjęcia, awatar pokazuje
  * inicjały. Każdy element z data-profil="inicjaly" jest awatarem i dostaje zdjęcie jako tło.
+ *
+ * Data urodzenia (12.11.2026): 'RRRR-MM-DD' albo null. Na razie nic nie liczy — pójdzie do bazy
+ * i do jednej z zakładek treningowych (decyzja Fryderyka). P.wiek() daje pełne lata.
  */
 (function (global) {
   'use strict';
@@ -25,9 +28,9 @@
   const KLUCZ = 'k2.profil';
   const MAKS = 30;
   const PLCIE = { m: 'Mężczyzna', k: 'Kobieta', n: 'Niezdefiniowana' };
-  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null };
-  const BOK = 512;                 // bok zapisanego zdjęcia w pikselach — ostre nawet na Retinie w 72-pikselowym kółku
-  const MAKS_ZDJ = 1500000;        // zapora na długość data URL (≈ 1,1 MB); 512×512 JPEG to zwykle 40–110 kB
+  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null };
+  const BOK = 1024;                // bok zapisanego zdjęcia w pikselach — ostre na Retinie także w powiększeniu (do 440 px na ekranie)
+  const MAKS_ZDJ = 1500000;        // zapora na długość data URL (≈ 1,1 MB); 1024×1024 JPEG to zwykle 100–300 kB
 
   // litery (każdego alfabetu, z polskimi), a między nimi pojedyncza spacja, myślnik albo apostrof:
   // „Anna-Maria”, „O’Neill”, „Jan Paweł”. Bez cyfr i znaków.
@@ -54,10 +57,44 @@
     return (pierwsza(p.imie) + pierwsza(p.nazwisko)) || '?';
   };
 
+  // ── data urodzenia: 'RRRR-MM-DD' albo null (nieustawiona) ──
+  P.MIESIACE = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+  const dzisISO = (d) => { d = d || new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  const dniW = (r, m) => new Date(Date.UTC(r, m, 0)).getUTCDate();      // m = 1..12
+
+  // trzy pola → { blad, wartosc }. Wszystkie puste = brak daty (wolno). Data musi istnieć w kalendarzu i nie być z przyszłości.
+  P.sprawdzDate = (dzien, miesiac, rok, dzis) => {
+    const d = String(dzien == null ? '' : dzien).trim(), m = String(miesiac == null ? '' : miesiac).trim(), r = String(rok == null ? '' : rok).trim();
+    if (!d && !m && !r) return { blad: '', wartosc: null };
+    if (!d || !m || !r) return { blad: 'Uzupełnij dzień, miesiąc i rok — albo zostaw wszystkie trzy puste.', wartosc: null };
+    if (!/^\d{1,2}$/.test(d) || +d < 1 || +d > 31) return { blad: 'Dzień to liczba od 1 do 31.', wartosc: null };
+    if (!/^\d{1,2}$/.test(m) || +m < 1 || +m > 12) return { blad: 'Wybierz miesiąc.', wartosc: null };
+    if (!/^\d{4}$/.test(r)) return { blad: 'Rok wpisz czterema cyframi, np. 2010.', wartosc: null };
+    if (+r < 1900) return { blad: 'Rok nie wcześniej niż 1900.', wartosc: null };
+    const n = dniW(+r, +m);
+    if (+d > n) return { blad: `${P.MIESIACE[m - 1]} ${r} ma ${n} dni.`, wartosc: null };
+    const w = `${r}-${String(+m).padStart(2, '0')}-${String(+d).padStart(2, '0')}`;
+    if (w > dzisISO(dzis)) return { blad: 'Ta data jeszcze nie nadeszła.', wartosc: null };
+    return { blad: '', wartosc: w };
+  };
+  const urodzinyPoprawne = (u) => u == null || (typeof u === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(u) && P.sprawdzDate(+u.slice(8), +u.slice(5, 7), u.slice(0, 4)).wartosc === u);
+
+  // pełne lata na dziś (urodzeni 29 lutego kończą rok 1 marca w latach nieprzestępnych)
+  P.wiek = (u, dzis) => {
+    if (!u) return null;
+    const t = dzisISO(dzis), r = +t.slice(0, 4) - +u.slice(0, 4);
+    return t.slice(5) >= u.slice(5) ? r : r - 1;
+  };
+  P.lata = (n) => {
+    if (n === 1) return '1 rok';
+    const j = n % 10, d = n % 100;
+    return `${n} ${j >= 2 && j <= 4 && (d < 12 || d > 14) ? 'lata' : 'lat'}`;
+  };
+
   const zdjeciePoprawne = (z) => z == null || (typeof z === 'string' && z.startsWith('data:image/jpeg;base64,') && z.length < MAKS_ZDJ);
 
   function poprawny(p) {
-    return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie);
+    return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie) && urodzinyPoprawne(p.urodziny);
   }
 
   // Wybrany plik → kwadrat ze środka, 512×512, JPEG. Obietnica zwraca data URL albo błąd z komunikatem po polsku.
@@ -100,7 +137,8 @@
     try {
       const p = JSON.parse(global.localStorage.getItem(KLUCZ) || 'null');
       if (p && p.zdjecie === undefined) p.zdjecie = null;      // wpis sprzed zdjęć (12.11.2026) — dalej ważny
-      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie };
+      if (p && p.urodziny === undefined) p.urodziny = null;    // wpis sprzed daty urodzenia — dalej ważny
+      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny };
     } catch (e) { /* brak schowka albo zepsuty wpis — domyślne */ }
     return { ...DOMYSLNY };
   }
@@ -112,6 +150,7 @@
     K.zawodnik.imie = biezacy.imie;
     K.zawodnik.nazwisko = biezacy.nazwisko;
     K.zawodnik.plec = biezacy.plec;
+    K.zawodnik.urodziny = biezacy.urodziny;
     if (global.A) global.A.imie = biezacy.imie;
   }
 
@@ -128,7 +167,8 @@
 
   // zwraca { ok, trwale }; trwale = false, gdy przeglądarka nie dała zapisać (np. tryb prywatny)
   P.zapisz = (nowy) => {
-    const p = { imie: P.oczysc(nowy.imie), nazwisko: P.oczysc(nowy.nazwisko), plec: nowy.plec, zdjecie: nowy.zdjecie === undefined ? biezacy.zdjecie : nowy.zdjecie };
+    const p = { imie: P.oczysc(nowy.imie), nazwisko: P.oczysc(nowy.nazwisko), plec: nowy.plec, zdjecie: nowy.zdjecie === undefined ? biezacy.zdjecie : nowy.zdjecie,
+      urodziny: nowy.urodziny === undefined ? biezacy.urodziny : nowy.urodziny };
     if (!poprawny(p)) return { ok: false, trwale: false };
     biezacy = p;
     let trwale = true;
