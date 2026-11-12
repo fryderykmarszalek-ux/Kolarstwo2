@@ -95,6 +95,7 @@ index.html, style.css, app.js   strona (Trener Pro)
 wspolne/                        widoki, wykresy, dane przykładowe, ikony, czcionki
 wspolne/profil.js               profil zawodnika: jedno źródło imienia, zdjęcia, daty, pomiarów
 wspolne/bmi.js                  przelicznik BMI 13–99 lat: tabela WHO 2007 + progi WHO dla dorosłych
+wspolne/talia.js                przelicznik talia/wzrost (WHtR) według NICE NG246
 archiwum/runda-{1,2,3}/         propozycje z rund, nietknięte (każda z własną kopią wspolne/)
 docs/burza-mozgow*.md           notatki z rund
 style/trener/index.html         przekierowanie ze starego adresu, zachowuje #widok
@@ -387,6 +388,30 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   celowo wstawionych błędów złapanych**; podpisy skali bez nakładania w 144 kombinacjach wieku,
   płci, masy i szerokości (najmniejszy odstęp 6,5 px); okno 448, edycja 140, zdjęcie 96, data 109,
   pytanie 43, najechanie 53 — bez błędów; przegląd 21 urządzeń identyczny z poprzednim.
+
+### Obwód talii i drugi przelicznik: talia / wzrost (12.11.2026)
+
+- **Pole „Obwód talii” jest OPCJONALNE** (decyzja Fryderyka) — etykieta „Opcjonalnie”, zakres
+  40–200 cm. **Dwa przeliczniki:** bez talii działa samo BMI, dokładnie jak wcześniej; z talią
+  dochodzi druga karta **WHtR** (talia ÷ wzrost) pod kartą BMI, w tym samym szkielecie: liczba,
+  werdykt, skala, wskaźniki „Norma · NICE 0,40–0,49” i „Cel · NICE < połowa wzrostu”. Bez talii
+  karta stoi wyszarzona z „Wymaga obwodu talii”. WHtR NIE jest zapisywany.
+- **Źródło: NICE NG246** (styczeń 2025; wcześniej CG189 z 2022) — `wspolne/talia.js`, cytaty
+  w nagłówku pliku. 0,40–0,49 norma, 0,50–0,59 podwyższony, ≥ 0,60 wysoki; poniżej 0,40 NICE nie
+  klasyfikuje → „Poza klasyfikacją”. Ten sam dla obu płci i każdego pochodzenia; **dorośli tylko
+  przy BMI < 35** (wtedy „Klasyfikacja dla BMI poniżej 35”), **dzieci i młodzież (5+) bez warunku
+  BMI**. Wiek dorosły w NICE = 18 lat. Bez daty urodzenia: przy BMI < 35 ocena (przedziały wspólne),
+  inaczej „Ocena wymaga daty urodzenia”. Zakres strony jak przy BMI: 13–99 lat.
+- **Tekst wytycznej czytany przez wyszukiwarkę, nie wprost** — nice.org.uk, gpnotebook i kopie
+  PDF są zablokowane w sieci sesji. Liczby potwierdzone cytatami ze strony NICE w wynikach
+  wyszukiwania i zgodnymi źródłami wtórnymi (GPnotebook, Ashwell 2025). Przykład z tekstu NICE
+  (96,5 cm / 170 cm = 0,57 → podwyższony) jest w teście jednostkowym.
+- **WHtR zaokrąglany do 0,01 przed oceną** — liczba na ekranie i werdykt zawsze się zgadzają
+  (0,4994 → „0,50” → „Podwyższony”). Test łapie wersję bez zaokrąglenia.
+- Na liście: „178 cm · 68,5 kg · talia 76 cm · BMI 21,6 · w normie”.
+- Sondy: talia 96 kontroli na 3 urządzeniach (oczekiwania liczone w sondzie niezależnie), **siedem
+  celowo wstawionych błędów złapanych**; obie skale i wskaźniki bez nakładania i obcinania
+  w 545 kombinacjach (320–1400 px); strażnik „bez notatek” 882/882; pozostałe sondy bez zmian.
 
 ### Pusta część okna profilu — co ma tam trafić
 

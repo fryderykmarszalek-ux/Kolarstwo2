@@ -222,18 +222,20 @@
     }
 
 
-    // ───── sekcja „Budowa ciała”: wzrost, masa, BMI ─────
-    // BMI nie jest zapisywane — liczy się z pól na żywo. Ocena: wspolne/bmi.js (siatki WHO), wiek i płeć z profilu.
+    // ───── sekcja „Budowa ciała”: wzrost, masa, obwód talii (opcjonalny) ─────
+    // Dwa przeliczniki na żywo, żaden wynik nie jest zapisywany: BMI (wspolne/bmi.js, WHO) i talia/wzrost
+    // (wspolne/talia.js, NICE). Drugi działa tylko z obwodem talii; bez niego karta pokazuje, czego wymaga.
     (function () {
       const f = okno.querySelector('#tp-cialo-form');
-      if (!f || !window.BMI) return;
-      const pola = { wzrost: f.querySelector('#tp-wzrost'), masa: f.querySelector('#tp-masa') };
-      const karta = f.querySelector('#tp-bmi'), kiedy = f.querySelector('#tp-cialo-kiedy');
+      if (!f || !window.BMI || !window.TALIA) return;
+      const POLA = ['wzrost', 'masa', 'talia'];
+      const pola = { wzrost: f.querySelector('#tp-wzrost'), masa: f.querySelector('#tp-masa'), talia: f.querySelector('#tp-talia') };
+      const karta = f.querySelector('#tp-bmi'), kartaT = f.querySelector('#tp-whtr'), kiedy = f.querySelector('#tp-cialo-kiedy');
       const opis = okno.querySelector('[data-sekcja-opis="cialo"]');
       let st = null;                               // stan w chwili wejścia w sekcję
       const tekst = (n) => (n == null ? '' : P.liczba(n));
       const norm = (v) => v.trim().replace('.', ',');
-      const zmienione = () => !!st && (norm(pola.wzrost.value) !== tekst(st.wzrost) || norm(pola.masa.value) !== tekst(st.masa));
+      const zmienione = () => !!st && POLA.some((n) => norm(pola[n].value) !== tekst(st[n]));
       const odczyt = (n) => P.sprawdzPomiar(n, pola[n].value);
       const blad = (n, t) => {
         f.querySelector(`#tp-${n}-b`).textContent = t;
@@ -248,24 +250,36 @@
       const b1 = (n) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');   // BMI i progi zawsze z jednym miejscem: „30,0”
       const IKONY = { dobrze: 'check-circle', uwaga: 'warning-circle', zle: 'warning' };
 
-      // skala: cztery strefy na jednej liniowej osi BMI; koniec osi to nie granica, tylko miejsce, gdzie przestajemy rysować
-      function skala(bmi, pr) {
-        const od = pr.niedowaga - 6, do_ = pr.otylosc + 7, x = (v) => (100 * (A.clamp(v, od, do_) - od)) / (do_ - od);
-        const strefy = [['Niedowaga', od, pr.niedowaga], ['Norma', pr.niedowaga, pr.nadwaga], ['Nadwaga', pr.nadwaga, pr.otylosc], ['Otyłość', pr.otylosc, do_]];
-        return h('div', { class: 'tp-bmi-skala', role: 'img', 'aria-label': `Skala BMI: niedowaga poniżej ${b1(pr.niedowaga)}, norma do ${b1(pr.nadwaga)}, nadwaga do ${b1(pr.otylosc)}, powyżej otyłość. Twój wynik: ${b1(bmi)}.` },
+      const b2 = (n) => n.toFixed(2).replace('.', ',');                              // talia/wzrost z dwoma miejscami: „0,45”
+      const IKONA_BRAK = 'minus-circle';
+
+      // skala: strefy na jednej liniowej osi; koniec osi to nie granica, tylko miejsce, gdzie przestajemy rysować.
+      // Zielona jest wyłącznie strefa normy; progi podpisane liczbą, strefy nazwą.
+      function skala({ od, do_, strefy, wynik, fmt, aria }) {
+        const x = (v) => (100 * (A.clamp(v, od, do_) - od)) / (do_ - od);
+        return h('div', { class: 'tp-bmi-skala', role: 'img', 'aria-label': aria },
           h('div', { class: 'tp-bmi-tor' },
-            ...strefy.map(([n, a, b], i) => h('i', { class: i === 1 ? 'norma' : '', style: { left: x(a) + '%', width: x(b) - x(a) + '%' } })),
-            h('b', { class: 'tp-bmi-znak', style: { left: x(bmi) + '%' } })),
-          h('div', { class: 'tp-bmi-progi' }, ...[pr.niedowaga, pr.nadwaga, pr.otylosc].map((v) => h('span', { style: { left: x(v) + '%' }, text: b1(v) }))),
-          h('div', { class: 'tp-bmi-strefy' }, ...strefy.map(([n, a, b]) => h('span', { style: { left: (x(a) + x(b)) / 2 + '%' }, text: n }))));
+            ...strefy.map(([n, a, b, norma]) => h('i', { class: norma ? 'norma' : '', style: { left: x(a) + '%', width: x(b) - x(a) + '%' } })),
+            h('b', { class: 'tp-bmi-znak', style: { left: x(wynik) + '%' } })),
+          h('div', { class: 'tp-bmi-progi' }, ...strefy.slice(1).map(([, a]) => h('span', { style: { left: x(a) + '%' }, text: fmt(a) }))),
+          h('div', { class: 'tp-bmi-strefy' }, ...strefy.filter(([n]) => n).map(([n, a, b]) => h('span', { style: { left: (x(a) + x(b)) / 2 + '%' }, text: n }))));
       }
+      const skalaBmi = (bmi, pr) => skala({ od: pr.niedowaga - 6, do_: pr.otylosc + 7, wynik: bmi, fmt: b1,
+        strefy: [['Niedowaga', pr.niedowaga - 6, pr.niedowaga], ['Norma', pr.niedowaga, pr.nadwaga, true], ['Nadwaga', pr.nadwaga, pr.otylosc], ['Otyłość', pr.otylosc, pr.otylosc + 7]],
+        aria: `Skala BMI: niedowaga poniżej ${b1(pr.niedowaga)}, norma do ${b1(pr.nadwaga)}, nadwaga do ${b1(pr.otylosc)}, powyżej otyłość. Wynik: ${b1(bmi)}.` });
+      const skalaWhtr = (r) => skala({ od: 0.34, do_: 0.70, wynik: r, fmt: b2,
+        strefy: [['', 0.34, TALIA.NORMA], ['Norma', TALIA.NORMA, TALIA.PODWYZSZONA, true], ['Podwyższony', TALIA.PODWYZSZONA, TALIA.WYSOKA], ['Wysoki', TALIA.WYSOKA, 0.70]],
+        aria: `Skala talia do wzrostu: norma od 0,40 do 0,49, podwyższony od 0,50, wysoki od 0,60. Wynik: ${b2(r)}.` });
+      const wsk = (etykieta, wartosc) => h('div', null, h('dt', { text: etykieta }), h('dd', { text: wartosc }));
+      const glowaKarty = (etykieta, liczba) => h('div', { class: 'tp-bmi-g' }, h('div', { class: 'tp-bmi-l' }, h('small', { text: etykieta }), h('b', { text: liczba })));
+      const werdykt = (o) => h('span', { class: 'tp-bmi-werdykt', 'data-poziom': o.poziom }, ik(o.poziom === 'brak' ? IKONA_BRAK : IKONY[o.poziom], 'fill'), o.nazwa);
 
       // Karta BMI ma zawsze ten sam szkielet: etykieta, liczba, werdykt; pod spodem skala i dwa wskaźniki.
       // Gdy czegoś brakuje, w miejscu werdyktu stoi krótka, wyszarzona informacja — bez zdań-wyjaśnień.
       function rysujBmi() {
         const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, { bmi, o } = ocena(w, m);
         karta.dataset.stan = o.stan;
-        const glowa = h('div', { class: 'tp-bmi-g' }, h('div', { class: 'tp-bmi-l' }, h('small', { text: 'BMI' }), h('b', { text: bmi ? b1(bmi) : '—' })));
+        const glowa = glowaKarty('BMI', bmi ? b1(bmi) : '—');
         if (o.stan !== 'ok') {
           const brak = {
             'brak-bmi': !w && !m ? 'Wymaga wzrostu i masy ciała' : !w ? 'Wymaga wzrostu' : 'Wymaga masy ciała',
@@ -277,26 +291,44 @@
           karta.replaceChildren(glowa);
           return;
         }
-        glowa.append(h('span', { class: 'tp-bmi-werdykt', 'data-poziom': o.poziom }, ik(IKONY[o.poziom], 'fill'), o.nazwa));
-        const wsk = (etykieta, wartosc) => h('div', null, h('dt', { text: etykieta }), h('dd', { text: wartosc }));
+        glowa.append(werdykt(o));
         const c = o.zrodlo === 'who2007' ? Math.round(o.centyl) : null;
         const lista = h('dl', { class: 'tp-bmi-wsk' }, wsk('Norma · WHO', `${b1(o.progi.niedowaga)}–${b1(o.progi.nadwaga - (o.zrodlo === 'who2007' ? 0 : 0.1))}`),
           c != null ? wsk('Centyl', c < 1 ? '< 1' : c > 99 ? '> 99' : String(c)) : null);
-        karta.replaceChildren(glowa, skala(bmi, o.progi), lista);
+        karta.replaceChildren(glowa, skalaBmi(bmi, o.progi), lista);
       }
-      function odswiez() { zapisz.disabled = !zmienione(); rysujBmi(); }
+
+      // Druga karta: talia/wzrost (NICE). Ten sam szkielet co BMI. Pole talii jest opcjonalne, więc bez niego
+      // karta stoi wyszarzona z „Wymaga obwodu talii” — przelicznik BMI działa niezależnie od niej.
+      function rysujWhtr() {
+        const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, t = odczyt('talia').wartosc, p = P.dane();
+        const o = TALIA.ocen({ talia: t, wzrost: w, bmi: BMI.oblicz(w, m), wiekLat: P.wiek(p.urodziny) });
+        kartaT.dataset.stan = o.stan;
+        const glowa = glowaKarty('WHtR', o.whtr != null ? b2(o.whtr) : '—');
+        if (o.stan !== 'ok') {
+          glowa.append(h('span', { class: 'tp-bmi-brak', text: {
+            'brak-talii': 'Wymaga obwodu talii', 'brak-wzrostu': 'Wymaga wzrostu', 'brak-masy': 'Ocena wymaga masy ciała',
+            'brak-wieku': 'Ocena wymaga daty urodzenia', 'bmi-35': 'Klasyfikacja dla BMI poniżej 35', 'poza-wiekiem': 'Ocena dla wieku 13–99 lat',
+          }[o.stan] }));
+          kartaT.replaceChildren(glowa);
+          return;
+        }
+        glowa.append(werdykt(o));
+        kartaT.replaceChildren(glowa, skalaWhtr(o.whtr),
+          h('dl', { class: 'tp-bmi-wsk' }, wsk('Norma · NICE', '0,40–0,49'), wsk('Cel · NICE', `< ${P.liczba(o.cel)} cm`)));
+      }
+      function odswiez() { zapisz.disabled = !zmienione(); rysujBmi(); rysujWhtr(); }
 
       // opis pod nazwą sekcji na liście — z danych ZAPISANYCH, nie z tego, co akurat wpisane
       function rysujOpis() {
         const p = P.dane(), { bmi, o } = ocena(p.wzrost, p.masa);
-        const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.liczba(p.masa)} kg` : null];
-        opis.classList.toggle('pusty', p.wzrost == null && p.masa == null);
-        if (p.wzrost == null && p.masa == null) opis.textContent = 'Nie uzupełniono';
-        else if (!bmi) opis.textContent = czesci[0] || czesci[1];
-        else opis.textContent = `${czesci.join(' · ')} · BMI ${b1(bmi)}${o.stan === 'ok' ? ' · ' + o.nazwa.toLowerCase() : ''}`;
+        const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.liczba(p.masa)} kg` : null,
+          p.talia != null ? `talia ${P.liczba(p.talia)} cm` : null, bmi ? `BMI ${b1(bmi)}${o.stan === 'ok' ? ' · ' + o.nazwa.toLowerCase() : ''}` : null].filter(Boolean);
+        opis.classList.toggle('pusty', !czesci.length);
+        opis.textContent = czesci.length ? czesci.join(' · ') : 'Nie uzupełniono';
       }
 
-      ['wzrost', 'masa'].forEach((n) => {
+      POLA.forEach((n) => {
         const w = pola[n];
         w.addEventListener('input', () => {
           const c = w.value.replace(/[^\d.,]/g, '');
@@ -307,13 +339,16 @@
         w.addEventListener('blur', () => { if (widok() === 'cialo') blad(n, odczyt(n).blad); });
       });
       pola.wzrost.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pola.masa.focus(); } });
+      pola.masa.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pola.talia.focus(); } });
 
       f.addEventListener('submit', (e) => {
         e.preventDefault();
-        const w = odczyt('wzrost'), m = odczyt('masa');
-        blad('wzrost', w.blad); blad('masa', m.blad);
-        if (w.blad || m.blad) { pola[w.blad ? 'wzrost' : 'masa'].focus(); return; }
-        const wynik = P.zapisz({ wzrost: w.wartosc, masa: m.wartosc, cialoData: w.wartosc == null && m.wartosc == null ? null : P.dzis() });
+        const v = Object.fromEntries(POLA.map((n) => [n, odczyt(n)]));
+        POLA.forEach((n) => blad(n, v[n].blad));
+        const zly = POLA.find((n) => v[n].blad);
+        if (zly) { pola[zly].focus(); return; }
+        const nic = POLA.every((n) => v[n].wartosc == null);
+        const wynik = P.zapisz({ wzrost: v.wzrost.wartosc, masa: v.masa.wartosc, talia: v.talia.wartosc, cialoData: nic ? null : P.dzis() });
         if (!wynik.ok) return;
         okno.classList.toggle('bez-zapisu', !wynik.trwale);
         pokazWidok('profil');
@@ -323,8 +358,7 @@
         tytul: 'Budowa ciała', form: f, zmienione, fokus: () => pola.wzrost,
         otworz() {
           st = P.dane();
-          pola.wzrost.value = tekst(st.wzrost); pola.masa.value = tekst(st.masa);
-          blad('wzrost', ''); blad('masa', '');
+          POLA.forEach((n) => { pola[n].value = tekst(st[n]); blad(n, ''); });
           kiedy.textContent = st.cialoData ? `Zaktualizowano ${f2(st.cialoData)}` : '';
           odswiez();
         },

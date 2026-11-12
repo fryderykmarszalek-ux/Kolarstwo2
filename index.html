@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
   <div class="tp">
@@ -144,7 +144,8 @@
           <p class="tp-blad" id="tp-ur-b" role="alert"></p>
         </div>
       </form>
-      <!-- widok 3: Budowa ciała — wzrost, masa; BMI liczy się na żywo i jest oceniane siatką WHO (wspolne/bmi.js) -->
+      <!-- widok 3: Budowa ciała — wzrost, masa, obwód talii (opcjonalny). Dwa przeliczniki na żywo:
+           BMI oceniane siatką WHO (wspolne/bmi.js) i talia/wzrost według NICE (wspolne/talia.js) -->
       <form class="tp-panel tp-panel-sekcja tp-panel-cialo" id="tp-cialo-form" novalidate aria-label="Budowa ciała">
         <div class="tp-pola tp-pola-cialo">
           <div class="tp-pole">
@@ -154,12 +155,18 @@
           </div>
           <div class="tp-pole">
             <div class="tp-pole-g"><label for="tp-masa">Masa ciała</label></div>
-            <div class="tp-jedn"><input id="tp-masa" name="masa" type="text" inputmode="decimal" maxlength="5" autocomplete="off" enterkeyhint="done" aria-describedby="tp-masa-b"><span aria-hidden="true">kg</span></div>
+            <div class="tp-jedn"><input id="tp-masa" name="masa" type="text" inputmode="decimal" maxlength="5" autocomplete="off" enterkeyhint="next" aria-describedby="tp-masa-b"><span aria-hidden="true">kg</span></div>
             <p class="tp-blad" id="tp-masa-b" role="alert"></p>
+          </div>
+          <div class="tp-pole tp-pole-talia">
+            <div class="tp-pole-g"><label for="tp-talia">Obwód talii</label><span class="tp-opcja">Opcjonalnie</span></div>
+            <div class="tp-jedn"><input id="tp-talia" name="talia" type="text" inputmode="decimal" maxlength="5" autocomplete="off" enterkeyhint="done" aria-describedby="tp-talia-b"><span aria-hidden="true">cm</span></div>
+            <p class="tp-blad" id="tp-talia-b" role="alert"></p>
           </div>
         </div>
         <p class="tp-cialo-kiedy" id="tp-cialo-kiedy"></p>
         <div class="tp-bmi" id="tp-bmi" aria-live="polite"></div>
+        <div class="tp-bmi tp-whtr" id="tp-whtr" aria-live="polite"></div>
       </form>
     </div>
     <footer class="tp-okno-st">
@@ -182,11 +189,12 @@
     <span class="tp-awatar tp-lupa-a" data-profil="inicjaly">FM</span>
   </dialog>
   <script src="wspolne/dane.js?v=6"></script>
-  <script src="wspolne/profil.js?v=6"></script>
+  <script src="wspolne/profil.js?v=7"></script>
   <script src="wspolne/bmi.js?v=1"></script>
+  <script src="wspolne/talia.js?v=1"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>

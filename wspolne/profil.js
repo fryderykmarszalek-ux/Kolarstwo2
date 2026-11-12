@@ -22,7 +22,7 @@
  * Data urodzenia (12.11.2026): 'RRRR-MM-DD' albo null. Na razie nic nie liczy — pójdzie do bazy
  * i do jednej z zakładek treningowych (decyzja Fryderyka). P.wiek() daje pełne lata.
  *
- * Pomiary ciała (12.11.2026): wzrost [cm] i masa [kg] jako liczby albo null, cialoData = dzień ostatniej
+ * Pomiary ciała (12.11.2026): wzrost [cm], masa [kg] i obwód talii [cm, opcjonalny] jako liczby albo null, cialoData = dzień ostatniej
  * zmiany. BMI NIE jest zapisywane — liczy się z nich przy wyświetlaniu (wspolne/bmi.js).
  * Żadnych wartości domyślnych w repo: to dane osobowe, a repo jest publiczne.
  */
@@ -32,7 +32,7 @@
   const KLUCZ = 'k2.profil';
   const MAKS = 30;
   const PLCIE = { m: 'Mężczyzna', k: 'Kobieta', n: 'Niezdefiniowana' };
-  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, cialoData: null };
+  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, talia: null, cialoData: null };
   const BOK = 1024;                // bok zapisanego zdjęcia w pikselach — ostre na Retinie także w powiększeniu (do 440 px na ekranie)
   const MAKS_ZDJ = 1500000;        // zapora na długość data URL (≈ 1,1 MB); 1024×1024 JPEG to zwykle 100–300 kB
 
@@ -102,7 +102,7 @@
   };
 
   // ── pomiary ciała: wzrost w cm (100–250), masa w kg (20–300); null = nieuzupełnione ──
-  const POMIARY = { wzrost: [100, 250, 'cm'], masa: [20, 300, 'kg'] };
+  const POMIARY = { wzrost: [100, 250, 'cm'], masa: [20, 300, 'kg'], talia: [40, 200, 'cm'] };
   P.POMIARY = POMIARY;
   // tekst z pola → { blad, wartosc }. Przecinek albo kropka, najwyżej jedno miejsce po przecinku. Puste pole jest dozwolone.
   P.sprawdzPomiar = (pole, tekst) => {
@@ -133,7 +133,7 @@
 
   function poprawny(p) {
     return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie) && urodzinyPoprawne(p.urodziny)
-      && pomiarPoprawny('wzrost', p.wzrost) && pomiarPoprawny('masa', p.masa) && (p.cialoData == null || /^\d{4}-\d{2}-\d{2}$/.test(p.cialoData));
+      && pomiarPoprawny('wzrost', p.wzrost) && pomiarPoprawny('masa', p.masa) && pomiarPoprawny('talia', p.talia) && (p.cialoData == null || /^\d{4}-\d{2}-\d{2}$/.test(p.cialoData));
   }
 
   // Wybrany plik → kwadrat ze środka, 512×512, JPEG. Obietnica zwraca data URL albo błąd z komunikatem po polsku.
@@ -176,8 +176,8 @@
     try {
       const p = JSON.parse(global.localStorage.getItem(KLUCZ) || 'null');
       // wpis sprzed zdjęć, daty urodzenia albo pomiarów ciała — dalej ważny, brakujące pola są puste
-      if (p) ['zdjecie', 'urodziny', 'wzrost', 'masa', 'cialoData'].forEach((k) => { if (p[k] === undefined) p[k] = null; });
-      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, masa: p.masa, cialoData: p.cialoData };
+      if (p) ['zdjecie', 'urodziny', 'wzrost', 'masa', 'talia', 'cialoData'].forEach((k) => { if (p[k] === undefined) p[k] = null; });
+      if (poprawny(p)) return { imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, masa: p.masa, talia: p.talia, cialoData: p.cialoData };
     } catch (e) { /* brak schowka albo zepsuty wpis — domyślne */ }
     return { ...DOMYSLNY };
   }

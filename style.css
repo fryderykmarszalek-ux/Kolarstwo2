@@ -519,3 +519,12 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-bmi-wsk dd { margin: 6px 0 0; font: 700 17px/1.2 var(--s-f); color: var(--s-tekst); font-variant-numeric: tabular-nums; }
 .tp-bmi-wsk dt, .tp-bmi-wsk dd { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @container (max-width: 399px) { .tp-bmi-wsk { gap: 8px; } .tp-bmi-wsk > div { padding: 10px 12px; } .tp-bmi-wsk dt { font-size: 10.5px; letter-spacing: .04em; } .tp-bmi-wsk dd { font-size: 15.5px; } .tp-bmi-brak { font-size: 12.5px; } }
+
+/* ───── obwód talii (opcjonalny) i druga karta: talia / wzrost (NICE) ───── */
+.tp-opcja { font: 600 12px/1 var(--s-f); color: var(--s-tekst-3); }
+.tp-pola.tp-pola-cialo { row-gap: 18px; }
+.tp-pole-talia { grid-column: 1 / -1; }
+@container (min-width: 560px) { .tp-pola.tp-pola-cialo { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tp-pole-talia { grid-column: auto; } }
+.tp-bmi + .tp-bmi { margin-top: 12px; }
+.tp-bmi-werdykt[data-poziom="brak"] { background: var(--tp-szary-1); color: var(--s-tekst-2); }
+.tp-bmi-werdykt[data-poziom="brak"] i { color: var(--s-tekst-3); }
