@@ -21,6 +21,34 @@ od nowa z wiedzą zdobytą przy tamtej, **zdecydowanie ładniej i estetyczniej.*
 **ESTETYKA JEST RDZENIEM PROJEKTU** — decyzja Fryderyka z 11.11.2026, „moja decyzja, kropka”.
 Nie podważać jej argumentem, że coś działa, choć brzydko wygląda.
 
+## 1a. PROFESJONALNIE, BEZ NOTATEK — do końca budowy strony (12.11.2026, decyzja Fryderyka)
+
+Fryderyk pokazał akapity ze starej strony („Każdy segment, który przejechałeś…”, „Moc pokazujemy
+tylko tam…”, „Kłódkę zdejmujesz wyłącznie Ty…”) i powiedział wprost: **to wygląda jak amatorskie
+notatki, nie jak profesjonalna aplikacja kolarska — do wywalenia.** Te same nawyki zaczęły
+wchodzić do v2 i zostały z niej usunięte. **Budujemy tak, jakby aplikacja szła na skalę globalną.**
+
+Zasady dla KAŻDEGO tekstu na stronie:
+- **Żadnych zdań-wyjaśnień ani notatek dla Fryderyka**: skąd liczba, jak działa kod, dlaczego tak
+  zdecydowaliśmy, co się kiedyś zmieni. To należy do commita i do tego pliku, nie do strony.
+- **Etykieta + wartość + jednostka.** Liczby mówią same; stan to krótka pigułka z ikoną.
+- **Komunikaty krótkie, bez kropki na końcu, bez zwrotów do czytelnika**: „Wpisz imię”,
+  „Nieprawidłowa data”, „Zakres 100–250 cm”, „Ocena wymaga daty urodzenia”.
+- **Brak danych** = wyszarzona kreska „—” i krótka informacja, czego wymaga. Nie pusta karta
+  z akapitem.
+- **Źródło** najwyżej jako etykieta wartości („Norma · WHO”), nigdy jako przypis.
+- Zastrzeżenia typu „BMI nie odróżnia mięśni od tłuszczu” — **nie na stronie**. Fryderyk
+  zapowiedział własny pomysł na „rozwijanie myśli”, który wejdzie dopiero znacznie później;
+  do tego czasu nic w tym stylu nie dokładać.
+- Komentarze w kodzie są w porządku — to nie strona.
+
+**Strażnik: `bez-notatek.js`** (sonda w scratchpadzie sesji 12.11): przechodzi przez wszystkie stany
+okna profilu (lista, powiększenie, edycja z błędami, okienko zdjęcia, zły plik, pytanie o usunięcie,
+Budowa ciała we wszystkich stanach) na iPadzie i iPhonie SE i odrzuca każdy widoczny tekst dłuższy
+niż 40 znaków, zakończony kropką, z wtrąceniem „ — ” albo ze zwrotem do czytelnika. Nowa wersja:
+448 z 448; wersja sprzed przebudowy: **68 złapanych notatek** (kontrola na znanym błędzie).
+**Dokładając cokolwiek do strony, dołożyć stan do strażnika i puścić go.**
+
 ## 2. Co jest zdecydowane — i co NIE
 
 | Zdecydowane | Kiedy |
@@ -28,6 +56,7 @@ Nie podważać jej argumentem, że coś działa, choć brzydko wygląda.
 | Styl **Trener Pro** z rundy 3. Pozostałe style i przełącznik poszły do `archiwum/runda-3/` | 11.11.2026 |
 | **Zero zewnętrznych serwerów** — ikony i czcionka leżą w repo (§3) | 11.11.2026 |
 | **Pole profilu „Athlete’s profile”** (lewy dolny róg) jest kluczowe, **widoczne zawsze** i otwiera okno na pierwszym planie (§5a) | 12.11.2026 |
+| **Profesjonalnie, bez notatek** — każdy tekst jak w produkcie na skalę globalną (§1a) | 12.11.2026 |
 
 **Wszystko inne to placeholdery.** Układ kart, treść pulpitu, wykresy, teksty, plan,
 wyzwania — Fryderyk zapowiedział, że całość „pewnie będzie wyglądała kompletnie inaczej”.
@@ -189,8 +218,9 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   atrybut `data-profil="imie|nazwisko|pelne|inicjaly"` i po zapisie zmienia się samo, bez
   przeładowania: inicjały w lewym dolnym rogu, w nagłówku okna i w awatarze, imię i nazwisko
   w profilu, powitanie na pulpicie. **Nowe miejsce z imieniem = ten sam atrybut.**
-- **Zapis: `localStorage` tej przeglądarki** (`k2.profil`). Okno mówi to wprost („Zapis w tej
-  przeglądarce”), a gdy przeglądarka zapisu odmawia — na czerwono. Inne urządzenia widzą
+- **Zapis: `localStorage` tej przeglądarki** (`k2.profil`). **Okno już tego nie mówi** (notatka
+  „Zapis w tej przeglądarce” usunięta 12.11 — §1a); stopka pokazuje tekst wyłącznie przy błędzie:
+  „Nie udało się zapisać na stałe”. Inne urządzenia widzą
   wartości domyślne z `dane.js`, dopóki nie będzie serwera. Druga karta tej samej przeglądarki
   przełącza się sama (zdarzenie `storage`).
 - Sondy: edycja 140 kontroli na 5 urządzeniach (mysz i dotyk), **trzy celowo wstawione błędy
@@ -206,7 +236,7 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   stanie**, także po dotknięciu i z klawiatury (`:focus-visible` zmienia tylko kolor). Pole
   trafienia 40×40 jest niewidoczne. Ciemniejsza zostaje też, **póki okienko jest otwarte**
   (`aria-expanded="true"`) — na dotyku to jedyny znak, skąd się wzięło; po zamknięciu wraca.
-- **Kredka otwiera okienko pod sobą** („Zdjęcie profilowe → Wybierz zdjęcie”). Jedna pozycja,
+- **Kredka otwiera okienko pod sobą** z jedną pozycją „Wybierz zdjęcie” (bez nagłówka i podpisu — §1a). Jedna pozycja,
   bo iPhone i iPad i tak pokazują po stuknięciu własny wybór: **Zdjęcia, Pliki albo aparat**
   (`<input type="file" accept="image/*">`). Okienko nie wychodzi poza okno (przesuwa się
   w lewo na wąskim ekranie). Zamyka: wybór pliku, ponowne stuknięcie kredki, stuknięcie obok,
@@ -292,8 +322,8 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   dla dwóch imion (218 z 218).
 - **„Usuń profilowe” najpierw pyta**: małe okno na środku, „Usunąć zdjęcie profilowe?”, **Nie**
   i czerwone **Tak, usuń**. Nie, Esc i dotknięcie obok = Nie. Po „Tak” zdjęcie znika z podglądu,
-  a **na stronie dopiero po „Zapisz”** — ta sama zasada co przy wyborze zdjęcia; okno mówi to
-  wprost. Fokus po otwarciu na samym okienku (bez obwódki na „Nie”).
+  a **na stronie dopiero po „Zapisz”** — ta sama zasada co przy wyborze zdjęcia. Okno ma sam tytuł
+  i dwa przyciski; zdanie wyjaśniające usunięte (§1a). Fokus po otwarciu na samym okienku (bez obwódki na „Nie”).
 - Sondy: 43 kontrole (płeć i pytanie) na 3 urządzeniach, **cztery celowo wstawione błędy
   złapane** (usuwanie bez pytania, „Nie” usuwające, tło jako „Tak”, podpis płci nieodświeżany).
 
@@ -316,12 +346,12 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
 
 - Nazwa moja („nazwij i skończ kod” — Fryderyk). Pola: **wzrost [cm, 100–250]** i **masa ciała
   [kg, 20–300]**, przecinek albo kropka, jedno miejsce po przecinku; puste pole dozwolone.
-  „1,78” we wzroście daje podpowiedź o centymetrach. Pod polami „Ostatni zapis: data”.
+  „1,78” we wzroście daje komunikat „Podaj wzrost w centymetrach”. Pod polami „Zaktualizowano 12 lis 2026”.
 - **BMI NIE jest zapisywane** — liczy się z pól na żywo (wariant B ze starej strony). W zapisie:
   `wzrost`, `masa`, `cialoData`. **Żadnych wartości domyślnych w repo** (dane osobowe).
-- **Braki pokazane wprost, nie zerami:** bez pomiarów przerywana karta „BMI policzy się samo”;
-  bez daty urodzenia sama liczba i zdanie, czego brakuje; nastolatek bez płci — to samo
-  z wyjaśnieniem; wiek poza 13–99 — „ocena od 13 do 99 lat”.
+- **Braki pokazane wprost, nie zerami** — ten sam szkielet karty, w miejscu werdyktu krótka szara
+  informacja: „—” + „Wymaga wzrostu i masy ciała”; liczba + „Ocena wymaga daty urodzenia”;
+  nastolatek bez płci — „Ocena wymaga podania płci”; wiek poza zakresem — „Ocena dla wieku 13–99 lat”.
 - **OCENA NIE JEST MOJA — `wspolne/bmi.js`, źródła w nagłówku pliku:**
   - **13–19 lat: WHO Growth Reference 2007** (BMI-for-age, wiek co do miesiąca, osobno dla płci).
     Tabela L/M/S skopiowana MASZYNOWO z pliku `bfawho2007.txt` pakietu `anthroplus` (oficjalny
@@ -346,8 +376,13 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   sugeruje łagodniejsze — nie dodawać z własnej inicjatywy.
 - Wygląd: duża liczba, werdykt jako pigułka **z ikoną i słowem** (nigdy sama barwa), skala
   liniowa z czterema strefami (norma zielona, reszta neutralna, 2 px przerwy), znacznik-kropka,
-  progi pod skalą **dla tej osoby**, zdanie z normą i centylem, źródło i zastrzeżenie, że BMI
-  nie odróżnia mięśni od tłuszczu. BMI i progi zawsze z jednym miejscem po przecinku („30,0”).
+  progi pod skalą **dla tej osoby**, pod spodem dwa wskaźniki: **„Norma · WHO”** (zakres) i **„Centyl”**
+  (tylko 13–19 lat; skrajne jako „< 1” / „> 99”). **Bez zdań, przypisów i zastrzeżeń** — pierwsza
+  wersja miała akapit z normą, źródło i „BMI nie odróżnia mięśni od tłuszczu”; usunięte 12.11 (§1a).
+  BMI i progi zawsze z jednym miejscem po przecinku („30,0”). Wskaźniki mieszczą się bez łamania
+  od 320 do 1400 px (275 z 275 przypadków).
+- Opis na liście sekcji: „Nie uzupełniono” / „178 cm” / „178 cm · 68,5 kg · BMI 21,6 · w normie”.
+- Komunikaty pól: „Podaj wzrost w centymetrach”, „Nieprawidłowa wartość”, „Zakres 100–250 cm”.
 - Sondy: sekcja 153 kontrole na 4 urządzeniach (zegar strony ustawiony na 12.11.2026), **siedem
   celowo wstawionych błędów złapanych**; podpisy skali bez nakładania w 144 kombinacjach wieku,
   płci, masy i szerokości (najmniejszy odstęp 6,5 px); okno 448, edycja 140, zdjęcie 96, data 109,

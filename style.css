@@ -297,10 +297,8 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 /* stopka okna: widoczna tylko w edycji; „Zapisz” zapisuje wszystko naraz */
 .tp-okno-st { display: none; flex: none; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 18px 14px 24px; box-shadow: 0 -1px 0 var(--s-linia); }
 .tp-okno:not([data-widok-okna="profil"]) .tp-okno-st { display: flex; }
-.tp-okno-uwaga { margin-right: auto; display: flex; align-items: center; gap: 6px; font: 500 12px/1.3 var(--s-f); color: var(--s-tekst-3); }
-.tp-okno-uwaga i { font-size: 15px; }
-.tp-okno.bez-zapisu .tp-okno-uwaga { color: #B4232A; }
-.tp-okno.bez-zapisu .tp-okno-uwaga::after { content: ' — przeglądarka nie pozwala zapisać na stałe'; }
+.tp-okno-uwaga { margin-right: auto; font: 600 12.5px/1.3 var(--s-f); color: #B4232A; }
+.tp-okno.bez-zapisu .tp-okno-uwaga::after { content: 'Nie udało się zapisać na stałe'; }   /* jedyny komunikat stopki: błąd zapisu */
 .tp-przycisk { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; border-radius: 12px;
   font: 700 14px/1 var(--s-f); color: var(--s-tekst-2); transition: background .15s, box-shadow .15s, opacity .15s; -webkit-tap-highlight-color: transparent; }
 @media (any-hover: hover) { .tp-przycisk:not(.glowny):hover { background: var(--tp-szary-1); color: var(--s-tekst); } }
@@ -317,6 +315,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 }
 @media (max-width: 520px) {
   .tp-okno-uwaga { flex-basis: 100%; }
+  .tp-okno:not(.bez-zapisu) .tp-okno-uwaga { display: none; }
   .tp-przycisk { flex: 1; }
   .tp-okno-awatar { display: none; }      /* wąsko w EDYCJI awatar jest duży w treści; w profilu wraca niżej (44 px) */
   .tp-okno-g h2 { font-size: 17px; }
@@ -366,7 +365,6 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
   background: var(--s-karta); box-shadow: 0 0 0 1px rgba(18, 24, 38, .07), 0 18px 40px -16px rgba(18, 24, 38, .38); animation: tp-zdj-wej .16s cubic-bezier(.2, .8, .2, 1); }
 .tp-zdj-menu[hidden] { display: none; }
 @keyframes tp-zdj-wej { from { opacity: 0; transform: translateY(-4px); } }
-.tp-zdj-menu-t { padding: 6px 10px 8px; font: 700 11.5px/1 var(--s-f); letter-spacing: .06em; text-transform: uppercase; color: var(--s-tekst-3); }
 .tp-zdj-wybierz { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 12px; cursor: pointer; transition: background .15s; -webkit-tap-highlight-color: transparent; }
 @media (any-hover: hover) { .tp-zdj-wybierz:hover { background: var(--s-karta-2); } }
 .tp-zdj-wybierz:active, .tp-zdj-wybierz:focus-within { background: var(--s-karta-2); }
@@ -374,7 +372,6 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-zdj-ik { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--s-akcent-tlo); color: var(--s-akcent); font-size: 21px; }
 .tp-zdj-opis { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .tp-zdj-opis b { font: 700 14px/1.2 var(--s-f); color: var(--s-tekst); }
-.tp-zdj-opis small { font: 500 12px/1.2 var(--s-f); color: var(--s-tekst-3); }
 .tp-zdj-blad { margin-top: 10px; }
 @media (prefers-reduced-motion: reduce) { .tp-zdj-menu { animation: none; } }
 
@@ -436,7 +433,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-pyt::backdrop { background: rgba(18, 24, 38, .32); animation: tp-tlo-wej .2s ease-out; }
 .tp-pyt-ik { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; background: #FDF0F0; color: #C2363A; font-size: 24px; }
 .tp-pyt h3 { font: 800 18px/1.25 var(--s-f); letter-spacing: -.01em; }
-.tp-pyt p { margin-top: 8px; font: 500 13.5px/1.45 var(--s-f); color: var(--s-tekst-2); }
+.tp-pyt h3 + .tp-pyt-st { margin-top: 24px; }
 .tp-pyt-st { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
 .tp-pyt-st .tp-przycisk { width: 100%; background: var(--tp-szary-1); color: var(--s-tekst); }
 @media (any-hover: hover) { .tp-pyt-st .tp-przycisk:not(.groz):hover { background: var(--tp-szary-2); } }
@@ -489,11 +486,6 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 
 /* karta BMI: liczba, werdykt (ikona + słowo, nigdy sama barwa), skala, zdanie, źródło */
 .tp-bmi { margin-top: 22px; padding: 20px; border-radius: 18px; background: var(--s-karta-2); border: 1.5px solid transparent; }
-.tp-bmi[data-stan="brak-bmi"] { background: transparent; border: 1.5px dashed var(--s-linia-2); }
-.tp-bmi-pusty { display: flex; align-items: center; gap: 14px; }
-.tp-bmi-pusty-ik { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--s-karta-2); color: var(--s-tekst-3); font-size: 22px; }
-.tp-bmi-pusty b { display: block; font: 700 15px/1.2 var(--s-f); color: var(--s-tekst); }
-.tp-bmi-pusty small { display: block; margin-top: 4px; font: 500 13px/1.35 var(--s-f); color: var(--s-tekst-3); }
 .tp-bmi-g { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 14px; }
 .tp-bmi-l { display: flex; align-items: baseline; gap: 10px; }
 .tp-bmi-l small { font: 700 12px/1 var(--s-f); letter-spacing: .08em; color: var(--s-tekst-3); }
@@ -514,10 +506,16 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-bmi-progi span, .tp-bmi-strefy span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
 .tp-bmi-progi span { font: 700 11.5px/14px var(--s-f); color: var(--s-tekst-2); font-variant-numeric: tabular-nums; }
 .tp-bmi-strefy span { font: 600 11px/14px var(--s-f); color: var(--s-tekst-3); }
-.tp-bmi-opis { margin-top: 18px; font: 500 13.5px/1.5 var(--s-f); color: var(--s-tekst-2); }
-.tp-bmi-opis b { font-weight: 700; color: var(--s-tekst); white-space: nowrap; }
-.tp-bmi-info { display: flex; gap: 10px; margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--s-akcent-tlo); font: 500 13px/1.45 var(--s-f); color: var(--s-tekst-2); }
-.tp-bmi-info i { flex: none; margin-top: 1px; font-size: 17px; color: var(--s-akcent); }
-.tp-bmi-zrodlo { margin-top: 10px; font: 500 12px/1.45 var(--s-f); color: var(--s-tekst-3); }
 @container (max-width: 399px) { .tp-bmi { padding: 16px; } .tp-bmi-l b { font-size: 34px; } .tp-bmi-strefy span { font-size: 10.5px; } .tp-pola.tp-pola-cialo { gap: 0 10px; } }
 @media (prefers-reduced-motion: reduce) { .tp-bmi-znak, .tp-sekcja, .tp-sekcja-s { transition: none; } }
+
+/* karta BMI bez zdań: brak danych = wyszarzona kreska i krótka informacja w miejscu werdyktu;
+   wynik = werdykt, skala i dwa wskaźniki (norma według WHO, centyl dla wieku 13–19 lat) */
+.tp-bmi:not([data-stan="ok"]) .tp-bmi-l b { color: var(--s-tekst-3); }
+.tp-bmi-brak { font: 600 13px/1.3 var(--s-f); color: var(--s-tekst-3); text-align: right; }
+.tp-bmi-wsk { display: flex; gap: 12px; margin: 22px 0 0; }
+.tp-bmi-wsk > div { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px; background: var(--s-karta); }
+.tp-bmi-wsk dt { font: 700 11px/1.2 var(--s-f); letter-spacing: .06em; text-transform: uppercase; color: var(--s-tekst-3); }
+.tp-bmi-wsk dd { margin: 6px 0 0; font: 700 17px/1.2 var(--s-f); color: var(--s-tekst); font-variant-numeric: tabular-nums; }
+.tp-bmi-wsk dt, .tp-bmi-wsk dd { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@container (max-width: 399px) { .tp-bmi-wsk { gap: 8px; } .tp-bmi-wsk > div { padding: 10px 12px; } .tp-bmi-wsk dt { font-size: 10.5px; letter-spacing: .04em; } .tp-bmi-wsk dd { font-size: 15.5px; } .tp-bmi-brak { font-size: 12.5px; } }

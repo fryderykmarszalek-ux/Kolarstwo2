@@ -52,9 +52,9 @@
   // '' = poprawne; inaczej komunikat do pokazania pod polem
   P.sprawdz = (pole, wartosc) => {
     const v = P.oczysc(wartosc);
-    if (!v) return pole === 'imie' ? 'Wpisz imię.' : 'Wpisz nazwisko.';
-    if (Array.from(v).length > MAKS) return `Najwyżej ${MAKS} znaków.`;
-    if (!WZOR.test(v)) return 'Tylko litery, a między nimi spacja, myślnik albo apostrof.';
+    if (!v) return pole === 'imie' ? 'Wpisz imię' : 'Wpisz nazwisko';
+    if (Array.from(v).length > MAKS) return `Maksymalnie ${MAKS} znaków`;
+    if (!WZOR.test(v)) return 'Dozwolone są tylko litery';
     return '';
   };
 
@@ -72,15 +72,15 @@
   P.sprawdzDate = (dzien, miesiac, rok, dzis) => {
     const d = String(dzien == null ? '' : dzien).trim(), m = String(miesiac == null ? '' : miesiac).trim(), r = String(rok == null ? '' : rok).trim();
     if (!d && !m && !r) return { blad: '', wartosc: null };
-    if (!d || !m || !r) return { blad: 'Uzupełnij dzień, miesiąc i rok — albo zostaw wszystkie trzy puste.', wartosc: null };
-    if (!/^\d{1,2}$/.test(d) || +d < 1 || +d > 31) return { blad: 'Dzień to liczba od 1 do 31.', wartosc: null };
-    if (!/^\d{1,2}$/.test(m) || +m < 1 || +m > 12) return { blad: 'Wybierz miesiąc.', wartosc: null };
-    if (!/^\d{4}$/.test(r)) return { blad: 'Rok wpisz czterema cyframi, np. 2010.', wartosc: null };
-    if (+r < 1900) return { blad: 'Rok nie wcześniej niż 1900.', wartosc: null };
+    if (!d || !m || !r) return { blad: 'Niepełna data', wartosc: null };
+    if (!/^\d{1,2}$/.test(d) || +d < 1 || +d > 31) return { blad: 'Nieprawidłowy dzień', wartosc: null };
+    if (!/^\d{1,2}$/.test(m) || +m < 1 || +m > 12) return { blad: 'Wybierz miesiąc', wartosc: null };
+    if (!/^\d{4}$/.test(r)) return { blad: 'Nieprawidłowy rok', wartosc: null };
+    if (+r < 1900) return { blad: 'Nieprawidłowy rok', wartosc: null };
     const n = dniW(+r, +m);
-    if (+d > n) return { blad: `${P.MIESIACE[m - 1]} ${r} ma ${n} dni.`, wartosc: null };
+    if (+d > n) return { blad: 'Nieprawidłowa data', wartosc: null };
     const w = `${r}-${String(+m).padStart(2, '0')}-${String(+d).padStart(2, '0')}`;
-    if (w > dzisISO(dzis)) return { blad: 'Ta data jeszcze nie nadeszła.', wartosc: null };
+    if (w > dzisISO(dzis)) return { blad: 'Data nie może być z przyszłości', wartosc: null };
     return { blad: '', wartosc: w };
   };
   const urodzinyPoprawne = (u) => u == null || (typeof u === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(u) && P.sprawdzDate(+u.slice(8), +u.slice(5, 7), u.slice(0, 4)).wartosc === u);
@@ -109,9 +109,9 @@
     const v = String(tekst == null ? '' : tekst).trim().replace(',', '.');
     if (!v) return { blad: '', wartosc: null };
     const [od, do_] = POMIARY[pole], n = Number(v);
-    if (pole === 'wzrost' && /^[12][.]\d{1,2}$/.test(v)) return { blad: 'Wpisz wzrost w centymetrach, np. 178.', wartosc: null };
-    if (!/^\d{1,3}(?:\.\d)?$/.test(v)) return { blad: pole === 'wzrost' ? 'Wpisz liczbę, np. 178 albo 178,5.' : 'Wpisz liczbę, np. 68 albo 68,5.', wartosc: null };
-    if (n < od || n > do_) return { blad: pole === 'wzrost' ? `Wzrost w centymetrach: od ${od} do ${do_}.` : `Masa w kilogramach: od ${od} do ${do_}.`, wartosc: null };
+    if (pole === 'wzrost' && /^[12][.]\d{1,2}$/.test(v)) return { blad: 'Podaj wzrost w centymetrach', wartosc: null };
+    if (!/^\d{1,3}(?:\.\d)?$/.test(v)) return { blad: 'Nieprawidłowa wartość', wartosc: null };
+    if (n < od || n > do_) return { blad: `Zakres ${od}–${do_} ${POMIARY[pole][2]}`, wartosc: null };
     return { blad: '', wartosc: n };
   };
   const pomiarPoprawny = (pole, n) => n == null || (typeof n === 'number' && isFinite(n) && n >= POMIARY[pole][0] && n <= POMIARY[pole][1]);
@@ -140,14 +140,14 @@
   // Orientację z aparatu (EXIF) przeglądarka uwzględnia sama przy rysowaniu <img>.
   P.przygotujZdjecie = (plik) => new Promise((ok, zle) => {
     const blad = (s) => zle(new Error(s));
-    if (!plik) return blad('Nie wybrano pliku.');
+    if (!plik) return blad('Nie wybrano pliku');
     const naObraz = /^image\//.test(plik.type) || /\.(jpe?g|png|heic|heif|webp|gif|bmp|avif)$/i.test(plik.name || '');
-    if (!naObraz) return blad('To nie jest zdjęcie. Wybierz plik JPG, PNG albo HEIC.');
-    if (plik.size > 40e6) return blad('Plik jest za duży (ponad 40 MB).');
+    if (!naObraz) return blad('Nieobsługiwany format pliku');
+    if (plik.size > 40e6) return blad('Maksymalny rozmiar pliku to 40 MB');
     const url = URL.createObjectURL(plik), img = new Image();
     img.onload = () => {
       const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(w, h);
-      if (!s) { URL.revokeObjectURL(url); return blad('Nie udało się odczytać tego zdjęcia.'); }
+      if (!s) { URL.revokeObjectURL(url); return blad('Nie udało się wczytać zdjęcia'); }
       const n = Math.min(BOK, s), c = document.createElement('canvas');
       c.width = c.height = n;
       const x = c.getContext('2d');
@@ -157,10 +157,10 @@
       URL.revokeObjectURL(url);
       let d = c.toDataURL('image/jpeg', 0.86);
       if (d.length >= MAKS_ZDJ) d = c.toDataURL('image/jpeg', 0.7);
-      if (!zdjeciePoprawne(d)) return blad('Nie udało się przygotować tego zdjęcia.');
+      if (!zdjeciePoprawne(d)) return blad('Nie udało się wczytać zdjęcia');
       ok(d);
     };
-    img.onerror = () => { URL.revokeObjectURL(url); blad('Nie udało się odczytać tego pliku. Wybierz JPG, PNG albo HEIC.'); };
+    img.onerror = () => { URL.revokeObjectURL(url); blad('Nieobsługiwany format pliku'); };
     img.src = url;
   });
 

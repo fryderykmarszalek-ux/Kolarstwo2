@@ -259,42 +259,30 @@
           h('div', { class: 'tp-bmi-progi' }, ...[pr.niedowaga, pr.nadwaga, pr.otylosc].map((v) => h('span', { style: { left: x(v) + '%' }, text: b1(v) }))),
           h('div', { class: 'tp-bmi-strefy' }, ...strefy.map(([n, a, b]) => h('span', { style: { left: (x(a) + x(b)) / 2 + '%' }, text: n }))));
       }
-      const info = (ikona, ...dzieci) => h('p', { class: 'tp-bmi-info' }, ik(ikona), h('span', null, ...dzieci));
 
+      // Karta BMI ma zawsze ten sam szkielet: etykieta, liczba, werdykt; pod spodem skala i dwa wskaźniki.
+      // Gdy czegoś brakuje, w miejscu werdyktu stoi krótka, wyszarzona informacja — bez zdań-wyjaśnień.
       function rysujBmi() {
-        const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, { bmi, o, p } = ocena(w, m);
+        const w = odczyt('wzrost').wartosc, m = odczyt('masa').wartosc, { bmi, o } = ocena(w, m);
         karta.dataset.stan = o.stan;
-        if (!bmi) {
-          const czego = !w && !m ? 'Wpisz wzrost i masę ciała.' : !w ? 'Brakuje jeszcze wzrostu.' : 'Brakuje jeszcze masy ciała.';
-          karta.replaceChildren(h('div', { class: 'tp-bmi-pusty' }, h('span', { class: 'tp-bmi-pusty-ik', 'aria-hidden': 'true' }, ik('calculator')),
-            h('div', null, h('b', { text: 'BMI policzy się samo' }), h('small', { text: czego }))));
-          return;
-        }
-        const glowa = h('div', { class: 'tp-bmi-g' }, h('div', { class: 'tp-bmi-l' }, h('small', { text: 'BMI' }), h('b', { text: b1(bmi) })));
-        const zrodlo = (t) => h('p', { class: 'tp-bmi-zrodlo', text: t + ' BMI nie odróżnia mięśni od tłuszczu — to orientacja, nie diagnoza.' });
+        const glowa = h('div', { class: 'tp-bmi-g' }, h('div', { class: 'tp-bmi-l' }, h('small', { text: 'BMI' }), h('b', { text: bmi ? b1(bmi) : '—' })));
         if (o.stan !== 'ok') {
           const brak = {
-            'brak-wieku': 'Żeby ocenić ten wynik, potrzebna jest data urodzenia — te same liczby znaczą co innego w wieku 15 i 40 lat. Dodasz ją w profilu, pod „Edit”.',
-            'brak-plci': 'W wieku 13–18 lat ocena zależy od płci: WHO ma osobne siatki dla chłopców i dziewcząt. Wybierz płeć w profilu, pod „Edit”.',
-            'poza-wiekiem': 'Ocena jest dostępna dla wieku od 13 do 99 lat.',
+            'brak-bmi': !w && !m ? 'Wymaga wzrostu i masy ciała' : !w ? 'Wymaga wzrostu' : 'Wymaga masy ciała',
+            'brak-wieku': 'Ocena wymaga daty urodzenia',
+            'brak-plci': 'Ocena wymaga podania płci',
+            'poza-wiekiem': 'Ocena dla wieku 13–99 lat',
           }[o.stan];
-          karta.replaceChildren(glowa, info('info', brak), zrodlo('Wzór: masa [kg] ÷ wzrost [m]².'));
+          glowa.append(h('span', { class: 'tp-bmi-brak', text: brak }));
+          karta.replaceChildren(glowa);
           return;
         }
         glowa.append(h('span', { class: 'tp-bmi-werdykt', 'data-poziom': o.poziom }, ik(IKONY[o.poziom], 'fill'), o.nazwa));
-        const zakres = `${b1(o.progi.niedowaga)}–${b1(o.progi.nadwaga)}`;
-        let zdanie, skad;
-        if (o.zrodlo === 'who2007') {
-          const c = Math.round(o.centyl), skrajny = c < 1 || c > 99;
-          zdanie = h('p', { class: 'tp-bmi-opis' }, `${p.plec === 'm' ? 'Dla chłopaka' : 'Dla dziewczyny'} w wieku ${P.wiekSlownie(p.urodziny)} norma to BMI `, h('b', { text: zakres }), '. ',
-            skrajny ? ['Twój wynik jest ', h('b', { text: c < 1 ? 'poniżej 1. centyla' : 'powyżej 99. centyla' }), ' próby wzorcowej WHO.']
-              : ['Twój wynik to ', h('b', { text: c + '. centyl' }), `: na 100 rówieśników z próby wzorcowej WHO ${c} ma BMI niższe.`]);
-          skad = 'Źródło: siatki WHO 2007 dla wieku 5–19 lat (wiek co do miesiąca, osobno dla płci).';
-        } else {
-          zdanie = h('p', { class: 'tp-bmi-opis' }, 'Dla dorosłych norma to BMI ', h('b', { text: '18,5–24,9' }), ' — taka sama w każdym wieku i dla obu płci.');
-          skad = 'Źródło: klasyfikacja WHO dla dorosłych.';
-        }
-        karta.replaceChildren(glowa, skala(bmi, o.progi), zdanie, zrodlo(skad));
+        const wsk = (etykieta, wartosc) => h('div', null, h('dt', { text: etykieta }), h('dd', { text: wartosc }));
+        const c = o.zrodlo === 'who2007' ? Math.round(o.centyl) : null;
+        const lista = h('dl', { class: 'tp-bmi-wsk' }, wsk('Norma · WHO', `${b1(o.progi.niedowaga)}–${b1(o.progi.nadwaga - (o.zrodlo === 'who2007' ? 0 : 0.1))}`),
+          c != null ? wsk('Centyl', c < 1 ? '< 1' : c > 99 ? '> 99' : String(c)) : null);
+        karta.replaceChildren(glowa, skala(bmi, o.progi), lista);
       }
       function odswiez() { zapisz.disabled = !zmienione(); rysujBmi(); }
 
@@ -303,8 +291,8 @@
         const p = P.dane(), { bmi, o } = ocena(p.wzrost, p.masa);
         const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.liczba(p.masa)} kg` : null];
         opis.classList.toggle('pusty', p.wzrost == null && p.masa == null);
-        if (p.wzrost == null && p.masa == null) opis.textContent = 'Wzrost, masa ciała i BMI — do uzupełnienia';
-        else if (!bmi) opis.textContent = `${czesci[0] || czesci[1]} · ${p.wzrost == null ? 'wzrost' : 'masa ciała'} do uzupełnienia`;
+        if (p.wzrost == null && p.masa == null) opis.textContent = 'Nie uzupełniono';
+        else if (!bmi) opis.textContent = czesci[0] || czesci[1];
         else opis.textContent = `${czesci.join(' · ')} · BMI ${b1(bmi)}${o.stan === 'ok' ? ' · ' + o.nazwa.toLowerCase() : ''}`;
       }
 
@@ -337,11 +325,11 @@
           st = P.dane();
           pola.wzrost.value = tekst(st.wzrost); pola.masa.value = tekst(st.masa);
           blad('wzrost', ''); blad('masa', '');
-          kiedy.textContent = st.cialoData ? `Ostatni zapis: ${f2(st.cialoData)}` : '';
+          kiedy.textContent = st.cialoData ? `Zaktualizowano ${f2(st.cialoData)}` : '';
           odswiez();
         },
       };
-      const f2 = (iso) => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+      const f2 = (iso) => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
       window.addEventListener('k2:profil', rysujOpis);
       rysujOpis();
     })();
