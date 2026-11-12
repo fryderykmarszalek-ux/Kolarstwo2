@@ -17,6 +17,9 @@
    rozwiniętym pasku dół menu (pole profilu) wypadał pod ekran. dvh = to, co naprawdę widać. */
 .tp-bok { position: sticky; top: 0; height: 100vh; height: 100dvh; background: #fff; box-shadow: 1px 0 0 var(--s-linia); padding: 22px 16px 18px; display: flex; flex-direction: column; gap: 22px; }
 .tp-logo { display: flex; align-items: center; gap: 11px; padding: 4px 8px; }
+.tp-logo { border-radius: 12px; transition: background .15s; }
+.tp-logo-z { transition: transform .15s, box-shadow .15s; }
+@media (any-hover: hover) { .tp-logo:hover { background: var(--s-karta-2); } .tp-logo:hover .tp-logo-z { transform: translateY(-1px); box-shadow: 0 9px 18px -6px rgba(47, 111, 235, .7); } }
 .tp-logo-z { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--tp-grad); color: #fff; font-size: 20px; box-shadow: 0 6px 14px -6px rgba(47, 111, 235, .6); }
 .tp-logo b { display: block; font: 800 16px/1.1 var(--s-f); letter-spacing: -.02em; }
 .tp-logo small { display: block; font: 600 12px/1.2 var(--s-f); color: var(--s-tekst-3); }
@@ -35,11 +38,21 @@
 .tp-grad-pasek i { display: block; height: 100%; border-radius: 4px; background: var(--tp-grad); }
 /* pole profilu — wejście do okna „Athlete’s profile”; MA BYĆ WIDOCZNE ZAWSZE (decyzja Fryderyka 11.11.2026) */
 .tp-bok-ja { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 4px 6px; border-radius: 12px; flex: none; -webkit-tap-highlight-color: transparent; }
-@media (hover: hover) { .tp-bok-ja:hover { background: var(--s-karta-2); } }   /* tylko mysz: na dotyku „hover” zostaje po stuknięciu */
-.tp-bok-ja:active { background: var(--s-karta-2); }
+/* Najechanie: ANY-hover, nie hover. iPad ma dotyk jako GŁÓWNE wejście, więc „(hover: hover)” był dla niego
+   fałszem nawet z kursorem z gładzika — i nic nie reagowało (zgłoszenie Fryderyka 12.11.2026).
+   any-hover = „jest JAKIKOLWIEK kursor”. Sam dotyk dalej nie dostaje efektu, więc nic nie „przykleja się” po stuknięciu. */
+@media (any-hover: hover) { .tp-bok-ja:hover { background: var(--tp-szary-1); } .tp-bok-ja:hover .tp-bok-ja-s { opacity: 1; transform: none; } .tp-bok-ja:hover .tp-awatar { box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px #BFD1F5; } }
+.tp-bok-ja:active { background: var(--tp-szary-2); }
 .tp-bok-ja:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 2px; }
 .tp-awatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #E7EEFB; color: var(--s-akcent); font: 700 13px/1 var(--s-f); flex: none; }
-.tp-bok-ja b { display: block; font: 700 13px/1.2 var(--s-f); color: var(--s-tekst); white-space: nowrap; }
+.tp-bok-ja { width: 100%; padding: 6px 8px 6px 6px; transition: background .15s; }
+.tp-bok-ja .tp-awatar { transition: box-shadow .15s; }
+.tp-bok-ja-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tp-bok-ja-t b { font: 700 13.5px/1.2 var(--s-f); color: var(--s-tekst); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tp-bok-ja-t small { font: 600 11.5px/1.2 var(--s-f); color: var(--s-tekst-3); white-space: nowrap; }
+/* strzałka „otwórz” — widać ją po najechaniu; na dotyku stoi stale, jasna */
+.tp-bok-ja-s { flex: none; font-size: 13px; color: var(--s-tekst-3); opacity: 0; transform: translateX(-3px); transition: opacity .15s, transform .15s; }
+@media not (any-hover: hover) { .tp-bok-ja-s { opacity: .7; transform: none; } }
 
 /* treść */
 .tp-tresc { min-width: 0; padding: 0 36px; }
@@ -147,8 +160,8 @@ body:not([data-widok="analiza"]) #tresc .s-widok > .s-nag-str { display: none; }
   .tp { grid-template-columns: minmax(0, 1fr); }
   .tp-nav { flex: 1; min-width: 0; scrollbar-width: none; }
   .tp-bok { position: sticky; z-index: 5; height: auto; flex-direction: row; align-items: center; padding: 10px 16px; gap: 14px; box-shadow: 0 1px 0 var(--s-linia); }
-  .tp-logo small, .tp-bok-cel, .tp-bok-ja b { display: none; }
-  .tp-bok-ja { padding: 0; border-radius: 50%; }   /* profil zostaje: sam awatar po prawej stronie paska */
+  .tp-logo small, .tp-bok-cel, .tp-bok-ja-t, .tp-bok-ja-s { display: none; }
+  .tp-bok-ja { width: auto; padding: 0; border-radius: 50%; }   /* profil zostaje: sam awatar po prawej stronie paska */
   .tp-nav { flex-direction: row; overflow-x: auto; }
   .tp-nav a { padding: 9px 11px; }
   .tp-tresc { padding: 0 16px; }
@@ -201,7 +214,7 @@ body[data-widok="analiza"] .tp-gora { padding-bottom: 6px; }
 .tp-okno-g { display: flex; align-items: center; gap: 12px; padding: 18px 18px 18px 24px; box-shadow: 0 1px 0 var(--s-linia); flex: none; }
 .tp-okno-g h2 { flex: 1; min-width: 0; font: 800 19px/1.2 var(--s-f); letter-spacing: -.02em; }
 .tp-okno-x { all: unset; box-sizing: border-box; cursor: pointer; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 18px; color: var(--s-tekst-2); flex: none; -webkit-tap-highlight-color: transparent; }
-@media (hover: hover) { .tp-okno-x:hover { background: var(--s-karta-2); color: var(--s-tekst); } }
+@media (any-hover: hover) { .tp-okno-x:hover { background: var(--tp-szary-1); color: var(--s-tekst); } }
 .tp-okno-x:active { background: var(--s-karta-2); color: var(--s-tekst); }
 .tp-okno-x:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 1px; }
 .tp-okno-tresc { flex: 1; min-height: 0; overflow-y: auto; padding: 24px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
@@ -216,7 +229,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-okno-x { margin-left: auto; }
 .tp-okno-g h2 { flex: 0 1 auto; overflow-wrap: anywhere; }
 .tp-okno-wstecz { all: unset; box-sizing: border-box; cursor: pointer; width: 40px; height: 40px; margin-left: -10px; border-radius: 12px; display: none; place-items: center; font-size: 18px; color: var(--s-tekst-2); flex: none; -webkit-tap-highlight-color: transparent; }
-@media (hover: hover) { .tp-okno-wstecz:hover { background: var(--s-karta-2); color: var(--s-tekst); } }
+@media (any-hover: hover) { .tp-okno-wstecz:hover { background: var(--tp-szary-1); color: var(--s-tekst); } }
 .tp-okno-wstecz:active { background: var(--s-karta-2); }
 .tp-okno-wstecz:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 1px; }
 .tp-tyt-edycja { display: none; }
@@ -228,7 +241,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-edytuj { all: unset; box-sizing: border-box; cursor: pointer; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px 0 10px; border-radius: 999px;
   background: var(--tp-szary-1); color: var(--tp-szary-t); font: 600 13px/1 var(--s-f); letter-spacing: .01em; transition: background .15s, color .15s; -webkit-tap-highlight-color: transparent; }
 .tp-edytuj svg { display: block; flex: none; }
-@media (hover: hover) { .tp-edytuj:hover { background: var(--tp-szary-2); color: var(--s-tekst); } }
+@media (any-hover: hover) { .tp-edytuj:hover { background: var(--tp-szary-3); color: var(--s-tekst); } }
 .tp-edytuj:active { background: var(--tp-szary-3); color: var(--s-tekst); }
 .tp-edytuj:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 2px; }
 
@@ -238,7 +251,6 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 @keyframes tp-panel-wej { from { opacity: 0; transform: translateX(10px); } }
 .tp-osoba { display: flex; align-items: center; gap: 18px; }
 .tp-awatar-duzy { width: 72px; height: 72px; font: 800 24px/1 var(--s-f); letter-spacing: .01em; }
-.tp-osoba-imie { min-width: 0; font: 800 26px/1.15 var(--s-f); letter-spacing: -.02em; overflow-wrap: anywhere; }
 
 /* edycja: pola */
 .tp-panel-edycja { container-type: inline-size; }
@@ -250,6 +262,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-licznik.pelny { color: var(--s-uwaga); }
 .tp-pole input { box-sizing: border-box; display: block; width: 100%; height: 48px; margin: 0; padding: 0 14px; border-radius: 12px; border: 1.5px solid transparent; outline: none;
   background: var(--s-karta-2); color: var(--s-tekst); font: 600 16px/1 var(--s-f); -webkit-appearance: none; appearance: none; transition: border-color .15s, background .15s, box-shadow .15s; }
+@media (any-hover: hover) { .tp-pole input:hover:not(:focus) { border-color: var(--s-linia-2); } }
 .tp-pole input:focus { background: var(--s-karta); border-color: var(--s-akcent); box-shadow: 0 0 0 4px rgba(47, 111, 235, .12); }
 .tp-pole input.zly { border-color: var(--s-hr); background: #FFF6F6; }
 .tp-pole input.zly:focus { box-shadow: 0 0 0 4px rgba(229, 72, 77, .12); }
@@ -263,7 +276,10 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-plec button { all: unset; box-sizing: border-box; cursor: pointer; position: relative; padding: 8px 2px; border-radius: 8px; font: 700 15px/1 var(--s-f); color: #A6B0BF; white-space: nowrap; transform-origin: 50% 55%;
   transition: color .28s ease, transform .28s cubic-bezier(.2, .8, .2, 1); -webkit-tap-highlight-color: transparent; }
 .tp-plec button[aria-checked="true"] { color: var(--s-tekst); transform: scale(1.12); }
-@media (hover: hover) { .tp-plec button[aria-checked="false"]:hover { color: var(--s-tekst-2); } }
+@media (any-hover: hover) { .tp-plec button[aria-checked="false"]:hover { color: var(--s-tekst-2); } .tp-plec button:hover::after { opacity: 1; } }
+/* kreska pod opcją po najechaniu — sama zmiana koloru jasnej opcji była za słaba, by poczuć „to się klika” */
+.tp-plec button::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: 1px; height: 2px; border-radius: 2px; background: currentColor; opacity: 0; transition: opacity .15s; }
+.tp-plec button[aria-checked="true"]::after { display: none; }
 .tp-plec button:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 4px; }
 .tp-plec button::before { content: ''; position: absolute; inset: -10px -8px; }   /* większe pole trafienia, wygląd bez zmian */
 .tp-plec-kropka { width: 4px; height: 4px; border-radius: 50%; background: var(--tp-kropka); }
@@ -283,23 +299,35 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-okno.bez-zapisu .tp-okno-uwaga::after { content: ' — przeglądarka nie pozwala zapisać na stałe'; }
 .tp-przycisk { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; border-radius: 12px;
   font: 700 14px/1 var(--s-f); color: var(--s-tekst-2); transition: background .15s, box-shadow .15s, opacity .15s; -webkit-tap-highlight-color: transparent; }
-@media (hover: hover) { .tp-przycisk:not(.glowny):hover { background: var(--s-karta-2); color: var(--s-tekst); } }
+@media (any-hover: hover) { .tp-przycisk:not(.glowny):hover { background: var(--tp-szary-1); color: var(--s-tekst); } }
 .tp-przycisk:not(.glowny):active { background: var(--tp-szary-1); }
 .tp-przycisk.glowny { min-width: 112px; background: var(--s-akcent); color: #fff; box-shadow: 0 6px 14px -6px rgba(47, 111, 235, .6); }
-@media (hover: hover) { .tp-przycisk.glowny:not(:disabled):hover { background: #2763D8; } }
+@media (any-hover: hover) { .tp-przycisk.glowny:not(:disabled):hover { background: #2259C8; box-shadow: 0 8px 18px -6px rgba(47, 111, 235, .7); } }
 .tp-przycisk.glowny:active { background: #2258C4; }
-.tp-przycisk:disabled { cursor: default; background: #C3D3F5; box-shadow: none; }
+.tp-przycisk:disabled { cursor: not-allowed; background: #C3D3F5; box-shadow: none; }
 .tp-przycisk:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 2px; }
 
 @media (max-width: 640px) {
   .tp-okno-st { padding: 12px 14px 14px 18px; }
   .tp-awatar-duzy { width: 64px; height: 64px; font-size: 22px; }
-  .tp-osoba-imie { font-size: 23px; }
 }
 @media (max-width: 520px) {
   .tp-okno-uwaga { flex-basis: 100%; }
   .tp-przycisk { flex: 1; }
-  .tp-okno-awatar { display: none; }      /* wąsko: w nagłówku zostaje tytuł, „Edit” i ×; awatar jest duży w treści */
+  .tp-okno-awatar { display: none; }      /* wąsko w EDYCJI awatar jest duży w treści; w profilu wraca niżej (44 px) */
   .tp-okno-g h2 { font-size: 17px; }
 }
 @media (max-width: 360px) { .tp-okno-g { gap: 8px; } .tp-okno-g h2 { font-size: 16px; } .tp-okno-tresc { padding: 16px 12px; } .tp-plec { padding: 12px 2px; } }
+
+/* ───── nagłówek okna profilu: awatar + imię i nazwisko (12.11.2026, prośba Fryderyka) ─────
+   Zamiast „FM · Athlete’s profile” nad osobnym awatarem z imieniem — jedna linia na górze. */
+.tp-okno[data-widok-okna="profil"] .tp-okno-g { gap: 16px; padding: 22px 18px 22px 24px; }
+.tp-okno[data-widok-okna="profil"] .tp-edytuj { margin-left: -4px; }   /* „Edit” bliżej imienia niż awatar: należy do niego */
+.tp-okno[data-widok-okna="profil"] .tp-okno-awatar { width: 56px; height: 56px; font: 800 19px/1 var(--s-f); letter-spacing: .01em; }
+.tp-okno[data-widok-okna="profil"] .tp-okno-g h2 { font: 800 24px/1.15 var(--s-f); letter-spacing: -.02em; }
+@media (max-width: 640px) {
+  .tp-okno[data-widok-okna="profil"] .tp-okno-g { gap: 12px; padding: 16px 12px 16px 18px; }
+  .tp-okno[data-widok-okna="profil"] .tp-okno-awatar { display: grid; width: 44px; height: 44px; font-size: 16px; }
+  .tp-okno[data-widok-okna="profil"] .tp-okno-g h2 { font-size: 19px; }
+}
+@media (max-width: 360px) { .tp-okno[data-widok-okna="profil"] .tp-okno-g h2 { font-size: 17px; } }

@@ -102,12 +102,33 @@ Sonda pilnowała też sama siebie: dwa razy „błąd” był błędem testu (`e
 ekranem, płynne przewijanie), a porównanie ze starą wersją bez jej czcionki zawyżało różnice.
 **Każdą nową kontrolę sprawdzać najpierw na znanym błędzie.**
 
+## 4a. KAŻDE KLIKALNE POLE WIDAĆ, ŻE JEST KLIKALNE (12.11.2026, zasada Fryderyka)
+
+„Najeżdżam kursorem i nic się nie dzieje — muszę się domyślić, że mogę kliknąć.” Fryderyk używa
+iPada **z kursorem** (gładzik/mysz). Zasada dla każdego nowego elementu, który coś robi:
+
+- **widoczna zmiana po najechaniu** (tło, kolor, cień, kreska) + `cursor: pointer`
+  (pole tekstowe: `text`, wyłączony przycisk: `not-allowed`);
+- **reguły najechania pod `@media (any-hover: hover)`, NIGDY pod `(hover: hover)`.**
+  `hover` pyta o GŁÓWNE wejście — na iPadzie to dotyk, więc z kursorem był fałsz i nic nie
+  reagowało. To był mój błąd z 11–12.11. `any-hover` = „jest jakikolwiek kursor”; sam dotyk
+  dalej nie dostaje efektu, więc po stuknięciu nic się nie „przykleja”;
+- na samym dotyku (bez kursora) wskazówka musi stać stale, jeśli bez niej nie widać, że coś się
+  otwiera (np. strzałka › w polu profilu).
+
+Kontrola `najechanie.js` (sesja 12.11): statycznie 0 reguł pod `(hover: hover)` w `style.css`
+i `web.css`; myszą 11 elementów ramy i profilu zmienia wygląd i ma właściwy kursor; dotyk —
+nic się nie przykleja. **Placeholderów jeszcze nie przeglądano** — Fryderyk: i tak wylecą.
+
 ## 5a. Pole profilu i okno „Athlete’s profile” (12.11.2026)
 
 Fryderyk: pole w lewym dolnym rogu „jest kluczowe dla strony”, ma być **widoczne cały czas**,
 nosić napis **Athlete’s profile** (po angielsku, jego wybór) i po dotknięciu otwierać okno
 na środku, z × w prawym górnym rogu, na pierwszym planie, **ze stroną widoczną w tle**.
-Treść okna (12.11.2026): widok profilu (duży awatar + imię i nazwisko) i widok edycji (niżej).
+Treść okna (12.11.2026): **na górze okna awatar + imię i nazwisko + „Edit”** (zamiast
+„FM · Athlete’s profile” — poprawka Fryderyka z tego samego dnia), pod spodem na razie pusto;
+widok edycji opisany niżej. **Pole w lewym dolnym rogu: awatar, imię i nazwisko, pod nimi
+„Athlete’s profile”**, a strzałka › pokazuje, że się otwiera.
 **Poza tym okno jest puste celowo; nie dokładać sekcji z własnej inicjatywy.** JOIN był tylko
 wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fryderyka.
 

@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <div class="tp">
@@ -28,7 +28,8 @@
       <div class="tp-bok-cel"></div>
       <button class="tp-bok-ja" type="button" aria-haspopup="dialog" aria-controls="tp-profil" aria-label="Athlete’s profile">
         <span class="tp-awatar" aria-hidden="true" data-profil="inicjaly">FM</span>
-        <b>Athlete’s profile</b>
+        <span class="tp-bok-ja-t"><b data-profil="pelne">Fryderyk Marszałek</b><small>Athlete’s profile</small></span>
+        <i class="ph-bold ph-caret-right tp-bok-ja-s" aria-hidden="true"></i>
       </button>
     </aside>
     <div class="tp-tresc">
@@ -46,7 +47,7 @@
     <header class="tp-okno-g">
       <button class="tp-okno-wstecz" type="button" aria-label="Wróć do profilu bez zapisywania"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
       <span class="tp-awatar tp-okno-awatar" aria-hidden="true" data-profil="inicjaly">FM</span>
-      <h2 id="tp-profil-t"><span class="tp-tyt-profil">Athlete’s profile</span><span class="tp-tyt-edycja">Edytuj profil</span></h2>
+      <h2 id="tp-profil-t"><span class="tp-tyt-profil" data-profil="pelne">Fryderyk Marszałek</span><span class="tp-tyt-edycja">Edytuj profil</span></h2>
       <button class="tp-edytuj" type="button" aria-label="Edytuj profil">
         <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.6 3.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.9.9.9-3.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M11 5.5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M11.5 17h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".55"/></svg>
         <span>Edit</span>
@@ -55,12 +56,8 @@
     </header>
     <div class="tp-okno-tresc">
       <!-- widok 1: profil -->
-      <section class="tp-panel tp-panel-profil" aria-label="Profil">
-        <div class="tp-osoba">
-          <span class="tp-awatar tp-awatar-duzy" aria-hidden="true" data-profil="inicjaly">FM</span>
-          <p class="tp-osoba-imie" data-profil="pelne">Fryderyk Marszałek</p>
-        </div>
-      </section>
+      <!-- treść profilu dojdzie później; awatar, imię i nazwisko stoją w nagłówku okna -->
+      <section class="tp-panel tp-panel-profil" aria-label="Athlete’s profile"></section>
       <!-- widok 2: edycja — imię, nazwisko, płeć; jeden „Zapisz” na dole zapisuje wszystko naraz -->
       <form class="tp-panel tp-panel-edycja" id="tp-profil-form" novalidate aria-label="Edycja profilu">
         <div class="tp-osoba tp-osoba-edycja">
