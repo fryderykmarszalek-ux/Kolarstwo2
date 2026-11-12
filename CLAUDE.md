@@ -159,6 +159,10 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
 
 - **„Edit”** — jasnoszara pigułka z własną kredką (kredka + kreska, którą „pisze”, inline SVG
   w `index.html`), **tuż za tytułem** „Athlete’s profile”. Prośba Fryderyka: własny rysunek, nie gotowa ikona.
+  **Bez obwódek i owali** (12.11.2026): niebieski owal ze screena to była obwódka fokusu —
+  `<dialog>` sam stawia fokus na pierwszym przycisku, a Safari z klawiaturą go rysuje. Teraz
+  fokus po otwarciu i po powrocie z edycji stoi na samym oknie (`tabindex="-1"`, bez obrysu),
+  a „Edit” z klawiatury dostaje ten sam odrobinę ciemniejszy szary co po najechaniu (`#E3E8EF`).
 - Kliknięcie przełącza **TO SAMO okno** w widok edycji (`data-widok-okna="edycja"` na `<dialog>`),
   nie otwiera nowego. Nagłówek: ‹ wróć, „Edytuj profil”, ×.
 - **Imię i nazwisko — osobne pola, limit 30 znaków każde** (`maxlength` + licznik „8/30”).

@@ -65,7 +65,7 @@
         (dotyk ? okno.querySelector('.tp-okno-wstecz') : wejscia.imie).focus();
       } else {
         start = null;
-        okno.querySelector('.tp-edytuj').focus();
+        okno.focus();      // fokus na samym oknie, nie na „Edit” — inaczej Safari rysuje wokół niego obwódkę
       }
     }
 
@@ -78,6 +78,7 @@
       if (suwak > 0) document.body.style.paddingRight = suwak + 'px';
       okno.dataset.widokOkna = 'profil'; start = null;
       okno.showModal();
+      okno.focus();        // przeglądarka sama wskazałaby pierwszy przycisk („Edit”) i obrysowała go na niebiesko
     });
     okno.querySelector('.tp-okno-x').addEventListener('click', () => okno.close());   // × zamyka całe okno; niezapisane zmiany przepadają
     okno.querySelector('.tp-edytuj').addEventListener('click', () => pokazWidok('edycja'));
