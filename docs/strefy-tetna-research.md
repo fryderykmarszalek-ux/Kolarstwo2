@@ -83,6 +83,10 @@ różnią**, dlatego wybór metody musi być widoczny przy strefach.
 
 ## 6. Proponowany kształt na stronie (do decyzji)
 
+> **Zbudowane 13.11.2026** (opis w `CLAUDE.md`, „Strefy tętna: kalkulator i strefy własne”):
+> metody A–D, przełącznik kalkulatora, 5 stref własnych. **Bez wzoru na HRmax z wieku** — decyzja
+> Fryderyka: w A i B tylko wpisane tętno maks. Propozycja z jazd i datowanie stref — jeszcze nie.
+
 - **Automatycznie:** wybór metody (A / B / C / D), wartości wejściowe z pochodzeniem
   („z jazdy 10 paź”, „wzór Tanaka”, „wpisane”), hierarchia gdy czegoś brak:
   LTHR → metoda C/D; jest HRspocz → B; jest zmierzone HRmax → A; nic → A ze wzoru Tanaki.

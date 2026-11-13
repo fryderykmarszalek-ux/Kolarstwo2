@@ -25,6 +25,10 @@
  * Pomiary ciała (12.11.2026): wzrost [cm], masa [kg] i obwód talii [cm, opcjonalny] jako liczby albo null, cialoData = dzień ostatniej
  * zmiany. BMI NIE jest zapisywane — liczy się z nich przy wyświetlaniu (wspolne/bmi.js).
  * Żadnych wartości domyślnych w repo: to dane osobowe, a repo jest publiczne.
+ *
+ * Strefy tętna (13.11.2026): strefyTetna = { auto, metoda, hrmax, hrspocz, lthr, wlasne } albo null
+ * (nic nie ustawione). Zapisujemy wyłącznie DANE WEJŚCIOWE — granice stref liczą się przy wyświetlaniu
+ * (wspolne/strefy-tetna.js, ładowany przed tym plikiem).
  */
 (function (global) {
   'use strict';
@@ -32,7 +36,7 @@
   const KLUCZ = 'k2.profil';
   const MAKS = 30;
   const PLCIE = { m: 'Mężczyzna', k: 'Kobieta', n: 'Niezdefiniowana' };
-  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, talia: null, cialoData: null, masy: [] };
+  const DOMYSLNY = { imie: K.zawodnik.imie, nazwisko: K.zawodnik.nazwisko, plec: 'n', zdjecie: null, urodziny: null, wzrost: null, masa: null, talia: null, cialoData: null, masy: [], strefyTetna: null };
   const BOK = 1024;                // bok zapisanego zdjęcia w pikselach — ostre na Retinie także w powiększeniu (do 440 px na ekranie)
   const MAKS_ZDJ = 1500000;        // zapora na długość data URL (≈ 1,1 MB); 1024×1024 JPEG to zwykle 100–300 kB
 
@@ -154,8 +158,11 @@
   function poprawny(p) {
     return p && typeof p === 'object' && !P.sprawdz('imie', p.imie) && !P.sprawdz('nazwisko', p.nazwisko) && p.plec in PLCIE && zdjeciePoprawne(p.zdjecie) && urodzinyPoprawne(p.urodziny)
       && pomiarPoprawny('wzrost', p.wzrost) && pomiarPoprawny('masa', p.masa) && pomiarPoprawny('talia', p.talia) && (p.cialoData == null || /^\d{4}-\d{2}-\d{2}$/.test(p.cialoData))
-      && Array.isArray(p.masy) && p.masy.every(wpisPoprawny);
+      && Array.isArray(p.masy) && p.masy.every(wpisPoprawny)
+      && (!global.STREFY_HR || global.STREFY_HR.poprawne(p.strefyTetna));
   }
+  // kopia ustawień stref — tylko znane pola, tablica granic kopiowana (P.dane() nie może oddać referencji do stanu)
+  const kopiaStref = (u) => (u ? { auto: u.auto, metoda: u.metoda, hrmax: u.hrmax ?? null, hrspocz: u.hrspocz ?? null, lthr: u.lthr ?? null, wlasne: u.wlasne ? u.wlasne.slice() : null } : null);
 
   // Wybrany plik → kwadrat ze środka, 512×512, JPEG. Obietnica zwraca data URL albo błąd z komunikatem po polsku.
   // Orientację z aparatu (EXIF) przeglądarka uwzględnia sama przy rysowaniu <img>.
@@ -204,11 +211,13 @@
     try {
       const p = JSON.parse(global.localStorage.getItem(KLUCZ) || 'null');
       // wpis sprzed zdjęć, daty urodzenia albo pomiarów ciała — dalej ważny, brakujące pola są puste
-      if (p) ['zdjecie', 'urodziny', 'wzrost', 'masa', 'talia', 'cialoData'].forEach((k) => { if (p[k] === undefined) p[k] = null; });
+      if (p) ['zdjecie', 'urodziny', 'wzrost', 'masa', 'talia', 'cialoData', 'strefyTetna'].forEach((k) => { if (p[k] === undefined) p[k] = null; });
       // zapis sprzed dziennika: jedna masa → jeden pomiar z dniem ostatniego zapisu sekcji
       if (p && !Array.isArray(p.masy)) p.masy = typeof p.masa === 'number' ? [{ d: p.cialoData || String(p.zapisano || '').slice(0, 10) || dzisISO(), kg: p.masa }] : [];
       if (p) p.masy = P.normujMasy(p.masy);
-      if (poprawny(p)) return zMasa({ imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, talia: p.talia, cialoData: p.cialoData, masy: p.masy });
+      // zepsute ustawienia stref nie mogą skasować reszty profilu — tylko one wracają do „nieustawione”
+      if (p && global.STREFY_HR && !global.STREFY_HR.poprawne(p.strefyTetna)) p.strefyTetna = null;
+      if (poprawny(p)) return zMasa({ imie: P.oczysc(p.imie), nazwisko: P.oczysc(p.nazwisko), plec: p.plec, zdjecie: p.zdjecie, urodziny: p.urodziny, wzrost: p.wzrost, talia: p.talia, cialoData: p.cialoData, masy: p.masy, strefyTetna: kopiaStref(p.strefyTetna) });
     } catch (e) { /* brak schowka albo zepsuty wpis — domyślne */ }
     return zMasa({ ...DOMYSLNY, masy: [] });
   }
@@ -224,7 +233,7 @@
     if (global.A) global.A.imie = biezacy.imie;
   }
 
-  P.dane = () => ({ ...biezacy, masy: biezacy.masy.map((x) => ({ ...x })) });
+  P.dane = () => ({ ...biezacy, masy: biezacy.masy.map((x) => ({ ...x })), strefyTetna: kopiaStref(biezacy.strefyTetna) });
 
   P.odswiez = (korzen) => {
     const w = { imie: biezacy.imie, nazwisko: biezacy.nazwisko, pelne: `${biezacy.imie} ${biezacy.nazwisko}`, inicjaly: P.inicjaly(biezacy), plec: P.PLCIE_PODPIS[biezacy.plec] };
@@ -240,6 +249,7 @@
     // pola, których „nowy” nie podaje, zostają jak były — każda sekcja profilu zapisuje tylko swoje
     const p = { ...biezacy };
     Object.keys(DOMYSLNY).forEach((k) => { if (nowy[k] !== undefined && k !== 'masa' && k !== 'masy') p[k] = nowy[k]; });
+    p.strefyTetna = kopiaStref(p.strefyTetna);
     p.imie = P.oczysc(p.imie); p.nazwisko = P.oczysc(p.nazwisko);
     // masa: albo cały dziennik („masy”), albo jedna liczba („masa”) = pomiar z dzisiaj (zastępuje dzisiejszy)
     if (nowy.masy !== undefined) {

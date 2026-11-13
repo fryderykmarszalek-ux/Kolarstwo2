@@ -96,6 +96,7 @@ wspolne/                        widoki, wykresy, dane przykładowe, ikony, czcio
 wspolne/profil.js               profil zawodnika: jedno źródło imienia, zdjęcia, daty, pomiarów
 wspolne/bmi.js                  przelicznik BMI 13–99 lat: tabela WHO 2007 + progi WHO dla dorosłych
 wspolne/talia.js                przelicznik talia/wzrost (WHtR) według NICE NG246
+wspolne/strefy-tetna.js         strefy tętna: 4 metody (% maks., Karvonen, Friel, Coggan) i strefy własne
 archiwum/runda-{1,2,3}/         propozycje z rund, nietknięte (każda z własną kopią wspolne/)
 docs/burza-mozgow*.md           notatki z rund
 style/trener/index.html         przekierowanie ze starego adresu, zachowuje #widok
@@ -466,8 +467,8 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
 
 ### Sekcja „Strefy treningowe” (13.11.2026)
 
-- Drugi wiersz listy, ikona `gauge`. Nazwa od Fryderyka. **Na razie sama nawigacja: dwie
-  podzakładki „Tętno” i „Moc”, panele puste** — „dalej nic nie robimy, zostawiamy”.
+- Drugi wiersz listy, ikona `gauge`. Nazwa od Fryderyka. Dwie podzakładki „Tętno” i „Moc”;
+  **Moc nadal pusta**, Tętno opisane niżej.
 - Inspiracja: zakładki Stravy (Heart Rate · Power · Pace), **styl własny**: dwie równe kolumny na
   całą szerokość, ikona (`heartbeat`, `lightning`) + nazwa, aktywna ciemna z niebieską ikoną,
   nieaktywna szara; pod spodem cienka linia, a po niej **przesuwa się zaokrąglony pasek akcentu
@@ -476,12 +477,64 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   dodawała `offsetLeft` przycisku do `offsetLeft` ikony, które już liczy się od paska zakładek —
   pasek pod „Moc” uciekał poza ekran. Złapane na zrzucie; test łapie tę mutację.
 - Wzorzec ARIA zakładek (`tablist` / `tab` / `tabpanel`, strzałki ← →, fokus na aktywnej).
-  Wybrana podzakładka pamiętana do przeładowania strony. Nic się nie zapisuje — „Zapisz” wyłączone,
-  tło zamyka okno.
+  Wybrana podzakładka pamiętana do przeładowania strony. „Zapisz” zapisuje ustawienia Tętna.
 - Klasy `.tp-podzakladki` są ogólne — **następne podzakładki gdziekolwiek w profilu: ten sam
   komponent**, nie nowy styl.
 - Sondy: 59 kontroli na 4 urządzeniach, **cztery celowe błędy złapane** (pasek liczony od złego
   rodzica, oba panele naraz, podpis pod nazwą sekcji, brak kreski między wierszami).
+
+### Strefy tętna: kalkulator i strefy własne (13.11.2026)
+
+- **Na górze przełącznik „Licz strefy automatycznie”** (styl iOS, prośba Fryderyka ze zrzutem).
+  Cały wiersz jest przyciskiem `role="switch"`; gałka rozciąga się przy wciśnięciu jak w iOS; kolor
+  włączonego = akcent strony, nie zieleń iOS.
+- **Włączony:** kafelki czterech metod (`role="radio"`, strzałki), pod nimi **tylko pola, których
+  wybrana metoda potrzebuje**: % tętna maks. → tętno maks.; rezerwa tętna (Karvonen) → maks.
+  i spoczynkowe; Friel (7 stref) i Coggan (5) → tętno progowe. **Bez daty urodzenia i bez wzoru
+  na HRmax** — decyzja Fryderyka („w metodzie a i b daj tylko HR max”). Pola są wspólne dla metod:
+  wpisane tętno maks. zostaje po przejściu z A na B.
+- **Wyłączony:** pięć stref własnych. **Pierwsza strefa nie ma dolnej granicy, ostatnia górnej** —
+  tam nie ma pola (decyzja Fryderyka: „leci do nieskończoności”). „Do” strefy i „od” następnej to
+  JEDNA granica: wpisanie jednego uzupełnia drugie, więc dziura ani nakładanie nie są możliwe.
+- **Wyjście do stref własnych jest zawsze na widoku:** przełącznik na górze + pigułka „Dostosuj
+  ręcznie” nad listą, która przenosi wyliczone strefy do własnych i wyłącza kalkulator (7 stref
+  Friela → 5: Z5 = 5a + 5b + 5c). Samo wyłączenie przy PUSTYCH strefach własnych też startuje od
+  wyliczonych; przy wypełnionych niczego nie nadpisuje.
+- **Lista stref jest jedna dla obu trybów** — wyliczone liczby zamieniają się w pola na tych samych
+  miejscach. Wiersz: pasek koloru, „Z2 Wytrzymałość”, pod spodem przedział procentowy (tylko
+  kalkulator), kolumny Od – Do.
+- **Liczenie: `wspolne/strefy-tetna.js`, jedna reguła dla wszystkich metod** — tętno należy do
+  wyższej strefy, gdy jest RÓWNE progowi albo wyższe; początek strefy = sufit progu. Każda
+  całkowita wartość ma dokładnie jedną strefę. Progi Coggana i Friela = dolna granica następnej
+  strefy z publikacji (Coggan 69/84/95/106 %, Friel 81/90/94/100/103/107 %).
+- **Podpisy procentowe liczą się z progów, nie są wpisane ręcznie** (`S.procenty`), w zapisie
+  „69–84%” = od 69 do poniżej 84 — to samo, co źródła piszą w całych procentach jako „69–83%”.
+  Pierwsza wersja miała podpisy przepisane ze źródeł i przy Cogganie mówiła co innego niż liczby.
+- **Zapis: `strefyTetna` w profilu** = `{ auto, metoda, hrmax, hrspocz, lthr, wlasne }`, wyłącznie
+  dane wejściowe (wariant B). Zepsuty wpis stref wraca do „nieustawione”, **reszta profilu zostaje**.
+  Błędne pole schowane (inna metoda) nie blokuje zapisu — zostaje przy zapisanej wartości.
+- Zakresy: tętno maks. 120–240, spoczynkowe 30–100, progowe 100–230, strefy własne 40–250
+  (250, żeby „Dostosuj ręcznie” z każdej metody dawało poprawne strefy: Coggan przy LTHR 230 → Z5 od 244).
+- **Rampa kolorów: pasek przy krawędzi, nie kolorowy znaczek z napisem.** Środkowe stopnie rampy
+  (L ≈ 0,62–0,72) nie dają kontrastu 4,5:1 ani z białym, ani z ciemnym pismem — policzone. Pasek
+  to dekoracja, strefę mówi napis „Z1”. Hexy z OKLCH (jasność 0,84 → 0,51), osobno dla 5 i 7 stref.
+- **Telefon: kolumny liczb 46 + 12 + 46 px** — zmierzone: najdłuższa para „Z2 Wytrzymałość”
+  / „Z5a Nadprogowa” to 114 px, liczba „188” 27 px; przy 320 px nazwa ma 121 px. Pierwsza wersja
+  (52 px) ucinała „Wytrzymał…”.
+- **Kafelki metod: dwie kolumny od 320 px treści, tytuł zawsze w jednej linii.** „% tętna maks.”
+  ma 102 px przy 14,5 px; kółko wyboru 16 px i odstęp 12 px dają mu przy iPhonie 15 Pro 111 px.
+  Pierwsza wersja (15 px, odstęp 14, kółko 18) łamała „% tętna / maks.” na iPhonie — miara
+  sprawdzała tylko wyjście poza kafelek, nie liczbę linii; teraz sprawdza oba.
+- Sondy (sesja 13.11): kalkulator **26 939 kontroli** — niezależna klasyfikacja każdego tętna 0–260
+  dla KAŻDEGO dozwolonego wejścia każdej metody, plus „Dostosuj ręcznie” z każdego wejścia;
+  zakładka 186 kontroli na 4 urządzeniach (oczekiwane liczby liczone w sondzie arytmetyką
+  całkowitą), **14 celowych błędów złapanych** (zaokrąglanie zamiast sufitu, niepołączone pola,
+  nadpisywanie własnych, krzyk w trakcie pisania, złe scalanie Friela, wszystkie pola naraz, zapis
+  mimo błędu, podpisy procentów, pole „od” w Z1, zepsuty wpis kasujący profil, „Zapisz” ślepe na
+  granice, Karvonen bez spoczynkowego, za szerokie kolumny, tytuł kafelka w dwóch liniach); układ
+  545 kombinacji 320–1400 px (5 stanów × co 10 px);
+  strażnik „bez notatek” 2431 (skróty „maks.” dozwolone tylko w etykiecie do 3 słów — sprawdzone
+  na wstawionym zdaniu); najechanie 89.
 
 ### Pusta część okna profilu — co ma tam trafić
 

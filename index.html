@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
   <div class="tp">
@@ -176,14 +176,49 @@
         <div class="tp-bmi" id="tp-bmi" aria-live="polite"></div>
         <div class="tp-bmi tp-whtr" id="tp-whtr" aria-live="polite"></div>
       </form>
-      <!-- widok 5: strefy treningowe — dwie podzakładki: Tętno i Moc (treść dojdzie później) -->
+      <!-- widok 5: strefy treningowe — dwie podzakładki: Tętno i Moc (Moc — treść dojdzie później).
+           Tętno: przełącznik kalkulatora; włączony = 4 metody (wspolne/strefy-tetna.js) i ich pola, wyłączony = 5 stref własnych.
+           Lista stref jest jedna dla obu trybów: wyliczone liczby zamieniają się w pola na tych samych miejscach. -->
       <form class="tp-panel tp-panel-sekcja tp-panel-strefy" id="tp-strefy-form" novalidate aria-label="Strefy treningowe">
         <div class="tp-podzakladki" role="tablist" aria-label="Rodzaj stref">
           <button type="button" role="tab" id="tp-strefy-tab-tetno" aria-controls="tp-strefy-tetno" data-strefy="tetno"><i class="ph-bold ph-heartbeat" aria-hidden="true"></i><span>Tętno</span></button>
           <button type="button" role="tab" id="tp-strefy-tab-moc" aria-controls="tp-strefy-moc" data-strefy="moc"><i class="ph-bold ph-lightning" aria-hidden="true"></i><span>Moc</span></button>
           <span class="tp-podzakladki-pasek" aria-hidden="true"></span>
         </div>
-        <section class="tp-strefy-panel" role="tabpanel" id="tp-strefy-tetno" aria-labelledby="tp-strefy-tab-tetno" tabindex="0"></section>
+        <section class="tp-strefy-panel" role="tabpanel" id="tp-strefy-tetno" aria-labelledby="tp-strefy-tab-tetno" tabindex="0" data-tryb="auto">
+          <button class="tp-hr-auto" id="tp-hr-auto" type="button" role="switch" aria-checked="true">
+            <span class="tp-sekcja-ik" aria-hidden="true"><i class="ph-bold ph-calculator"></i></span>
+            <span class="tp-hr-auto-t">Licz strefy automatycznie</span>
+            <span class="tp-przel" aria-hidden="true"><i></i></span>
+          </button>
+          <div class="tp-hr-kalk">
+            <div class="tp-pole-g tp-hr-g"><span id="tp-hr-metoda-t">Metoda</span></div>
+            <div class="tp-hr-metody" role="radiogroup" aria-labelledby="tp-hr-metoda-t"></div>
+            <div class="tp-pola tp-hr-dane">
+              <div class="tp-pole" data-wej="hrmax">
+                <div class="tp-pole-g"><label for="tp-hr-hrmax">Tętno maks.</label></div>
+                <div class="tp-jedn tp-jedn-hr"><input id="tp-hr-hrmax" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" enterkeyhint="next" aria-describedby="tp-hr-hrmax-b"><span aria-hidden="true">ud./min</span></div>
+                <p class="tp-blad" id="tp-hr-hrmax-b" role="alert"></p>
+              </div>
+              <div class="tp-pole" data-wej="hrspocz">
+                <div class="tp-pole-g"><label for="tp-hr-hrspocz">Tętno spoczynkowe</label></div>
+                <div class="tp-jedn tp-jedn-hr"><input id="tp-hr-hrspocz" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" enterkeyhint="done" aria-describedby="tp-hr-hrspocz-b"><span aria-hidden="true">ud./min</span></div>
+                <p class="tp-blad" id="tp-hr-hrspocz-b" role="alert"></p>
+              </div>
+              <div class="tp-pole" data-wej="lthr">
+                <div class="tp-pole-g"><label for="tp-hr-lthr">Tętno progowe</label></div>
+                <div class="tp-jedn tp-jedn-hr"><input id="tp-hr-lthr" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" enterkeyhint="done" aria-describedby="tp-hr-lthr-b"><span aria-hidden="true">ud./min</span></div>
+                <p class="tp-blad" id="tp-hr-lthr-b" role="alert"></p>
+              </div>
+            </div>
+          </div>
+          <div class="tp-hr-strefy-g">
+            <span class="tp-hr-g" id="tp-hr-strefy-t">Strefy · ud./min</span>
+            <button class="tp-hr-recznie" type="button"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M12.6 3.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.9.9.9-3.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M11 5.5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Dostosuj ręcznie</span></button>
+          </div>
+          <div class="tp-hr-lista" id="tp-hr-lista" role="group" aria-labelledby="tp-hr-strefy-t" aria-describedby="tp-hr-wl-b"></div>
+          <p class="tp-blad tp-hr-wl-b" id="tp-hr-wl-b" role="alert"></p>
+        </section>
         <section class="tp-strefy-panel" role="tabpanel" id="tp-strefy-moc" aria-labelledby="tp-strefy-tab-moc" tabindex="0" hidden></section>
       </form>
       <!-- widok 4: dziennik masy ciała — otwierany z „Budowy ciała”; zmiany zapisuje wspólne „Zapisz” -->
@@ -250,12 +285,13 @@
     <span class="tp-awatar tp-lupa-a" data-profil="inicjaly">FM</span>
   </dialog>
   <script src="wspolne/dane.js?v=6"></script>
-  <script src="wspolne/profil.js?v=8"></script>
+  <script src="wspolne/strefy-tetna.js?v=1"></script>
+  <script src="wspolne/profil.js?v=9"></script>
   <script src="wspolne/bmi.js?v=1"></script>
   <script src="wspolne/talia.js?v=1"></script>
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=20"></script>
 </body>
 </html>

@@ -373,7 +373,9 @@
     })();
 
     // ───── sekcja „Strefy treningowe”: dwie podzakładki, Tętno i Moc ─────
-    // Na razie sama nawigacja — treść paneli dojdzie później. Nic tu się nie zapisuje, więc „Zapisz” stoi wyłączone.
+    // Moc — na razie pusta. Tętno: przełącznik kalkulatora. Włączony = jedna z czterech metod (wspolne/strefy-tetna.js)
+    // i tylko te pola, których ona potrzebuje; wyłączony = pięć stref własnych. Zapisujemy wyłącznie dane wejściowe
+    // (P.zapisz({ strefyTetna })) — granice liczą się przy wyświetlaniu, jedną regułą dla wszystkich metod.
     (function () {
       const f = okno.querySelector('#tp-strefy-form');
       if (!f) return;
@@ -402,11 +404,193 @@
         });
       });
       if ('ResizeObserver' in window) new ResizeObserver(ustawPasek).observe(f.querySelector('.tp-podzakladki'));
-      f.addEventListener('submit', (e) => e.preventDefault());
+
+      // ── Tętno ──
+      const S = window.STREFY_HR, panel = f.querySelector('#tp-strefy-tetno');
+      const el = {
+        auto: panel.querySelector('#tp-hr-auto'), metody: panel.querySelector('.tp-hr-metody'), lista: panel.querySelector('#tp-hr-lista'),
+        recznie: panel.querySelector('.tp-hr-recznie'), wlB: panel.querySelector('#tp-hr-wl-b'),
+      };
+      const WEJ = ['hrmax', 'hrspocz', 'lthr'];
+      const wej = Object.fromEntries(WEJ.map((k) => [k, panel.querySelector('#tp-hr-' + k)]));
+      const poleWej = Object.fromEntries(WEJ.map((k) => [k, panel.querySelector(`[data-wej="${k}"]`)]));
+      let st = null;                        // zapisane ustawienia w chwili wejścia w sekcję
+      let auto = true, metoda = 'hrmax';
+      let gr = [null, null, null, null];    // granice stref własnych: górne granice Z1…Z4 (null = puste pole)
+      let pokazBladWl = false;              // błąd stref własnych widać dopiero po wyjściu z listy albo przy „Zapisz”
+      const pustaGr = () => gr.every((g) => g == null);
+
+      // kafelki metod — budowane raz; kolejność z S.METODY
+      const kafle = Object.entries(S.METODY).map(([k, m]) => h('button', { type: 'button', role: 'radio', class: 'tp-hr-metoda', 'data-metoda': k },
+        h('b', { text: m.nazwa }), h('small', { text: m.opis }), h('i', { class: 'ph-fill ph-check-circle', 'aria-hidden': 'true' })));
+      el.metody.append(...kafle);
+
+      const tekstWej = (v) => (v == null ? '' : String(v));
+      const normWej = (t) => (/^\d+$/.test(t.trim()) ? String(+t.trim()) : t.trim());
+      const odczyt = (k) => S.sprawdzWejscie(k, wej[k].value);
+      const widoczne = () => (auto ? S.METODY[metoda].wymaga : []);
+      // wartości do liczenia: tylko poprawne; błędne pole liczy się jak puste
+      const dane = () => Object.fromEntries(WEJ.map((k) => [k, odczyt(k).wartosc]));
+      const poczatki = () => S.poczatki(metoda, dane());
+
+      function bladWej(k, t) {
+        panel.querySelector(`#tp-hr-${k}-b`).textContent = t;
+        wej[k].classList.toggle('zly', !!t);
+        if (t) wej[k].setAttribute('aria-invalid', 'true'); else wej[k].removeAttribute('aria-invalid');
+      }
+
+      // ── lista stref: ten sam układ w obu trybach. Auto: liczby; własne: pola na tych samych miejscach.
+      // Pierwsza strefa nie ma dolnej granicy, ostatnia górnej — tam nie ma ani liczby, ani pola.
+      const pole = (s, i, gdzie, wartosc) => h('input', { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', maxlength: '3', autocomplete: 'off', enterkeyhint: 'next',
+        class: 'tp-hr-wart', 'data-i': String(i), 'data-gdzie': gdzie, 'aria-label': `${s} ${gdzie === 'od' ? 'od' : 'do'}`, value: wartosc });
+      function rysujListe() {
+        const wl = !auto, m = wl ? S.WLASNE : S.METODY[metoda], n = m.etykiety.length;
+        const pp = wl ? null : poczatki(), wiersze = pp ? S.wiersze(pp, m) : null, pr = wl ? null : S.procenty(metoda);
+        el.lista.dataset.n = String(n);
+        const nagl = h('div', { class: 'tp-hr-w tp-hr-nagl', 'aria-hidden': 'true' }, h('span'), h('span'), h('span', { text: 'Od' }), h('span'), h('span', { text: 'Do' }));
+        const rzad = m.etykiety.map((e, i) => {
+          const pierwsza = i === 0, ostatnia = i === n - 1;
+          let od = null, do_ = null;
+          if (wl) {
+            od = pierwsza ? null : pole(e, i - 1, 'od', gr[i - 1] == null ? '' : String(gr[i - 1] + 1));
+            do_ = ostatnia ? null : pole(e, i, 'do', gr[i] == null ? '' : String(gr[i]));
+          } else {
+            const w = wiersze && wiersze[i];
+            od = pierwsza ? null : h('span', { class: 'tp-hr-l', text: w ? String(w.od) : '—' });
+            do_ = ostatnia ? null : h('span', { class: 'tp-hr-l', text: w ? String(w.do) : '—' });
+          }
+          const opis = wl || !wiersze ? `${e} ${m.nazwy[i]}` : `${e} ${m.nazwy[i]}: ${pierwsza ? `do ${wiersze[i].do}` : ostatnia ? `od ${wiersze[i].od}` : `${wiersze[i].od}–${wiersze[i].do}`} ud./min`;
+          return h('div', { class: 'tp-hr-w', role: wl ? 'group' : null, 'aria-label': opis, 'data-z': `${n}-${i + 1}` },
+            h('span', { class: 'tp-hr-pas', 'aria-hidden': 'true' }),
+            h('span', { class: 'tp-hr-n', 'aria-hidden': wl ? null : 'true' }, h('b', null, h('span', { class: 'tp-hr-z', text: e }), h('span', { class: 'tp-hr-nazwa', text: m.nazwy[i] })),
+              pr ? h('small', { text: pr[i] }) : null),
+            h('span', { class: 'tp-hr-od' }, od),
+            h('span', { class: 'tp-hr-kr', 'aria-hidden': 'true', text: pierwsza || ostatnia ? '' : '–' }),
+            h('span', { class: 'tp-hr-do' }, do_));
+        });
+        const brak = !wl && !pp ? h('p', { class: 'tp-hr-brak' }, ik('minus-circle', 'fill'),
+          { hrmax: 'Wymaga tętna maks.', hrspocz: 'Wymaga tętna spoczynkowego', lthr: 'Wymaga tętna progowego' }[S.METODY[metoda].wymaga.find((k) => dane()[k] == null)]) : null;
+        el.lista.classList.toggle('pusta', !!brak);
+        el.lista.replaceChildren(...(brak ? [brak] : []), nagl, ...rzad);
+        oznaczWlasne();
+      }
+      // błąd stref własnych: komunikat pod listą i czerwone pola (oba pola danej granicy — „do” i sąsiednie „od”)
+      function oznaczWlasne() {
+        const w = S.sprawdzWlasne(gr), widac = !auto && pokazBladWl && !!w.blad;
+        el.wlB.textContent = widac ? w.blad : '';
+        el.lista.querySelectorAll('.tp-hr-wart').forEach((x) => {
+          const zly = widac && w.zle.includes(+x.dataset.i);
+          x.classList.toggle('zly', zly);
+          if (zly) x.setAttribute('aria-invalid', 'true'); else x.removeAttribute('aria-invalid');
+        });
+      }
+      function rysuj() {
+        panel.dataset.tryb = auto ? 'auto' : 'wlasne';
+        el.auto.setAttribute('aria-checked', String(auto));
+        kafle.forEach((b) => { const on = b.dataset.metoda === metoda; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; });
+        const wym = S.METODY[metoda].wymaga;
+        WEJ.forEach((k) => { poleWej[k].hidden = !wym.includes(k); });
+        rysujListe();
+        odswiezZapisz();
+      }
+
+      // ── zmiany ──
+      // „zmienione” porównuje to, co widać w polach (także wpisane w połowie), z tym, co zapisane
+      const surowo = () => JSON.stringify([auto, metoda, ...WEJ.map((k) => normWej(wej[k].value)), gr]);
+      const surowoZ = (u) => JSON.stringify([u.auto, u.metoda, ...WEJ.map((k) => tekstWej(u[k])), u.wlasne || [null, null, null, null]]);
+      const zmienione = () => !!st && surowo() !== surowoZ(st);
+      const odswiezZapisz = () => { if (widok() === 'strefy') zapisz.disabled = !zmienione(); };
+
+      function ustawAuto(on) {
+        if (on === auto) return;
+        // wyłączenie przy pustych strefach własnych: startują od tego, co policzył kalkulator
+        if (!on && pustaGr()) { const pp = poczatki(); if (pp) gr = S.doWlasnych(metoda, pp); }
+        auto = on; pokazBladWl = false;
+        rysuj();
+      }
+      el.auto.addEventListener('click', () => ustawAuto(!auto));
+      // „Dostosuj ręcznie”: wyliczone strefy przechodzą do własnych, kalkulator się wyłącza (7 stref Friela → 5: Z5 = 5a + 5b + 5c)
+      el.recznie.addEventListener('click', () => {
+        const pp = poczatki();
+        if (pp) gr = S.doWlasnych(metoda, pp);
+        auto = true; ustawAuto(false);
+        el.auto.focus();
+      });
+      kafle.forEach((b, i) => {
+        b.addEventListener('click', () => { metoda = b.dataset.metoda; rysuj(); });
+        b.addEventListener('keydown', (e) => {
+          const krok = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!krok) return;
+          e.preventDefault(); const nb = kafle[(i + krok + kafle.length) % kafle.length]; metoda = nb.dataset.metoda; rysuj(); nb.focus();
+        });
+      });
+      WEJ.forEach((k) => {
+        const w = wej[k];
+        w.addEventListener('input', () => {
+          const c = w.value.replace(/\D/g, '');
+          if (c !== w.value) w.value = c;
+          if (w.classList.contains('zly')) bladWej(k, odczyt(k).blad);
+          rysujListe(); odswiezZapisz();
+        });
+        w.addEventListener('blur', () => { if (widok() === 'strefy') bladWej(k, odczyt(k).blad); });
+        w.addEventListener('keydown', (e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          const wid = widoczne(), nast = wid[wid.indexOf(k) + 1];
+          if (nast) wej[nast].focus(); else w.blur();
+        });
+      });
+      // pola stref własnych: „do” strefy i „od” następnej to ta sama granica — wpisanie jednego uzupełnia drugie
+      el.lista.addEventListener('input', (e) => {
+        const x = e.target; if (!x.classList || !x.classList.contains('tp-hr-wart')) return;
+        const c = x.value.replace(/\D/g, '');
+        if (c !== x.value) x.value = c;
+        const i = +x.dataset.i, od = x.dataset.gdzie === 'od';
+        gr[i] = c === '' ? null : od ? +c - 1 : +c;
+        const para = el.lista.querySelector(`.tp-hr-wart[data-i="${i}"][data-gdzie="${od ? 'do' : 'od'}"]`);
+        if (para) para.value = gr[i] == null || gr[i] + (od ? 0 : 1) < 0 ? '' : String(gr[i] + (od ? 0 : 1));
+        oznaczWlasne(); odswiezZapisz();
+      });
+      el.lista.addEventListener('focusout', (e) => { if (!auto && widok() === 'strefy' && !el.lista.contains(e.relatedTarget)) { pokazBladWl = true; oznaczWlasne(); } });
+      el.lista.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || !e.target.classList.contains('tp-hr-wart')) return;
+        e.preventDefault();
+        const p = [...el.lista.querySelectorAll('.tp-hr-wart')], j = p.indexOf(e.target);
+        if (p[j + 1]) p[j + 1].focus(); else e.target.blur();
+      });
+
+      // ── zapis ──
+      f.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (aktywna !== 'tetno') pokaz('tetno');
+        // pola widoczne muszą być poprawne; błędne pole schowane (inna metoda) zostaje przy zapisanej wartości
+        const wid = widoczne();
+        wid.forEach((k) => bladWej(k, odczyt(k).blad));
+        const zly = wid.find((k) => odczyt(k).blad);
+        if (zly) { wej[zly].focus(); return; }
+        const sw = S.sprawdzWlasne(gr);
+        if (!auto && sw.blad) {
+          pokazBladWl = true; oznaczWlasne();
+          const p = el.lista.querySelector('.tp-hr-wart.zly'); if (p) p.focus();
+          return;
+        }
+        const wart = (k) => { const o = odczyt(k); return o.blad ? st[k] : o.wartosc; };
+        const u = { auto, metoda, hrmax: wart('hrmax'), hrspocz: wart('hrspocz'), lthr: wart('lthr'), wlasne: sw.blad ? st.wlasne : sw.wartosc };
+        const wynik = P.zapisz({ strefyTetna: u });
+        if (!wynik.ok) return;
+        okno.classList.toggle('bez-zapisu', !wynik.trwale);
+        pokazWidok('profil');
+      });
+
       sekcje.strefy = {
-        tytul: 'Strefy treningowe', form: f, zmienione: () => false,
+        tytul: 'Strefy treningowe', form: f, zmienione,
         fokus: () => taby.find((b) => b.dataset.strefy === aktywna),
-        otworz() { zapisz.disabled = true; pokaz(aktywna); requestAnimationFrame(ustawPasek); },
+        otworz() {
+          st = P.dane().strefyTetna || { ...S.DOMYSLNE };
+          auto = st.auto; metoda = st.metoda; gr = st.wlasne ? st.wlasne.slice() : [null, null, null, null];
+          WEJ.forEach((k) => { wej[k].value = tekstWej(st[k]); bladWej(k, ''); });
+          pokazBladWl = false;
+          pokaz(aktywna); rysuj(); requestAnimationFrame(ustawPasek);
+        },
       };
     })();
 
