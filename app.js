@@ -240,7 +240,6 @@
       const masaPole = f.querySelector('#tp-masa-pole'), masaW = f.querySelector('#tp-masa-w');
       const masa = () => P.dane().masa;
       const karta = f.querySelector('#tp-bmi'), kartaT = f.querySelector('#tp-whtr'), kiedy = f.querySelector('#tp-cialo-kiedy');
-      const opis = okno.querySelector('[data-sekcja-opis="cialo"]');
       let st = null;                               // stan w chwili wejścia w sekcję
       const tekst = (n) => (n == null ? '' : P.liczba(n));
       const norm = (v) => v.trim().replace('.', ',');
@@ -334,15 +333,6 @@
       function odswiez() { zapisz.disabled = !zmienione(); rysujMase(); rysujBmi(); rysujWhtr(); }
       masaPole.addEventListener('click', () => pokazWidok('waga'));
 
-      // opis pod nazwą sekcji na liście — z danych ZAPISANYCH, nie z tego, co akurat wpisane
-      function rysujOpis() {
-        const p = P.dane(), { bmi, o } = ocena(p.wzrost, p.masa);
-        const czesci = [p.wzrost != null ? `${P.liczba(p.wzrost)} cm` : null, p.masa != null ? `${P.kg(p.masa)} kg` : null,
-          p.talia != null ? `talia ${P.liczba(p.talia)} cm` : null, bmi ? `BMI ${b1(bmi)}${o.stan === 'ok' ? ' · ' + o.nazwa.toLowerCase() : ''}` : null].filter(Boolean);
-        opis.classList.toggle('pusty', !czesci.length);
-        opis.textContent = czesci.length ? czesci.join(' · ') : 'Nie uzupełniono';
-      }
-
       POLA.forEach((n) => {
         const w = pola[n];
         w.addEventListener('input', () => {
@@ -380,8 +370,44 @@
         },
       };
       const f2 = (iso) => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8)).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
-      window.addEventListener('k2:profil', rysujOpis);
-      rysujOpis();
+    })();
+
+    // ───── sekcja „Strefy treningowe”: dwie podzakładki, Tętno i Moc ─────
+    // Na razie sama nawigacja — treść paneli dojdzie później. Nic tu się nie zapisuje, więc „Zapisz” stoi wyłączone.
+    (function () {
+      const f = okno.querySelector('#tp-strefy-form');
+      if (!f) return;
+      const taby = [...f.querySelectorAll('[role="tab"]')], pasek = f.querySelector('.tp-podzakladki-pasek');
+      let aktywna = 'tetno';
+      // pasek pod aktywną zakładką: pozycja i szerokość z jej napisu (ikona + tekst), przesuwa się animacją
+      function ustawPasek() {
+        const t = taby.find((b) => b.dataset.strefy === aktywna);
+        if (!t.offsetWidth) return;
+        // mierzone względem paska zakładek (getBoundingClientRect), nie offsetLeft — ten liczy się od różnych rodziców
+        const baza = t.parentElement.getBoundingClientRect(), i = t.querySelector('i').getBoundingClientRect(), w = t.querySelector('span').getBoundingClientRect();
+        const lewo = i.left - baza.left - 4, szer = w.right - i.left + 8;
+        pasek.style.transform = `translateX(${lewo}px)`; pasek.style.width = szer + 'px';
+      }
+      function pokaz(k, fokus) {
+        aktywna = k;
+        taby.forEach((b) => { const on = b.dataset.strefy === k; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && fokus) b.focus();
+          f.querySelector('#' + b.getAttribute('aria-controls')).hidden = !on; });
+        ustawPasek();
+      }
+      taby.forEach((b, i) => {
+        b.addEventListener('click', () => pokaz(b.dataset.strefy));
+        b.addEventListener('keydown', (e) => {
+          const krok = { ArrowRight: 1, ArrowLeft: -1 }[e.key]; if (!krok) return;
+          e.preventDefault(); pokaz(taby[(i + krok + taby.length) % taby.length].dataset.strefy, true);
+        });
+      });
+      if ('ResizeObserver' in window) new ResizeObserver(ustawPasek).observe(f.querySelector('.tp-podzakladki'));
+      f.addEventListener('submit', (e) => e.preventDefault());
+      sekcje.strefy = {
+        tytul: 'Strefy treningowe', form: f, zmienione: () => false,
+        fokus: () => taby.find((b) => b.dataset.strefy === aktywna),
+        otworz() { zapisz.disabled = true; pokaz(aktywna); requestAnimationFrame(ustawPasek); },
+      };
     })();
 
     // ───── dziennik masy ciała ─────

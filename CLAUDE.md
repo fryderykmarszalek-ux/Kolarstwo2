@@ -341,7 +341,12 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   w rejestrze + formularz + reguła CSS pokazująca panel; nie pisać drugiego okna.**
 - `P.zapisz()` **scala**: sekcja podaje tylko swoje pola, reszta profilu zostaje. Test łapie
   wersję, w której edycja imienia kasowała pomiary.
-- Opis pod nazwą sekcji bierze się z danych ZAPISANYCH i odświeża na zdarzenie `k2:profil`.
+- **Wiersz = ikona i nazwa, BEZ podpisu z danymi** (decyzja Fryderyka z 13.11.2026: „nie chcę
+  tego”). Do 12.11 pod nazwą stało „178 cm · 68,5 kg · talia 76 cm · BMI 21,6 · w normie” — usunięte
+  razem z kodem, który to liczył. Ikona w miękkim niebieskim kwadracie (`.tp-sekcja-ik`, Phosphor
+  bold) — mój dodatek, żeby wiersz bez podpisu nie był gołym tekstem; do zdjęcia, jeśli nie pasuje.
+- **Kreska tylko MIĘDZY wierszami** (`li + li`), nie nad pierwszym i nie pod ostatnim — „prawidłowe
+  oddzielenie zakładek” ze szkicu Fryderyka.
 
 ### Sekcja „Budowa ciała”: wzrost, masa, BMI (12.11.2026)
 
@@ -382,7 +387,6 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   wersja miała akapit z normą, źródło i „BMI nie odróżnia mięśni od tłuszczu”; usunięte 12.11 (§1a).
   BMI i progi zawsze z jednym miejscem po przecinku („30,0”). Wskaźniki mieszczą się bez łamania
   od 320 do 1400 px (275 z 275 przypadków).
-- Opis na liście sekcji: „Nie uzupełniono” / „178 cm” / „178 cm · 68,5 kg · BMI 21,6 · w normie”.
 - Komunikaty pól: „Podaj wzrost w centymetrach”, „Nieprawidłowa wartość”, „Zakres 100–250 cm”.
 - Sondy: sekcja 153 kontrole na 4 urządzeniach (zegar strony ustawiony na 12.11.2026), **siedem
   celowo wstawionych błędów złapanych**; podpisy skali bez nakładania w 144 kombinacjach wieku,
@@ -408,7 +412,6 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   (96,5 cm / 170 cm = 0,57 → podwyższony) jest w teście jednostkowym.
 - **WHtR zaokrąglany do 0,01 przed oceną** — liczba na ekranie i werdykt zawsze się zgadzają
   (0,4994 → „0,50” → „Podwyższony”). Test łapie wersję bez zaokrąglenia.
-- Na liście: „178 cm · 68,5 kg · talia 76 cm · BMI 21,6 · w normie”.
 - Sondy: talia 96 kontroli na 3 urządzeniach (oczekiwania liczone w sondzie niezależnie), **siedem
   celowo wstawionych błędów złapanych**; obie skale i wskaźniki bez nakładania i obcinania
   w 545 kombinacjach (320–1400 px); strażnik „bez notatek” 882/882; pozostałe sondy bez zmian.
@@ -460,6 +463,25 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   nagłówek ślepy na wskazanie); układ 336 kombinacji (4 zestawy danych × 28 szerokości × 3 zakresy)
   bez nakładania i obcinania; sekcja przebudowana na masę z dziennika 145; strażnik „bez notatek”
   1681 (skróty typu „3 mies.” dozwolone); najechanie 71.
+
+### Sekcja „Strefy treningowe” (13.11.2026)
+
+- Drugi wiersz listy, ikona `gauge`. Nazwa od Fryderyka. **Na razie sama nawigacja: dwie
+  podzakładki „Tętno” i „Moc”, panele puste** — „dalej nic nie robimy, zostawiamy”.
+- Inspiracja: zakładki Stravy (Heart Rate · Power · Pace), **styl własny**: dwie równe kolumny na
+  całą szerokość, ikona (`heartbeat`, `lightning`) + nazwa, aktywna ciemna z niebieską ikoną,
+  nieaktywna szara; pod spodem cienka linia, a po niej **przesuwa się zaokrąglony pasek akcentu
+  o szerokości NAPISU** (nie całej kolumny), animacją 0,32 s.
+- **Pozycja paska mierzona `getBoundingClientRect` względem paska zakładek.** Pierwsza wersja
+  dodawała `offsetLeft` przycisku do `offsetLeft` ikony, które już liczy się od paska zakładek —
+  pasek pod „Moc” uciekał poza ekran. Złapane na zrzucie; test łapie tę mutację.
+- Wzorzec ARIA zakładek (`tablist` / `tab` / `tabpanel`, strzałki ← →, fokus na aktywnej).
+  Wybrana podzakładka pamiętana do przeładowania strony. Nic się nie zapisuje — „Zapisz” wyłączone,
+  tło zamyka okno.
+- Klasy `.tp-podzakladki` są ogólne — **następne podzakładki gdziekolwiek w profilu: ten sam
+  komponent**, nie nowy styl.
+- Sondy: 59 kontroli na 4 urządzeniach, **cztery celowe błędy złapane** (pasek liczony od złego
+  rodzica, oba panele naraz, podpis pod nazwą sekcji, brak kreski między wierszami).
 
 ### Pusta część okna profilu — co ma tam trafić
 

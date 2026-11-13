@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="wspolne/ikony/fill/style.css?v=7">
   <link rel="stylesheet" href="wspolne/ikony/bold/style.css?v=7">
   <link rel="stylesheet" href="wspolne/web.css?v=8">
-  <link rel="stylesheet" href="style.css?v=19">
+  <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
   <div class="tp">
@@ -65,12 +65,20 @@
       <!-- widok 1: profil -->
       <!-- treść profilu dojdzie później; awatar, imię i nazwisko stoją w nagłówku okna -->
       <!-- lista sekcji: każdy wiersz otwiera swój widok w TYM SAMYM oknie, z „Zapisz” na dole jak w edycji.
-           Kolejne sekcje = kolejne <li>; opis pod nazwą wpisuje app.js z zapisanych danych. -->
+           Kolejne sekcje = kolejne <li>. Wiersz to ikona i nazwa — bez podpisu z danymi (decyzja z 13.11.2026). -->
       <section class="tp-panel tp-panel-profil" aria-label="Athlete’s profile">
         <ul class="tp-sekcje">
           <li>
             <button class="tp-sekcja" type="button" data-sekcja="cialo">
-              <span class="tp-sekcja-t"><b>Budowa ciała</b><small data-sekcja-opis="cialo">Wzrost, masa ciała i BMI</small></span>
+              <span class="tp-sekcja-ik" aria-hidden="true"><i class="ph-bold ph-person-simple"></i></span>
+              <span class="tp-sekcja-t"><b>Budowa ciała</b></span>
+              <i class="ph-bold ph-caret-right tp-sekcja-s" aria-hidden="true"></i>
+            </button>
+          </li>
+          <li>
+            <button class="tp-sekcja" type="button" data-sekcja="strefy">
+              <span class="tp-sekcja-ik" aria-hidden="true"><i class="ph-bold ph-gauge"></i></span>
+              <span class="tp-sekcja-t"><b>Strefy treningowe</b></span>
               <i class="ph-bold ph-caret-right tp-sekcja-s" aria-hidden="true"></i>
             </button>
           </li>
@@ -168,6 +176,16 @@
         <div class="tp-bmi" id="tp-bmi" aria-live="polite"></div>
         <div class="tp-bmi tp-whtr" id="tp-whtr" aria-live="polite"></div>
       </form>
+      <!-- widok 5: strefy treningowe — dwie podzakładki: Tętno i Moc (treść dojdzie później) -->
+      <form class="tp-panel tp-panel-sekcja tp-panel-strefy" id="tp-strefy-form" novalidate aria-label="Strefy treningowe">
+        <div class="tp-podzakladki" role="tablist" aria-label="Rodzaj stref">
+          <button type="button" role="tab" id="tp-strefy-tab-tetno" aria-controls="tp-strefy-tetno" data-strefy="tetno"><i class="ph-bold ph-heartbeat" aria-hidden="true"></i><span>Tętno</span></button>
+          <button type="button" role="tab" id="tp-strefy-tab-moc" aria-controls="tp-strefy-moc" data-strefy="moc"><i class="ph-bold ph-lightning" aria-hidden="true"></i><span>Moc</span></button>
+          <span class="tp-podzakladki-pasek" aria-hidden="true"></span>
+        </div>
+        <section class="tp-strefy-panel" role="tabpanel" id="tp-strefy-tetno" aria-labelledby="tp-strefy-tab-tetno" tabindex="0"></section>
+        <section class="tp-strefy-panel" role="tabpanel" id="tp-strefy-moc" aria-labelledby="tp-strefy-tab-moc" tabindex="0" hidden></section>
+      </form>
       <!-- widok 4: dziennik masy ciała — otwierany z „Budowy ciała”; zmiany zapisuje wspólne „Zapisz” -->
       <form class="tp-panel tp-panel-sekcja tp-panel-waga" id="tp-waga-form" novalidate aria-label="Masa ciała">
         <div class="tp-waga-g">
@@ -238,6 +256,6 @@
   <script src="wspolne/wykresy.js?v=8"></script>
   <script src="wspolne/apka.js?v=6"></script>
   <script src="wspolne/web.js?v=8"></script>
-  <script src="app.js?v=18"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>

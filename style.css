@@ -251,7 +251,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 
 /* widoki */
 .tp-panel { display: none; }
-.tp-okno[data-widok-okna="profil"] .tp-panel-profil, .tp-okno[data-widok-okna="edycja"] .tp-panel-edycja, .tp-okno[data-widok-okna="cialo"] .tp-panel-cialo, .tp-okno[data-widok-okna="waga"] .tp-panel-waga { display: block; animation: tp-panel-wej .22s cubic-bezier(.2, .8, .2, 1); }
+.tp-okno[data-widok-okna="profil"] .tp-panel-profil, .tp-okno[data-widok-okna="edycja"] .tp-panel-edycja, .tp-okno[data-widok-okna="cialo"] .tp-panel-cialo, .tp-okno[data-widok-okna="waga"] .tp-panel-waga, .tp-okno[data-widok-okna="strefy"] .tp-panel-strefy { display: block; animation: tp-panel-wej .22s cubic-bezier(.2, .8, .2, 1); }
 @keyframes tp-panel-wej { from { opacity: 0; transform: translateX(10px); } }
 .tp-osoba { display: flex; align-items: center; gap: 18px; }
 .tp-awatar-duzy { width: 72px; height: 72px; font: 800 24px/1 var(--s-f); letter-spacing: .01em; }
@@ -466,8 +466,6 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
   transition: background .15s; -webkit-tap-highlight-color: transparent; }
 .tp-sekcja-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .tp-sekcja-t b { font: 700 16px/1.2 var(--s-f); letter-spacing: -.01em; color: var(--s-tekst); }
-.tp-sekcja-t small { font: 500 13.5px/1.35 var(--s-f); color: var(--s-tekst-2); font-variant-numeric: tabular-nums; }
-.tp-sekcja-t small.pusty { color: var(--s-tekst-3); }
 .tp-sekcja-s { flex: none; font-size: 15px; color: var(--s-tekst-3); transition: color .15s, transform .15s; }
 @media (any-hover: hover) { .tp-sekcja:hover { background: var(--tp-szary-1); } .tp-sekcja:hover .tp-sekcja-s { color: var(--s-tekst); transform: translateX(3px); } }
 .tp-sekcja:active { background: var(--tp-szary-2); }
@@ -654,3 +652,29 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 }
 @media (prefers-reduced-motion: reduce) { .tp-waga-dane, .tp-toast, .tp-arkusz[open] { animation: none; } }
 @container (max-width: 299px) { .tp-waga-stat { gap: 6px; } .tp-waga-stat > div { padding: 10px 9px; } .tp-waga-stat dd { font-size: 14px; } }
+
+
+/* ───── wiersz sekcji: ikona w miękkim kwadracie + nazwa (13.11.2026 — bez podpisu z danymi) ───── */
+.tp-sekcja-ik { flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--s-akcent-tlo); color: var(--s-akcent); font-size: 19px; }
+.tp-sekcja { padding: 12px 12px; }
+
+/* ───── podzakładki (Strefy treningowe: Tętno · Moc) ─────
+   Dwie równe kolumny na całą szerokość, ikona + nazwa; aktywna ciemna, nieaktywna szara.
+   Pod spodem cienka linia, a po niej przesuwa się zaokrąglony pasek w kolorze akcentu
+   — szerokość paska = szerokość napisu, nie całej kolumny. */
+.tp-podzakladki { position: relative; display: grid; grid-template-columns: 1fr 1fr; margin: -6px 0 0; border-bottom: 1px solid var(--s-linia); }
+.tp-podzakladki button { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 12px;
+  font: 700 15px/1 var(--s-f); color: var(--s-tekst-3); transition: color .2s; -webkit-tap-highlight-color: transparent; }
+.tp-podzakladki button i { font-size: 18px; transition: color .2s, transform .2s; }
+.tp-podzakladki button[aria-selected="true"] { color: var(--s-tekst); }
+.tp-podzakladki button[aria-selected="true"] i { color: var(--s-akcent); }
+@media (any-hover: hover) { .tp-podzakladki button[aria-selected="false"]:hover { color: var(--s-tekst-2); } .tp-podzakladki button[aria-selected="false"]:hover i { transform: translateY(-1px); } }
+.tp-podzakladki button:active { color: var(--s-tekst); }
+.tp-podzakladki button:focus { outline: none; }
+.tp-podzakladki button:focus-visible span { outline: 2px solid var(--s-akcent); outline-offset: 4px; border-radius: 4px; }
+.tp-podzakladki-pasek { position: absolute; left: 0; bottom: -1.5px; height: 3px; width: 0; border-radius: 3px 3px 0 0; background: var(--s-akcent);
+  transition: transform .32s cubic-bezier(.2, .8, .2, 1), width .32s cubic-bezier(.2, .8, .2, 1); }
+.tp-strefy-panel { min-height: 220px; padding-top: 20px; }
+.tp-strefy-panel:focus { outline: none; }
+.tp-strefy-panel[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .tp-podzakladki-pasek, .tp-podzakladki button, .tp-podzakladki button i { transition: none; } }
