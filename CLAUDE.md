@@ -97,6 +97,7 @@ wspolne/profil.js               profil zawodnika: jedno źródło imienia, zdję
 wspolne/bmi.js                  przelicznik BMI 13–99 lat: tabela WHO 2007 + progi WHO dla dorosłych
 wspolne/talia.js                przelicznik talia/wzrost (WHtR) według NICE NG246
 wspolne/strefy-tetna.js         strefy tętna: 4 metody (% maks., Karvonen, Friel, Coggan) i strefy własne
+wspolne/strefy-mocy.js          strefy mocy: 7 poziomów Coggana z FTP, testu 20 min, rampy albo CP; strefy własne
 archiwum/runda-{1,2,3}/         propozycje z rund, nietknięte (każda z własną kopią wspolne/)
 docs/burza-mozgow*.md           notatki z rund
 style/trener/index.html         przekierowanie ze starego adresu, zachowuje #widok
@@ -467,8 +468,8 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
 
 ### Sekcja „Strefy treningowe” (13.11.2026)
 
-- Drugi wiersz listy, ikona `gauge`. Nazwa od Fryderyka. Dwie podzakładki „Tętno” i „Moc”;
-  **Moc nadal pusta**, Tętno opisane niżej.
+- Drugi wiersz listy, ikona `gauge`. Nazwa od Fryderyka. Dwie podzakładki „Tętno” i „Moc”,
+  opisane niżej.
 - Inspiracja: zakładki Stravy (Heart Rate · Power · Pace), **styl własny**: dwie równe kolumny na
   całą szerokość, ikona (`heartbeat`, `lightning`) + nazwa, aktywna ciemna z niebieską ikoną,
   nieaktywna szara; pod spodem cienka linia, a po niej **przesuwa się zaokrąglony pasek akcentu
@@ -535,6 +536,53 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   545 kombinacji 320–1400 px (5 stanów × co 10 px);
   strażnik „bez notatek” 2431 (skróty „maks.” dozwolone tylko w etykiecie do 3 słów — sprawdzone
   na wstawionym zdaniu); najechanie 89.
+
+### Strefy mocy i wspólny kalkulator (13.11.2026)
+
+- **Research: `docs/strefy-mocy-research.md`.** Wniosek: prawie każdy system stref mocy to procent
+  JEDNEJ liczby progowej (FTP albo CP). Prawdziwe różnice są w tym, skąd ta liczba się bierze.
+  Rekordy na odcinkach liczy CP (dwa wysiłki) i 4DP Wahoo (5 s / 1 min / 5 min / 20 min, zamknięte).
+- **Model stref: Coggan, 7 poziomów** (≤ 55 · 55–75 · 75–90 · 90–105 · 105–120 · 120–150 · > 150 %
+  progu). Ten sam co Strava, TrainingPeaks, Garmin i stara strona; GoldenCheetah liczy go od CP
+  (sprawdzone w kodzie źródłowym). Nazwy: Regeneracja, Wytrzymałość, Tempo, Próg, VO2max, Beztlenowa,
+  **Sprint** (Z7 = nerwowo-mięśniowa; pełna nazwa ma 136 px i nie mieści się na telefonie).
+- **Cztery kafelki = cztery sposoby wyznaczenia progu, wszystkie dają te same 7 stref:**
+  FTP wpisane · Test 20 min (FTP = 0,95 × średnia) · Test rampowy (FTP = 0,75 × najlepsza minuta) ·
+  Critical Power z dwóch maksymalnych wysiłków: CP = (P₂t₂ − P₁t₁)/(t₂ − t₁), W′ = (P₁ − P₂)·t₁t₂/(t₂ − t₁).
+  Dzięki temu „Dostosuj ręcznie” przenosi strefy 1:1 (7 → 7). Odrzucone: iLevels i 4DP (zamknięte),
+  Seiler (LT1 z laboratorium), warianty Zwifta/TrainerRoada (te same progi przesunięte o kilka %).
+- **Reguła granic INNA niż przy tętnie, i to celowo:** Coggan pisze „Z1 ≤ 55%”, więc moc równa progowi
+  zostaje w niższej strefie (górna granica = floor(p% × próg)); źródła tętna piszą „Z1 < 81%”, więc
+  tam równa idzie wyżej. Każda reguła idzie za znakiem w swoim źródle. FTP 210 daje dokładnie strefy
+  starej strony: 0–115 · 116–157 · 158–189 · 190–220 · 221–252 · 253–315 · 316+.
+- **Próg wyliczony zaokrąglany do pełnego wata, strefy liczą się z tej liczby** — ręczne przeliczenie
+  z ekranu daje to samo. Wszystko na liczbach całkowitych (19/20 zamiast 0,95; procent × próg / 100).
+- **Zakresy okrągłe, dobrane tak, żeby z testów nigdy nie wyszedł zły próg:** FTP 50–700, 20 min
+  50–750, minuta 50–950 W (próg 38–713 W mieści się w 30–750). CP z dwóch wysiłków potrafi wyjść
+  dowolne, więc tylko ono ma komunikat „CP poza zakresem 30–750 W”. Czasy: krótki 2–10 min, długi
+  8–40 min, **różnica ≥ 5 min**, krótszy musi mieć wyższą moc. Strefy własne 10–1500 W.
+- **Kafelki wyniku pod polami:** próg wyliczony (FTP z testu albo CP — przy wpisanym FTP nie, bo
+  powtarzałby pole), W′ przy CP, **W/kg z ostatniego pomiaru masy w profilu** (bez masy kafelka nie ma).
+  W′ ≥ 100 kJ (fizjologicznie niemożliwe, czyli błąd we wpisie) bez ułamka, żeby się mieściło.
+- **Błąd między polami CP:** na liście stref od razu krótka informacja „Wymaga poprawnych wysiłków”,
+  pełny komunikat pod polami dopiero po wyjściu z grupy; „Zapisz” blokuje i stawia fokus na polach.
+- **Rampa bursztynowa** (OKLCH, jasność 0,85 → 0,52), tętno zostaje czerwone; rampę wybiera atrybut
+  `data-rodzaj` na panelu.
+- **JEDEN kalkulator dla obu zakładek: `kalkulatorStref(panel, moduł, id, poZmianie)` w `app.js`.**
+  Moduł (`STREFY_HR`, `STREFY_MOC`) opisuje metody, pola (`POLA`: etykieta, jednostka, zakres, brak),
+  granice i komunikaty; kalkulator buduje z tego DOM i zachowanie. Treść paneli powstaje w JS, klasy
+  wspólne `tp-sk-*` (do 13.11 `tp-hr-*`), identyfikatory z przedrostkiem zakładki (`tp-hr-…`, `tp-pw-…`).
+  **Nowa metoda = wpis w module, nie kod w `app.js`.** Jeden „Zapisz” zapisuje TYLKO zakładki ze
+  zmianami; błąd sprawdzany najpierw w otwartej zakładce, a błąd w drugiej przełącza na nią.
+- Zapis: `strefyMocy` w profilu = `{ auto, metoda, ftp, p20, pmin, t1, w1, t2, w2, wlasne }`; kopia pól
+  w `profil.js` idzie po kluczach `DOMYSLNE` modułu. Zepsuty wpis → „nieustawione”, reszta profilu zostaje.
+- Sondy (sesja 13.11): kalkulator mocy 737 warunków ≈ 870 tys. porównań — każdy próg 30–750 × każda
+  moc 0–1200 W, każde wejście testów, siatka wysiłków CP ze sprawdzeniem modelu (praca = CP·t + W′),
+  „Dostosuj ręcznie” z każdego progu; **8 mutacji modułu złapanych** (jedna dopiero po poprawce
+  testu, który przy oczekiwanej odmowie tylko liczył trafienia, zamiast zgłaszać pomyłkę);
+  zakładka Moc 40 kontroli na urządzenie (oczekiwane waty z definicji, przeszukaniem po kolei),
+  w tym zapis obu zakładek naraz i przełączenie na zakładkę z błędem; układ 763 kombinacji
+  320–1400 px (7 stanów, kafelki wyniku przy skrajnych danych); strażnik i najechanie z nowymi stanami.
 
 ### Pusta część okna profilu — co ma tam trafić
 

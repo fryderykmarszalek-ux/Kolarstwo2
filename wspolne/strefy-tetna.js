@@ -30,8 +30,16 @@
     coggan: { nazwa: 'Coggan', opis: '% progu · 5 stref', wymaga: ['lthr'], progi: [0.69, 0.84, 0.95, 1.06], etykiety: ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'], nazwy: N5 },
   };
   S.WLASNE = { etykiety: ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'], nazwy: N5 };
+  // opis pól dla wspólnego kalkulatora na stronie (app.js) — ten sam kształt co w wspolne/strefy-mocy.js
+  S.JEDNOSTKA = 'ud./min';
+  S.POLA = {
+    hrmax: { etykieta: 'Tętno maks.', jednostka: 'ud./min', brak: 'Wymaga tętna maks.' },
+    hrspocz: { etykieta: 'Tętno spoczynkowe', jednostka: 'ud./min', brak: 'Wymaga tętna spoczynkowego' },
+    lthr: { etykieta: 'Tętno progowe', jednostka: 'ud./min', brak: 'Wymaga tętna progowego' },
+  };
   // zakresy wejść — tak dobrane, że progi każdej metody są zawsze różne (min. 2 ud./min między nimi)
-  S.ZAKRESY = { hrmax: [120, 240], hrspocz: [30, 100], lthr: [100, 230], wlasne: [40, 250] };   // wlasne: 250, żeby „Dostosuj ręcznie” z każdej metody dawało poprawne strefy (Coggan przy LTHR 230: Z5 od 244)
+  S.ZAKRESY = { hrmax: [120, 240], hrspocz: [30, 100], lthr: [100, 230], wlasne: [40, 250] };
+  Object.keys(S.POLA).forEach((k) => { S.POLA[k].zakres = S.ZAKRESY[k]; });   // wlasne: 250, żeby „Dostosuj ręcznie” z każdej metody dawało poprawne strefy (Coggan przy LTHR 230: Z5 od 244)
 
   const sufit = (x) => Math.ceil(x - 1e-9);          // 144,9999999 i 145,0000001 → 145; chroni przed błędem zapisu ułamków
 
