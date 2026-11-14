@@ -165,7 +165,8 @@
   // kopia ustawień stref — tylko pola znane modułowi (jego DOMYSLNE), tablica granic kopiowana:
   // P.dane() nie może oddać referencji do stanu
   const kopiaUst = (M, u) => (!u ? null : !M ? { ...u } : Object.fromEntries(Object.keys(M.DOMYSLNE).map((k) =>
-    [k, k === 'wlasne' ? (u.wlasne ? u.wlasne.slice() : null) : k === 'auto' || k === 'metoda' ? u[k] : (u[k] ?? null)])));
+    [k, k === 'wlasne' ? (u.wlasne ? u.wlasne.slice() : null) : k === 'auto' || k === 'metoda' ? u[k]
+      : typeof M.DOMYSLNE[k] === 'boolean' ? !!u[k] : (u[k] ?? null)])));   // przełącznik ze starego zapisu (bez pola) = wyłączony
   const kopiaStref = (u) => kopiaUst(global.STREFY_HR, u), kopiaMocy = (u) => kopiaUst(global.STREFY_MOC, u);
 
   // Wybrany plik → kwadrat ze środka, 512×512, JPEG. Obietnica zwraca data URL albo błąd z komunikatem po polsku.

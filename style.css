@@ -757,7 +757,7 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-sk-l { font: 700 17px/1 var(--s-f); letter-spacing: -.01em; color: var(--s-tekst); font-variant-numeric: tabular-nums; }
 .tp-sk-wart { box-sizing: border-box; width: 100%; height: 42px; margin: 0; padding: 0 6px; border-radius: 11px; border: 1.5px solid var(--s-linia); outline: none; text-align: center;
   background: var(--s-karta); color: var(--s-tekst); font: 700 16px/1 var(--s-f); font-variant-numeric: tabular-nums; -webkit-appearance: none; appearance: none; transition: border-color .15s, box-shadow .15s; }
-@media (any-hover: hover) { .tp-sk-wart:hover:not(:focus) { border-color: var(--s-linia-2); } }
+@media (any-hover: hover) { .tp-sk-wart:not(.staly):hover:not(:focus) { border-color: var(--s-linia-2); } }
 .tp-sk-wart:focus { border-color: var(--s-akcent); box-shadow: 0 0 0 4px rgba(47, 111, 235, .12); }
 .tp-sk-wart.zly { border-color: var(--s-hr); background: #FFF6F6; }
 .tp-sk-wart.zly:focus { box-shadow: 0 0 0 4px rgba(229, 72, 77, .12); }
@@ -808,3 +808,18 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
   .tp-sk-auto { gap: 12px; padding: 11px 12px 11px 11px; } .tp-sk-auto-t { font-size: 14.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .tp-sk-kalk { animation: none; } .tp-przel, .tp-przel i, .tp-sk-metoda, .tp-sk-metoda i { transition: none; } }
+
+/* skrajne granice stref (14.11.2026, prośba Fryderyka): okienko zostaje, ale stałe — 0 i ∞, bez edycji */
+.tp-sk-wart.staly { display: flex; align-items: center; justify-content: center; background: var(--tp-szary-1); border-color: transparent; color: var(--s-tekst-3);
+  cursor: not-allowed; user-select: none; -webkit-user-select: none; }
+.tp-sk-l.staly { color: var(--s-tekst-3); }
+/* grupa przełączników: jedna karta, wiersze oddzielone kreską od ikony w prawo (jak ustawienia w iOS) */
+.tp-sk-grupa { border-radius: 16px; background: var(--s-karta-2); overflow: hidden; }
+.tp-sk-grupa .tp-sk-auto { border-radius: 0; background: transparent; }
+@media (any-hover: hover) { .tp-sk-grupa .tp-sk-auto:hover { background: var(--tp-szary-1); } }
+.tp-sk-grupa .tp-sk-auto:focus-visible { outline-offset: -3px; }
+.tp-sk-grupa .tp-sk-auto + .tp-sk-auto { position: relative; }
+.tp-sk-grupa .tp-sk-auto + .tp-sk-auto::before { content: ''; position: absolute; top: 0; left: 64px; right: 0; height: 1px; background: var(--s-linia-2); }
+/* pola poza blokiem kalkulatora: schowane, gdy nie ma żadnego; przy strefach własnych tylko FTP */
+.tp-pola.tp-sk-dane[hidden], .tp-sk-rel[hidden] { display: none; }
+.tp-strefy-panel[data-tryb="wlasne"] .tp-pola.tp-sk-dane { margin-top: 24px; }

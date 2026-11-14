@@ -420,10 +420,15 @@
 
         // ── budowa ──
         const el = {};
-        el.auto = h('button', { class: 'tp-sk-auto', id: pid('auto'), type: 'button', role: 'switch', 'aria-checked': 'true' },
-          h('span', { class: 'tp-sekcja-ik', 'aria-hidden': 'true' }, ik('calculator', 'bold')),
-          h('span', { class: 'tp-sk-auto-t', text: 'Licz strefy automatycznie' }),
+        // przełączniki w jednej grupie (jak ustawienia w iOS): kalkulator + przełączniki modułu (moc: aktualizacja FTP z jazd)
+        const przelacznik = (id_, ikona, tekst) => h('button', { class: 'tp-sk-auto', id: id_, type: 'button', role: 'switch', 'aria-checked': 'false' },
+          h('span', { class: 'tp-sekcja-ik', 'aria-hidden': 'true' }, ik(ikona, 'bold')),
+          h('span', { class: 'tp-sk-auto-t', text: tekst }),
           h('span', { class: 'tp-przel', 'aria-hidden': 'true' }, h('i')));
+        el.auto = przelacznik(pid('auto'), 'calculator', 'Licz strefy automatycznie');
+        const DODATKOWE = S.PRZELACZNIKI || [];
+        const przel = Object.fromEntries(DODATKOWE.map((x) => [x.klucz, przelacznik(pid(x.klucz), x.ikona, x.etykieta)]));
+        el.grupa = h('div', { class: 'tp-sk-grupa' }, el.auto, ...DODATKOWE.map((x) => przel[x.klucz]));
         const kafle = Object.entries(S.METODY).map(([k, m]) => h('button', { type: 'button', role: 'radio', class: 'tp-sk-metoda', 'data-metoda': k },
           h('b', { text: m.nazwa }), h('small', { text: m.opis }), h('i', { class: 'ph-fill ph-check-circle', 'aria-hidden': 'true' })));
         const wej = {}, poleWej = {};
@@ -441,25 +446,26 @@
         el.wynik = S.wynik ? h('dl', { class: 'tp-sk-wynik', 'aria-live': 'polite' }) : null;
         el.kalk = h('div', { class: 'tp-sk-kalk' },
           h('div', { class: 'tp-pole-g tp-sk-g' }, h('span', { id: pid('metoda-t'), text: 'Metoda' })),
-          h('div', { class: 'tp-sk-metody', role: 'radiogroup', 'aria-labelledby': pid('metoda-t') }, ...kafle),
-          el.dane, el.rel, el.wynik);
+          h('div', { class: 'tp-sk-metody', role: 'radiogroup', 'aria-labelledby': pid('metoda-t') }, ...kafle));
         el.recznie = h('button', { class: 'tp-sk-recznie', type: 'button' }, KREDKA(), h('span', { text: 'Dostosuj ręcznie' }));
         el.lista = h('div', { class: 'tp-sk-lista', id: pid('lista'), role: 'group', 'aria-labelledby': pid('strefy-t'), 'aria-describedby': pid('wl-b') });
         el.wlB = h('p', { class: 'tp-blad tp-sk-wl-b', id: pid('wl-b'), role: 'alert' });
-        panel.replaceChildren(el.auto, el.kalk,
+        // pola stoją POZA blokiem kalkulatora: przy wyłączonym zostają pola z S.POLA_WLASNE (moc: FTP)
+        panel.replaceChildren(el.grupa, el.kalk, el.dane, el.rel, ...(el.wynik ? [el.wynik] : []),
           h('div', { class: 'tp-sk-strefy-g' }, h('span', { class: 'tp-sk-g', id: pid('strefy-t'), text: `Strefy · ${S.JEDNOSTKA}` }), el.recznie),
           el.lista, el.wlB);
 
         // ── stan ──
         let st = null;                         // zapisane ustawienia w chwili wejścia w sekcję
         let auto = true, metoda = Object.keys(S.METODY)[0];
+        let dod = {};                          // stan przełączników modułu, np. { ftpAuto: false }
         let gr = pustaGr();                    // granice stref własnych: górne granice Z1…Z(n−1); null = puste pole
         let pokazBladWl = false;               // błąd stref własnych widać dopiero po wyjściu z listy albo przy „Zapisz”
 
         const tekstWej = (v) => (v == null ? '' : String(v));
         const normWej = (t) => (/^\d+$/.test(t.trim()) ? String(+t.trim()) : t.trim());
         const odczyt = (k) => S.sprawdzWejscie(k, wej[k].value);
-        const widoczne = () => (auto ? S.METODY[metoda].wymaga : []);
+        const widoczne = () => (auto ? S.METODY[metoda].wymaga : S.POLA_WLASNE || []);
         const dane = () => Object.fromEntries(WEJ.map((k) => [k, odczyt(k).wartosc]));   // błędne pole liczy się jak puste
         const poczatki = () => S.poczatki(metoda, dane());
         const relacja = () => (S.relacja ? S.relacja(metoda, dane()) : null);
@@ -483,12 +489,13 @@
             const pierwsza = i === 0, ostatnia = i === n - 1;
             let od = null, do_ = null;
             if (wl) {
-              od = pierwsza ? null : pole(e, i - 1, 'od', gr[i - 1] == null ? '' : String(gr[i - 1] + 1));
-              do_ = ostatnia ? null : pole(e, i, 'do', gr[i] == null ? '' : String(gr[i]));
+              // skrajne granice: okienko jest, ale stałe — 0 na dole pierwszej strefy, ∞ na górze ostatniej
+              od = pierwsza ? h('span', { class: 'tp-sk-wart staly', 'aria-hidden': 'true', text: '0' }) : pole(e, i - 1, 'od', gr[i - 1] == null ? '' : String(gr[i - 1] + 1));
+              do_ = ostatnia ? h('span', { class: 'tp-sk-wart staly', 'aria-hidden': 'true', text: '∞' }) : pole(e, i, 'do', gr[i] == null ? '' : String(gr[i]));
             } else {
               const w = wiersze && wiersze[i];
-              od = pierwsza ? null : h('span', { class: 'tp-sk-l', text: w ? String(w.od) : '—' });
-              do_ = ostatnia ? null : h('span', { class: 'tp-sk-l', text: w ? String(w.do) : '—' });
+              od = pierwsza ? h('span', { class: 'tp-sk-l staly', text: '0' }) : h('span', { class: 'tp-sk-l', text: w ? String(w.od) : '—' });
+              do_ = ostatnia ? h('span', { class: 'tp-sk-l staly', text: '∞' }) : h('span', { class: 'tp-sk-l', text: w ? String(w.do) : '—' });
             }
             const opis = wl || !wiersze ? `${e} ${m.nazwy[i]}` : `${e} ${m.nazwy[i]}: ${pierwsza ? `do ${wiersze[i].do}` : ostatnia ? `od ${wiersze[i].od}` : `${wiersze[i].od}–${wiersze[i].do}`} ${S.JEDNOSTKA}`;
             return h('div', { class: 'tp-sk-w', role: wl ? 'group' : null, 'aria-label': opis, 'data-z': `${n}-${i + 1}` },
@@ -496,7 +503,7 @@
               h('span', { class: 'tp-sk-n', 'aria-hidden': wl ? null : 'true' }, h('b', null, h('span', { class: 'tp-sk-z', text: e }), h('span', { class: 'tp-sk-nazwa', text: m.nazwy[i] })),
                 pr ? h('small', { text: pr[i] }) : null),
               h('span', { class: 'tp-sk-od' }, od),
-              h('span', { class: 'tp-sk-kr', 'aria-hidden': 'true', text: pierwsza || ostatnia ? '' : '–' }),
+              h('span', { class: 'tp-sk-kr', 'aria-hidden': 'true', text: '–' }),
               h('span', { class: 'tp-sk-do' }, do_));
           });
           let brak = null;
@@ -521,7 +528,7 @@
         // kafelki wyniku (moc): próg, W′, W/kg — W/kg tylko przy znanej masie ciała
         function rysujWynik() {
           if (!el.wynik) return;
-          const wyn = S.wynik(metoda, dane(), P.dane().masa);
+          const wyn = S.wynik(auto ? metoda : S.METODA_WLASNA, dane(), P.dane().masa);
           el.wynik.hidden = !wyn.length;
           el.wynik.classList.toggle('pusty', !!wyn.length && wyn[0].wartosc === '—');
           el.wynik.replaceChildren(...wyn.map((x) => h('div', null, h('dt', { text: x.etykieta }), h('dd', null, x.wartosc, x.jednostka ? h('small', { text: x.jednostka }) : null))));
@@ -529,28 +536,34 @@
         function rysuj() {
           panel.dataset.tryb = auto ? 'auto' : 'wlasne';
           el.auto.setAttribute('aria-checked', String(auto));
+          DODATKOWE.forEach((x) => przel[x.klucz].setAttribute('aria-checked', String(!!dod[x.klucz])));
           kafle.forEach((b) => { const on = b.dataset.metoda === metoda; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; });
-          const wym = S.METODY[metoda].wymaga;
-          WEJ.forEach((k) => { poleWej[k].hidden = !wym.includes(k); });
-          el.dane.dataset.metoda = metoda;
+          const wid = widoczne();
+          WEJ.forEach((k) => { poleWej[k].hidden = !wid.includes(k); });
+          el.dane.hidden = !wid.length;
+          el.dane.dataset.metoda = auto ? metoda : 'wlasne';
+          el.rel.hidden = !auto;
           if (el.rel.textContent) el.rel.textContent = relacja() || '';
           rysujWynik(); rysujListe(); poZmianie();
         }
 
         // ── zmiany ──
         // „zmienione” porównuje to, co widać w polach (także wpisane w połowie), z tym, co zapisane
-        const surowo = () => JSON.stringify([auto, metoda, ...WEJ.map((k) => normWej(wej[k].value)), gr]);
-        const surowoZ = (u) => JSON.stringify([u.auto, u.metoda, ...WEJ.map((k) => tekstWej(u[k])), u.wlasne || pustaGr()]);
+        const surowo = () => JSON.stringify([auto, metoda, ...WEJ.map((k) => normWej(wej[k].value)), gr, ...DODATKOWE.map((x) => !!dod[x.klucz])]);
+        const surowoZ = (u) => JSON.stringify([u.auto, u.metoda, ...WEJ.map((k) => tekstWej(u[k])), u.wlasne || pustaGr(), ...DODATKOWE.map((x) => !!u[x.klucz])]);
         const zmienione = () => !!st && surowo() !== surowoZ(st);
 
         function ustawAuto(on) {
           if (on === auto) return;
           // wyłączenie przy pustych strefach własnych: startują od tego, co policzył kalkulator
           if (!on && gr.every((g) => g == null)) { const pp = poczatki(); if (pp) gr = S.doWlasnych(metoda, pp); }
+          // i puste pola stref własnych (moc: FTP) dostają to, co wyliczyła metoda — np. FTP z testu 20 min
+          if (!on && S.przyWylaczeniu) Object.entries(S.przyWylaczeniu(metoda, dane()) || {}).forEach(([k, v]) => { if (!wej[k].value) wej[k].value = String(v); });
           auto = on; pokazBladWl = false;
           rysuj();
         }
         el.auto.addEventListener('click', () => ustawAuto(!auto));
+        DODATKOWE.forEach((x) => przel[x.klucz].addEventListener('click', () => { dod[x.klucz] = !dod[x.klucz]; rysuj(); }));
         // „Dostosuj ręcznie”: wyliczone strefy przechodzą do własnych, kalkulator się wyłącza
         el.recznie.addEventListener('click', () => {
           const pp = poczatki();
@@ -608,6 +621,7 @@
           otworz(u) {
             st = u || { ...S.DOMYSLNE };
             auto = st.auto; metoda = st.metoda; gr = st.wlasne ? st.wlasne.slice() : pustaGr();
+            dod = Object.fromEntries(DODATKOWE.map((x) => [x.klucz, !!st[x.klucz]]));
             WEJ.forEach((k) => { wej[k].value = tekstWej(st[k]); bladWej(k, ''); });
             el.rel.textContent = ''; pokazBladWl = false;
             rysuj();
@@ -623,7 +637,8 @@
             const sw = S.sprawdzWlasne(gr);
             if (!auto && sw.blad) { pokazBladWl = true; oznaczWlasne(); return { fokus: el.lista.querySelector('.tp-sk-wart.zly') }; }
             const wart = (k) => { const o = odczyt(k); return o.blad ? st[k] : o.wartosc; };
-            return { u: { auto, metoda, ...Object.fromEntries(WEJ.map((k) => [k, wart(k)])), wlasne: sw.blad ? st.wlasne : sw.wartosc } };
+            return { u: { auto, metoda, ...Object.fromEntries(WEJ.map((k) => [k, wart(k)])), wlasne: sw.blad ? st.wlasne : sw.wartosc,
+              ...Object.fromEntries(DODATKOWE.map((x) => [x.klucz, !!dod[x.klucz]])) } };
           },
         };
       }

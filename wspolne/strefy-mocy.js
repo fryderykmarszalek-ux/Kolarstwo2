@@ -48,6 +48,14 @@
   // dozwolony próg. Z okrągłych zakresów pól wychodzi FTP 38–713 W (50 × 0,75 … 950 × 0,75), więc z testów nigdy nie ma
   // błędu progu; sprawdzenie łapie tylko CP, które z dwóch wysiłków potrafi wyjść dowolne (nawet ujemne).
   S.PROG = [30, 750];
+  // kalkulator wyłączony: zostaje pole FTP — FTP jest potrzebne stronie niezależnie od tego, skąd są strefy
+  S.POLA_WLASNE = ['ftp'];
+  S.METODA_WLASNA = 'ftp';                                   // kafelki wyniku przy wyłączonym kalkulatorze: jak przy wpisanym FTP (W/kg)
+  // FTP wyliczone z testu przechodzi do pola FTP, gdy kalkulator się wyłącza, a pole jest puste (CP to nie FTP — nie przechodzi)
+  S.przyWylaczeniu = (metoda, d) => { const r = (metoda === 'test20' || metoda === 'rampa') && S.prog(metoda, d); return r && r.prog ? { ftp: r.prog } : null; };
+  // przełącznik „Aktualizuj FTP z jazd” (jak automatyczne wykrywanie FTP w Zwifcie). 14.11.2026: jazd na stronie jeszcze
+  // nie ma, więc zapisujemy tylko ZAMIAR — mechanizm wejdzie z podłączeniem danych (CLAUDE.md, „Strefy mocy”).
+  S.PRZELACZNIKI = [{ klucz: 'ftpAuto', etykieta: 'Aktualizuj FTP z\u00a0jazd', ikona: 'arrows-clockwise' }];
   // strefy własne: 10–1500 W, żeby „Dostosuj ręcznie” z KAŻDEGO dozwolonego progu dawało poprawne strefy
   // (próg 30 → Z1 do 16 W; próg 750 → Z7 od 1126 W)
   S.ZAKRESY = { wlasne: [10, 1500] };
@@ -122,11 +130,12 @@
     return wyn;
   };
 
-  S.DOMYSLNE = { auto: true, metoda: 'ftp', ftp: null, p20: null, pmin: null, t1: null, w1: null, t2: null, w2: null, wlasne: null };
+  S.DOMYSLNE = { auto: true, metoda: 'ftp', ftp: null, p20: null, pmin: null, t1: null, w1: null, t2: null, w2: null, wlasne: null, ftpAuto: false };
   S.poprawne = (u) => {
     if (u == null) return true;
     if (typeof u !== 'object' || typeof u.auto !== 'boolean' || !(u.metoda in S.METODY)) return false;
     for (const k of Object.keys(S.POLA)) if (u[k] != null && (!Number.isInteger(u[k]) || u[k] < S.POLA[k].zakres[0] || u[k] > S.POLA[k].zakres[1])) return false;
+    if (u.ftpAuto != null && typeof u.ftpAuto !== 'boolean') return false;
     return u.wlasne == null || (Array.isArray(u.wlasne) && S.sprawdzWlasne(u.wlasne).wartosc !== null);
   };
 

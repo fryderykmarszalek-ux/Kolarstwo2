@@ -494,8 +494,8 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   i spoczynkowe; Friel (7 stref) i Coggan (5) → tętno progowe. **Bez daty urodzenia i bez wzoru
   na HRmax** — decyzja Fryderyka („w metodzie a i b daj tylko HR max”). Pola są wspólne dla metod:
   wpisane tętno maks. zostaje po przejściu z A na B.
-- **Wyłączony:** pięć stref własnych. **Pierwsza strefa nie ma dolnej granicy, ostatnia górnej** —
-  tam nie ma pola (decyzja Fryderyka: „leci do nieskończoności”). „Do” strefy i „od” następnej to
+- **Wyłączony:** pięć stref własnych. **Pierwsza strefa nie ma dolnej granicy, ostatnia górnej**
+  (decyzja Fryderyka: „leci do nieskończoności”) — od 14.11 stoją tam stałe okienka „0” i „∞” (niżej). „Do” strefy i „od” następnej to
   JEDNA granica: wpisanie jednego uzupełnia drugie, więc dziura ani nakładanie nie są możliwe.
 - **Wyjście do stref własnych jest zawsze na widoku:** przełącznik na górze + pigułka „Dostosuj
   ręcznie” nad listą, która przenosi wyliczone strefy do własnych i wyłącza kalkulator (7 stref
@@ -583,6 +583,30 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   zakładka Moc 40 kontroli na urządzenie (oczekiwane waty z definicji, przeszukaniem po kolei),
   w tym zapis obu zakładek naraz i przełączenie na zakładkę z błędem; układ 763 kombinacji
   320–1400 px (7 stanów, kafelki wyniku przy skrajnych danych); strażnik i najechanie z nowymi stanami.
+
+### Strefy: okienka 0 i ∞, FTP przy strefach własnych, „Aktualizuj FTP z jazd” (14.11.2026)
+
+- **Skrajne granice stref MAJĄ okienka** — poprawka Fryderyka: „okienka w strefach zniknęły; ma być
+  niedostępne do edycji, ale mają istnieć z wartościami nieskończoność i 0”. Dolna granica pierwszej
+  strefy = stałe okienko „0”, górna ostatniej = „∞”, w obu podzakładkach. W strefach własnych to szare
+  okienko (`.tp-sk-wart.staly`): nie pole tekstowe, bez fokusu, bez reakcji na najechanie, kursor
+  „niedostępne”. W kalkulatorze „0” i „∞” szarym pismem. Myślnik stoi w każdym wierszu.
+  Zastępuje decyzję z 13.11 („tam nie ma pola”).
+- **Pole FTP także przy WYŁĄCZONYM kalkulatorze mocy** — „to kluczowe dla strony”. `S.POLA_WLASNE`
+  w module = pola widoczne przy strefach własnych (moc: `ftp`, tętno: brak). Pola stoją teraz POZA
+  blokiem kalkulatora. Pod polem kafelek W/kg (`S.METODA_WLASNA`). FTP jest to samo pole co w metodzie
+  „FTP” — jedna wartość. Przy wyłączeniu kalkulatora puste FTP dostaje FTP z testu 20 min albo rampy
+  (`S.przyWylaczeniu`); CP NIE przechodzi, bo CP to nie FTP.
+- **Przełącznik „Aktualizuj FTP z jazd”** (jak automatyczne wykrywanie FTP w Zwifcie) — drugi wiersz
+  w grupie przełączników (`S.PRZELACZNIKI`, jedna karta z kreską jak w iOS), zapis `strefyMocy.ftpAuto`
+  (domyślnie wyłączony; stary zapis bez pola = wyłączony). **DZIŚ NIC NIE ROBI — jazd na stronie jeszcze
+  nie ma. ZAMIAR NA PÓŹNIEJ (polecenie Fryderyka „zapamiętaj”):** po podłączeniu prawdziwych jazd,
+  przy `ftpAuto = true`, strona sama aktualizuje FTP z jazd z pomiarem mocy. Metodę ustalić wtedy
+  z Fryderykiem (kandydaci: CP z krzywej mocy z ostatnich tygodni; 0,95 × najlepsze 20 min); pewnie
+  jak w Zwifcie — podnosi po jeździe, która pokazała wyższy próg. Pamiętać, że FTP to decyzja Fryderyka
+  (stara strona, 19.09.2026): przy wyłączonym przełączniku strona NIGDY nie rusza FTP sama.
+- Sondy: mutacje złapane — okienka 0/∞ znikające, okienko 0 edytowalne, brak pola FTP przy strefach
+  własnych, przełącznik niezapisywany, FTP z testu nieprzechodzące, okienko z kursorem zwykłym.
 
 ### Pusta część okna profilu — co ma tam trafić
 
