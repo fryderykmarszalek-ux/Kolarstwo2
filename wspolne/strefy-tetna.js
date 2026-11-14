@@ -32,9 +32,12 @@
   S.WLASNE = { etykiety: ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'], nazwy: N5 };
   // opis pól dla wspólnego kalkulatora na stronie (app.js) — ten sam kształt co w wspolne/strefy-mocy.js
   S.JEDNOSTKA = 'ud./min';
+  // PARAMETRY — tętno maks. i spoczynkowe ZAWSZE na górze zakładki, niezależnie od kalkulatora (14.11.2026, Fryderyk);
+  // metody korzystają z nich, a u siebie pokazują tylko to, czego tu nie ma (tętno progowe)
+  S.PARAMETRY = ['hrmax', 'hrspocz'];
   S.POLA = {
     hrmax: { etykieta: 'Tętno maks.', jednostka: 'ud./min', brak: 'Wymaga tętna maks.' },
-    hrspocz: { etykieta: 'Tętno spoczynkowe', jednostka: 'ud./min', brak: 'Wymaga tętna spoczynkowego' },
+    hrspocz: { etykieta: 'Tętno spocz.', jednostka: 'ud./min', brak: 'Wymaga tętna spoczynkowego' },
     lthr: { etykieta: 'Tętno progowe', jednostka: 'ud./min', brak: 'Wymaga tętna progowego' },
   };
   // zakresy wejść — tak dobrane, że progi każdej metody są zawsze różne (min. 2 ud./min między nimi)

@@ -813,13 +813,35 @@ html.tp-okno-otwarte { overflow: hidden; }   /* strona pod oknem się nie przewi
 .tp-sk-wart.staly { display: flex; align-items: center; justify-content: center; background: var(--tp-szary-1); border-color: transparent; color: var(--s-tekst-3);
   cursor: not-allowed; user-select: none; -webkit-user-select: none; }
 .tp-sk-l.staly { color: var(--s-tekst-3); }
-/* grupa przełączników: jedna karta, wiersze oddzielone kreską od ikony w prawo (jak ustawienia w iOS) */
-.tp-sk-grupa { border-radius: 16px; background: var(--s-karta-2); overflow: hidden; }
-.tp-sk-grupa .tp-sk-auto { border-radius: 0; background: transparent; }
-@media (any-hover: hover) { .tp-sk-grupa .tp-sk-auto:hover { background: var(--tp-szary-1); } }
-.tp-sk-grupa .tp-sk-auto:focus-visible { outline-offset: -3px; }
-.tp-sk-grupa .tp-sk-auto + .tp-sk-auto { position: relative; }
-.tp-sk-grupa .tp-sk-auto + .tp-sk-auto::before { content: ''; position: absolute; top: 0; left: 64px; right: 0; height: 1px; background: var(--s-linia-2); }
 /* pola poza blokiem kalkulatora: schowane, gdy nie ma żadnego; przy strefach własnych tylko FTP */
 .tp-pola.tp-sk-dane[hidden], .tp-sk-rel[hidden] { display: none; }
-.tp-strefy-panel[data-tryb="wlasne"] .tp-pola.tp-sk-dane { margin-top: 24px; }
+
+/* ───── strefy: dwie sekcje (14.11.2026) — PARAMETRY zawsze na górze, STREFY pod spodem ─────
+   Parametry stoją w tym samym miejscu niezależnie od kalkulatora i metody; kreska nad „Strefy” rozdziela to,
+   co jest wartością zawodnika, od tego, jak liczą się strefy. */
+.tp-sk-sekcja { margin: 0 0 12px; font: 700 12px/1.2 var(--s-f); letter-spacing: .08em; text-transform: uppercase; color: var(--s-tekst-3); }
+.tp-sk-sekcja:not(:first-child) { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--s-linia); }
+.tp-pola.tp-sk-param { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.tp-sk-param + .tp-sk-auto { margin-top: 16px; }
+.tp-sk-kg { font: 600 12.5px/1.2 var(--s-f); color: var(--s-tekst-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* okienko „Moc progowa”: wygląda jak pole, ale tylko do odczytu — szare tło, bez ramki, kursor „niedostępne” */
+.tp-sk-prog-okno { box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 48px; padding: 0 14px; border-radius: 12px;
+  background: var(--tp-szary-1); cursor: not-allowed; user-select: none; -webkit-user-select: none; }
+.tp-sk-prog-w { font: 700 16px/1 var(--s-f); color: var(--s-tekst); font-variant-numeric: tabular-nums; }
+.tp-sk-prog.pusty .tp-sk-prog-w { color: var(--s-tekst-3); }
+.tp-sk-prog-l { display: flex; align-items: baseline; gap: 4px; }
+.tp-sk-prog-j { font: 600 14px/1 var(--s-f); color: var(--s-tekst-3); }
+.tp-sk-prog-j[hidden] { display: none; }
+.tp-sk-prog-okno > i { font-size: 15px; color: var(--s-tekst-3); }   /* kłódka: wartość wyliczona, nie do wpisania */
+.tp-sk-prog-pod { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin-top: 7px; }
+.tp-sk-prog-z { font: 600 12.5px/1.35 var(--s-f); color: var(--s-tekst-3); }
+.tp-sk-ustaw { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; margin: -2px -6px; border-radius: 6px;
+  font: 700 12.5px/1.35 var(--s-f); color: var(--s-akcent); white-space: nowrap; transition: background .15s; -webkit-tap-highlight-color: transparent; }
+.tp-sk-ustaw[hidden] { display: none; }
+.tp-sk-ustaw i { font-size: 12px; }
+@media (any-hover: hover) { .tp-sk-ustaw:hover { background: var(--s-akcent-tlo); } }
+.tp-sk-ustaw:active { background: var(--s-akcent-tlo); }
+.tp-sk-ustaw:focus { outline: none; }
+.tp-sk-ustaw:focus-visible { outline: 2px solid var(--s-akcent); outline-offset: 1px; }
+/* jednostka listy stref w wierszu nagłówka kolumn (nad nazwami), żeby nagłówek „Granice” nie łamał się na telefonie */
+.tp-sk-nagl .tp-sk-jedn-n { padding-left: 12px; text-align: left; text-transform: none; letter-spacing: 0; font-size: 11.5px; }

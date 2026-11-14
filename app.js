@@ -407,7 +407,9 @@
 
       // ── kalkulator stref: JEDEN mechanizm dla tętna i mocy ──
       // S = moduł obliczeń (STREFY_HR, STREFY_MOC) — zna metody, pola, granice i komunikaty; tu jest tylko wygląd i zachowanie.
-      // Przełącznik na górze: włączony = kafelki metod i tylko pola wybranej metody, wyłączony = strefy własne.
+      // Dwie sekcje (14.11.2026): PARAMETRY — pola z S.PARAMETRY (+ okienko progu i przełączniki modułu) ZAWSZE na górze,
+      // niezależnie od kalkulatora; STREFY — przełącznik kalkulatora, kafelki metod, pola metody, których nie ma w parametrach,
+      // i lista. Włączony kalkulator = metody; wyłączony = strefy własne.
       // Lista stref jest jedna dla obu trybów — wyliczone liczby zamieniają się w pola na tych samych miejscach.
       // Pierwsza strefa nie ma dolnej granicy, ostatnia górnej; „do” strefy i „od” następnej to JEDNA granica.
       const KREDKA = (() => { const t = document.createElement('template');
@@ -420,7 +422,7 @@
 
         // ── budowa ──
         const el = {};
-        // przełączniki w jednej grupie (jak ustawienia w iOS): kalkulator + przełączniki modułu (moc: aktualizacja FTP z jazd)
+        const PARAM = S.PARAMETRY || [];
         const przelacznik = (id_, ikona, tekst) => h('button', { class: 'tp-sk-auto', id: id_, type: 'button', role: 'switch', 'aria-checked': 'false' },
           h('span', { class: 'tp-sekcja-ik', 'aria-hidden': 'true' }, ik(ikona, 'bold')),
           h('span', { class: 'tp-sk-auto-t', text: tekst }),
@@ -428,7 +430,6 @@
         el.auto = przelacznik(pid('auto'), 'calculator', 'Licz strefy automatycznie');
         const DODATKOWE = S.PRZELACZNIKI || [];
         const przel = Object.fromEntries(DODATKOWE.map((x) => [x.klucz, przelacznik(pid(x.klucz), x.ikona, x.etykieta)]));
-        el.grupa = h('div', { class: 'tp-sk-grupa' }, el.auto, ...DODATKOWE.map((x) => przel[x.klucz]));
         const kafle = Object.entries(S.METODY).map(([k, m]) => h('button', { type: 'button', role: 'radio', class: 'tp-sk-metoda', 'data-metoda': k },
           h('b', { text: m.nazwa }), h('small', { text: m.opis }), h('i', { class: 'ph-fill ph-check-circle', 'aria-hidden': 'true' })));
         const wej = {}, poleWej = {};
@@ -437,11 +438,24 @@
           wej[k] = h('input', { id: pid(k), type: 'text', inputmode: 'numeric', pattern: '[0-9]*', maxlength: String(String(d.zakres[1]).length), autocomplete: 'off',
             enterkeyhint: 'next', 'aria-describedby': pid(k) + '-b', 'aria-label': d.aria || null });
           poleWej[k] = h('div', { class: 'tp-pole', 'data-wej': k },
-            h('div', { class: 'tp-pole-g' }, h('label', { for: pid(k), text: d.etykieta })),
+            h('div', { class: 'tp-pole-g' }, h('label', { for: pid(k), text: d.etykieta }), d.naKg ? h('span', { class: 'tp-sk-kg', id: pid(k) + '-kg' }) : null),
             h('div', { class: 'tp-jedn tp-sk-jedn', 'data-jedn': d.jednostka }, wej[k], h('span', { 'aria-hidden': 'true', text: d.jednostka })),
             h('p', { class: 'tp-blad', id: pid(k) + '-b', role: 'alert' }));
         });
-        el.dane = h('div', { class: 'tp-pola tp-sk-dane' }, ...WEJ.map((k) => poleWej[k]));
+        // okienko progu (moc): tylko do odczytu, z podpisem źródła i „Ustaw jako FTP”
+        const PO = S.PROG_OKNO;
+        if (PO) {
+          el.progW = h('span', { class: 'tp-sk-prog-w' });
+          el.progZ = h('span', { class: 'tp-sk-prog-z' });
+          el.ustaw = h('button', { class: 'tp-sk-ustaw', type: 'button' }, ik('arrow-left', 'bold'), h('span', { text: PO.przycisk }));
+          el.prog = h('div', { class: 'tp-pole tp-sk-prog' },
+            h('div', { class: 'tp-pole-g' }, h('span', { id: pid('prog-t'), text: PO.etykieta })),
+            h('div', { class: 'tp-sk-prog-okno', role: 'status', 'aria-labelledby': pid('prog-t') },
+              h('span', { class: 'tp-sk-prog-l' }, el.progW, el.progJ = h('span', { class: 'tp-sk-prog-j', text: PO.jednostka })), ik('lock-simple', 'bold')),
+            h('div', { class: 'tp-sk-prog-pod' }, el.progZ, el.ustaw));
+        }
+        el.param = h('div', { class: 'tp-pola tp-sk-param' }, ...PARAM.map((k) => poleWej[k]), el.prog || null);
+        el.dane = h('div', { class: 'tp-pola tp-sk-dane' }, ...WEJ.filter((k) => !PARAM.includes(k)).map((k) => poleWej[k]));
         el.rel = h('p', { class: 'tp-blad tp-sk-rel', id: pid('rel-b'), role: 'alert' });
         el.wynik = S.wynik ? h('dl', { class: 'tp-sk-wynik', 'aria-live': 'polite' }) : null;
         el.kalk = h('div', { class: 'tp-sk-kalk' },
@@ -450,9 +464,11 @@
         el.recznie = h('button', { class: 'tp-sk-recznie', type: 'button' }, KREDKA(), h('span', { text: 'Dostosuj ręcznie' }));
         el.lista = h('div', { class: 'tp-sk-lista', id: pid('lista'), role: 'group', 'aria-labelledby': pid('strefy-t'), 'aria-describedby': pid('wl-b') });
         el.wlB = h('p', { class: 'tp-blad tp-sk-wl-b', id: pid('wl-b'), role: 'alert' });
-        // pola stoją POZA blokiem kalkulatora: przy wyłączonym zostają pola z S.POLA_WLASNE (moc: FTP)
-        panel.replaceChildren(el.grupa, el.kalk, el.dane, el.rel, ...(el.wynik ? [el.wynik] : []),
-          h('div', { class: 'tp-sk-strefy-g' }, h('span', { class: 'tp-sk-g', id: pid('strefy-t'), text: `Strefy · ${S.JEDNOSTKA}` }), el.recznie),
+        el.metodaPola = h('div', { class: 'tp-sk-metoda-pola' }, el.dane, el.rel, el.wynik);
+        panel.replaceChildren(
+          h('h3', { class: 'tp-sk-sekcja', text: 'Parametry' }), el.param, ...DODATKOWE.map((x) => przel[x.klucz]),
+          h('h3', { class: 'tp-sk-sekcja', text: 'Strefy' }), el.auto, el.kalk, el.metodaPola,
+          h('div', { class: 'tp-sk-strefy-g' }, h('span', { class: 'tp-sk-g', id: pid('strefy-t'), text: 'Granice' }), el.recznie),
           el.lista, el.wlB);
 
         // ── stan ──
@@ -465,7 +481,8 @@
         const tekstWej = (v) => (v == null ? '' : String(v));
         const normWej = (t) => (/^\d+$/.test(t.trim()) ? String(+t.trim()) : t.trim());
         const odczyt = (k) => S.sprawdzWejscie(k, wej[k].value);
-        const widoczne = () => (auto ? S.METODY[metoda].wymaga : S.POLA_WLASNE || []);
+        // pola do wypełnienia i sprawdzenia: parametry zawsze, pola metody tylko przy włączonym kalkulatorze
+        const widoczne = () => [...PARAM, ...(auto ? S.METODY[metoda].wymaga.filter((k) => !PARAM.includes(k)) : [])];
         const dane = () => Object.fromEntries(WEJ.map((k) => [k, odczyt(k).wartosc]));   // błędne pole liczy się jak puste
         const poczatki = () => S.poczatki(metoda, dane());
         const relacja = () => (S.relacja ? S.relacja(metoda, dane()) : null);
@@ -484,7 +501,7 @@
           const pp = wl ? null : poczatki(), wiersze = pp ? S.wiersze(pp, m) : null, pr = wl ? null : S.procenty(metoda);
           el.lista.dataset.n = String(n);
           el.lista.classList.toggle('dlugie', m.etykiety.some((e) => e.length > 2));    // „Z5a”: nazwy wyrównane w jednej kolumnie
-          const nagl = h('div', { class: 'tp-sk-w tp-sk-nagl', 'aria-hidden': 'true' }, h('span'), h('span'), h('span', { text: 'Od' }), h('span'), h('span', { text: 'Do' }));
+          const nagl = h('div', { class: 'tp-sk-w tp-sk-nagl', 'aria-hidden': 'true' }, h('span'), h('span', { class: 'tp-sk-jedn-n', text: S.JEDNOSTKA }), h('span', { text: 'Od' }), h('span'), h('span', { text: 'Do' }));
           const rzad = m.etykiety.map((e, i) => {
             const pierwsza = i === 0, ostatnia = i === n - 1;
             let od = null, do_ = null;
@@ -525,10 +542,23 @@
             if (zly) x.setAttribute('aria-invalid', 'true'); else x.removeAttribute('aria-invalid');
           });
         }
-        // kafelki wyniku (moc): próg, W′, W/kg — W/kg tylko przy znanej masie ciała
+        // parametry: W/kg przy polach z naKg (masa z profilu), okienko progu ze źródłem i „Ustaw jako FTP”
+        function rysujParametry() {
+          const d = dane(), masa = P.dane().masa;
+          WEJ.filter((k) => S.POLA[k].naKg).forEach((k) => { panel.querySelector(`#${pid(k)}-kg`).textContent = masa > 0 && d[k] ? `${(d[k] / masa).toFixed(2).replace('.', ',')} W/kg` : ''; });
+          if (!PO) return;
+          const p = S.progAktualny(auto, metoda, d);
+          el.progW.textContent = p.wartosc ? String(p.wartosc) : '—';
+          el.progJ.hidden = !p.wartosc;
+          el.prog.classList.toggle('pusty', !p.wartosc);
+          el.progZ.textContent = p.zrodlo;
+          el.ustaw.hidden = !(auto && p.wartosc && metoda !== 'ftp' && p.wartosc !== d[PO.doPola]);
+        }
+        // kafelki wyniku metody (moc: W′ przy CP)
         function rysujWynik() {
+          rysujParametry();
           if (!el.wynik) return;
-          const wyn = S.wynik(auto ? metoda : S.METODA_WLASNA, dane(), P.dane().masa);
+          const wyn = auto ? S.wynik(metoda, dane()) : [];
           el.wynik.hidden = !wyn.length;
           el.wynik.classList.toggle('pusty', !!wyn.length && wyn[0].wartosc === '—');
           el.wynik.replaceChildren(...wyn.map((x) => h('div', null, h('dt', { text: x.etykieta }), h('dd', null, x.wartosc, x.jednostka ? h('small', { text: x.jednostka }) : null))));
@@ -536,13 +566,13 @@
         function rysuj() {
           panel.dataset.tryb = auto ? 'auto' : 'wlasne';
           el.auto.setAttribute('aria-checked', String(auto));
+          el.metodaPola.hidden = !auto;
           DODATKOWE.forEach((x) => przel[x.klucz].setAttribute('aria-checked', String(!!dod[x.klucz])));
           kafle.forEach((b) => { const on = b.dataset.metoda === metoda; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; });
           const wid = widoczne();
           WEJ.forEach((k) => { poleWej[k].hidden = !wid.includes(k); });
-          el.dane.hidden = !wid.length;
-          el.dane.dataset.metoda = auto ? metoda : 'wlasne';
-          el.rel.hidden = !auto;
+          el.dane.hidden = !wid.some((k) => !PARAM.includes(k));
+          el.dane.dataset.metoda = metoda;
           if (el.rel.textContent) el.rel.textContent = relacja() || '';
           rysujWynik(); rysujListe(); poZmianie();
         }
@@ -557,12 +587,17 @@
           if (on === auto) return;
           // wyłączenie przy pustych strefach własnych: startują od tego, co policzył kalkulator
           if (!on && gr.every((g) => g == null)) { const pp = poczatki(); if (pp) gr = S.doWlasnych(metoda, pp); }
-          // i puste pola stref własnych (moc: FTP) dostają to, co wyliczyła metoda — np. FTP z testu 20 min
-          if (!on && S.przyWylaczeniu) Object.entries(S.przyWylaczeniu(metoda, dane()) || {}).forEach(([k, v]) => { if (!wej[k].value) wej[k].value = String(v); });
           auto = on; pokazBladWl = false;
           rysuj();
         }
         el.auto.addEventListener('click', () => ustawAuto(!auto));
+        // „Ustaw jako FTP”: wyliczony próg (z testu albo CP) przechodzi do pola FTP
+        if (PO) el.ustaw.addEventListener('click', () => {
+          const p = S.progAktualny(auto, metoda, dane());
+          if (!p.wartosc) return;
+          wej[PO.doPola].value = String(p.wartosc); bladWej(PO.doPola, '');
+          rysuj(); wej[PO.doPola].focus();
+        });
         DODATKOWE.forEach((x) => przel[x.klucz].addEventListener('click', () => { dod[x.klucz] = !dod[x.klucz]; rysuj(); }));
         // „Dostosuj ręcznie”: wyliczone strefy przechodzą do własnych, kalkulator się wyłącza
         el.recznie.addEventListener('click', () => {

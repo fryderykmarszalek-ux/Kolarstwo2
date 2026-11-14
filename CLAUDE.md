@@ -592,14 +592,11 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   okienko (`.tp-sk-wart.staly`): nie pole tekstowe, bez fokusu, bez reakcji na najechanie, kursor
   „niedostępne”. W kalkulatorze „0” i „∞” szarym pismem. Myślnik stoi w każdym wierszu.
   Zastępuje decyzję z 13.11 („tam nie ma pola”).
-- **Pole FTP także przy WYŁĄCZONYM kalkulatorze mocy** — „to kluczowe dla strony”. `S.POLA_WLASNE`
-  w module = pola widoczne przy strefach własnych (moc: `ftp`, tętno: brak). Pola stoją teraz POZA
-  blokiem kalkulatora. Pod polem kafelek W/kg (`S.METODA_WLASNA`). FTP jest to samo pole co w metodzie
-  „FTP” — jedna wartość. Przy wyłączeniu kalkulatora puste FTP dostaje FTP z testu 20 min albo rampy
-  (`S.przyWylaczeniu`); CP NIE przechodzi, bo CP to nie FTP.
-- **Przełącznik „Aktualizuj FTP z jazd”** (jak automatyczne wykrywanie FTP w Zwifcie) — drugi wiersz
-  w grupie przełączników (`S.PRZELACZNIKI`, jedna karta z kreską jak w iOS), zapis `strefyMocy.ftpAuto`
-  (domyślnie wyłączony; stary zapis bez pola = wyłączony). **DZIŚ NIC NIE ROBI — jazd na stronie jeszcze
+- ~~Pole FTP przy wyłączonym kalkulatorze, przepisywanie FTP z testu przy wyłączeniu~~ — zastąpione
+  sekcją „Parametry” (niżej) tego samego dnia.
+- **Przełącznik „Aktualizuj FTP z jazd”** (jak automatyczne wykrywanie FTP w Zwifcie) — `S.PRZELACZNIKI`, zapis `strefyMocy.ftpAuto`
+  (domyślnie wyłączony; stary zapis bez pola = wyłączony; od przebudowy niżej stoi w sekcji „Parametry”
+  pod FTP, osobną kartą). **DZIŚ NIC NIE ROBI — jazd na stronie jeszcze
   nie ma. ZAMIAR NA PÓŹNIEJ (polecenie Fryderyka „zapamiętaj”):** po podłączeniu prawdziwych jazd,
   przy `ftpAuto = true`, strona sama aktualizuje FTP z jazd z pomiarem mocy. Metodę ustalić wtedy
   z Fryderykiem (kandydaci: CP z krzywej mocy z ostatnich tygodni; 0,95 × najlepsze 20 min); pewnie
@@ -607,6 +604,42 @@ wzorem „mniej więcej” — **żadnych grup ani obserwujących**, decyzja Fry
   (stara strona, 19.09.2026): przy wyłączonym przełączniku strona NIGDY nie rusza FTP sama.
 - Sondy: mutacje złapane — okienka 0/∞ znikające, okienko 0 edytowalne, brak pola FTP przy strefach
   własnych, przełącznik niezapisywany, FTP z testu nieprzechodzące, okienko z kursorem zwykłym.
+
+### Strefy: sekcje „Parametry” i „Strefy” — porządek (14.11.2026)
+
+Fryderyk (zrzut z iPada, metoda CP): „strona sobie policzyła, a pola [FTP] nie ma”. Chciał **pola FTP
+zawsze w jednym i tym samym miejscu, niezależnie od kalkulatora i metody**, do tego **okienko mocy
+progowej**, też niezależne, a w tętnie **niezależne tętno maks. i spoczynkowe**; „mamy mały chaos,
+uporządkuj, żeby użytkownik widział co, jak i gdzie”.
+
+- **Każda podzakładka ma dwie sekcje** (nagłówki wersalikami, kreska między nimi):
+  - **PARAMETRY — zawsze na górze, zawsze te same, w obu trybach.** Moc: **FTP** (pole; obok etykiety
+    W/kg z masy w profilu) i **Moc progowa** (okienko tylko do odczytu, kłódka, kursor „niedostępne”) +
+    przełącznik „Aktualizuj FTP z jazd”. Tętno: **Tętno maks.** i **Tętno spocz.** (pola).
+  - **STREFY** — przełącznik „Licz strefy automatycznie”, kafelki metod, **pola metody tylko te, których
+    nie ma w parametrach** (tętno progowe; średnia 20 min; minuta rampy; dwa wysiłki CP), W′ przy CP,
+    nagłówek „Granice” + „Dostosuj ręcznie”, lista. Jednostka listy w wierszu nagłówka kolumn (OD/DO).
+- **Moduł mówi, co jest parametrem: `S.PARAMETRY`** (moc `['ftp']`, tętno `['hrmax','hrspocz']`).
+  Metoda „FTP” / „% tętna maks.” / „Rezerwa tętna” nie ma już własnych pól — bierze je z parametrów.
+  Parametry są sprawdzane przy „Zapisz” ZAWSZE (stoją na widoku).
+- **Moc progowa = próg, z którego liczą się strefy** (`S.progAktualny`): metoda FTP → FTP, test 20 min →
+  0,95 × średnia, rampa → 0,75 × minuta, CP → CP; pod okienkiem źródło („Test 20 min”, „Critical Power”);
+  przy strefach własnych „—” i „Strefy własne”. FTP to wartość zawodnika, moc progowa to wynik kalkulatora
+  — świadomie dwa okienka, bo FTP i CP to nie to samo (research). Interpretacja moja; jeśli Fryderyk
+  miał na myśli drugie POLE do wpisania, to do zmiany.
+- **„Ustaw jako FTP”** pod okienkiem (strzałka w lewo, w stronę pola FTP): gdy metoda wyliczyła próg inny
+  niż FTP, jedno dotknięcie przepisuje go do FTP — jak akceptacja wyniku testu w Zwifcie. Zastępuje
+  ciche przepisywanie przy wyłączaniu kalkulatora (`przyWylaczeniu`, usunięte). Strona nigdy nie zmienia
+  FTP sama.
+- Kafelki wyniku: tylko W′ przy CP (próg jest w okienku, W/kg przy FTP).
+- **„Tętno spocz.”, nie „Tętno spoczynkowe”** — pełna etykieta łamała się na iPhonie SE i pola stały
+  nierówno (złapane miarą: „etykieta parametru w dwóch liniach; pola parametrów nierówno”).
+  „Granice · ud./min” łamało się tak samo — jednostka przeszła do wiersza OD/DO.
+- Sondy: moc 47 / tętno 47 kontroli na urządzenie (m.in. kolejność sekcji, FTP i okienko NAD
+  przełącznikiem kalkulatora, pola przy każdej metodzie i w strefach własnych, „Ustaw jako FTP”);
+  **8 mutacji złapanych** (FTP znikające przy metodzie, brak tętna spocz. w parametrach, przycisk
+  niewidoczny, przycisk niezapisujący, okienko pokazujące FTP zamiast progu, W/kg z innej masy,
+  parametry pod kalkulatorem, długa etykieta); układ obu zakładek co 10 px od 320 do 1400.
 
 ### Pusta część okna profilu — co ma tam trafić
 

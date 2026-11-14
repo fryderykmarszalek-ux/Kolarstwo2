@@ -28,7 +28,7 @@
   const N7 = ['Regeneracja', 'Wytrzymałość', 'Tempo', 'Próg', 'VO2max', 'Beztlenowa', 'Sprint'];
   // kolejność = kolejność kafelków na stronie
   S.METODY = {
-    ftp: { nazwa: 'FTP', opis: 'Wpisana wartość', wymaga: ['ftp'], prog: 'FTP' },
+    ftp: { nazwa: 'FTP', opis: 'Z pola FTP', wymaga: ['ftp'], prog: 'FTP' },
     test20: { nazwa: 'Test 20 min', opis: '95% średniej mocy', wymaga: ['p20'], prog: 'FTP' },
     rampa: { nazwa: 'Test rampowy', opis: '75% maks. minuty', wymaga: ['pmin'], prog: 'FTP' },
     cp: { nazwa: 'Critical Power', opis: 'CP i W′ · 2 wysiłki', wymaga: ['t1', 'w1', 't2', 'w2'], prog: 'CP' },
@@ -37,7 +37,7 @@
   S.WLASNE = { etykiety: E7, nazwy: N7 };
   // pola wejściowe: etykieta, jednostka, zakres; brak = co pokazać, gdy metoda nie ma danych
   S.POLA = {
-    ftp: { etykieta: 'FTP', jednostka: 'W', zakres: [50, 700], brak: 'Wymaga FTP' },
+    ftp: { etykieta: 'FTP', jednostka: 'W', zakres: [50, 700], brak: 'Wymaga FTP', naKg: true },
     p20: { etykieta: 'Średnia moc 20 min', jednostka: 'W', zakres: [50, 750], brak: 'Wymaga średniej mocy 20 min' },
     pmin: { etykieta: 'Najlepsza minuta', jednostka: 'W', zakres: [50, 950], brak: 'Wymaga najlepszej minuty' },
     t1: { etykieta: 'Krótki wysiłek', jednostka: 'min', zakres: [2, 10], brak: 'Wymaga dwóch wysiłków', aria: 'Czas krótkiego wysiłku' },
@@ -48,13 +48,18 @@
   // dozwolony próg. Z okrągłych zakresów pól wychodzi FTP 38–713 W (50 × 0,75 … 950 × 0,75), więc z testów nigdy nie ma
   // błędu progu; sprawdzenie łapie tylko CP, które z dwóch wysiłków potrafi wyjść dowolne (nawet ujemne).
   S.PROG = [30, 750];
-  // kalkulator wyłączony: zostaje pole FTP — FTP jest potrzebne stronie niezależnie od tego, skąd są strefy
-  S.POLA_WLASNE = ['ftp'];
-  S.METODA_WLASNA = 'ftp';                                   // kafelki wyniku przy wyłączonym kalkulatorze: jak przy wpisanym FTP (W/kg)
-  // FTP wyliczone z testu przechodzi do pola FTP, gdy kalkulator się wyłącza, a pole jest puste (CP to nie FTP — nie przechodzi)
-  S.przyWylaczeniu = (metoda, d) => { const r = (metoda === 'test20' || metoda === 'rampa') && S.prog(metoda, d); return r && r.prog ? { ftp: r.prog } : null; };
-  // przełącznik „Aktualizuj FTP z jazd” (jak automatyczne wykrywanie FTP w Zwifcie). 14.11.2026: jazd na stronie jeszcze
-  // nie ma, więc zapisujemy tylko ZAMIAR — mechanizm wejdzie z podłączeniem danych (CLAUDE.md, „Strefy mocy”).
+  // PARAMETRY — pola stojące ZAWSZE w tym samym miejscu na górze zakładki, niezależnie od kalkulatora i metody
+  // (14.11.2026, Fryderyk: „pole z FTP zawsze w jednym i tym samym miejscu”). Metoda pokazuje u siebie tylko pola,
+  // których tu nie ma. FTP to wartość zawodnika, potrzebna całej stronie; strefy liczą się z MOCY PROGOWEJ.
+  S.PARAMETRY = ['ftp'];
+  // okienko „Moc progowa” obok FTP — tylko do odczytu: próg, z którego liczą się strefy (FTP, FTP z testu albo CP).
+  // Gdy różni się od FTP, „Ustaw jako FTP” przepisuje go do pola FTP (jak akceptacja wyniku testu w Zwifcie).
+  S.PROG_OKNO = { etykieta: 'Moc progowa', jednostka: 'W', doPola: 'ftp', przycisk: 'Ustaw jako FTP' };
+  S.progAktualny = (auto, metoda, d) => {
+    if (!auto) return { wartosc: null, zrodlo: 'Strefy własne' };
+    const r = S.prog(metoda, d);
+    return { wartosc: r && r.prog ? r.prog : null, zrodlo: S.METODY[metoda].nazwa };
+  };
   S.PRZELACZNIKI = [{ klucz: 'ftpAuto', etykieta: 'Aktualizuj FTP z\u00a0jazd', ikona: 'arrows-clockwise' }];
   // strefy własne: 10–1500 W, żeby „Dostosuj ręcznie” z KAŻDEGO dozwolonego progu dawało poprawne strefy
   // (próg 30 → Z1 do 16 W; próg 750 → Z7 od 1126 W)
@@ -119,15 +124,12 @@
   // Na liście stref zamiast niego stoi krótka informacja BRAK_RELACJA (pełny komunikat jest pod polami).
   S.BRAK_RELACJA = 'Wymaga poprawnych wysiłków';
   S.relacja = (metoda, d) => { const r = S.prog(metoda, d); return r && r.blad ? r.blad : null; };
-  // kafelki wyniku: próg (gdy jest wyliczony — przy wpisanym FTP powtarzałby pole), W′ (CP), W/kg (gdy znana masa ciała)
-  S.wynik = (metoda, d, masa) => {
-    const r = S.prog(metoda, d), m = S.METODY[metoda], ok = !!(r && r.prog);
-    const wyn = metoda === 'ftp' ? [] : [{ etykieta: m.prog, wartosc: ok ? String(r.prog) : '—', jednostka: ok ? 'W' : '' }];
-    // W′: jedno miejsce po przecinku; od 100 kJ (fizjologicznie niemożliwe — błąd we wpisie) bez ułamka, żeby liczba mieściła się w kafelku
-    const kj = ok && r.wprim / 1000;
-    if (metoda === 'cp') wyn.push({ etykieta: 'W′', wartosc: ok ? kj.toFixed(kj < 100 ? 1 : 0).replace('.', ',') : '—', jednostka: ok ? 'kJ' : '' });
-    if (masa > 0) wyn.push({ etykieta: 'W/kg', wartosc: ok ? (r.prog / masa).toFixed(2).replace('.', ',') : '—', jednostka: '' });
-    return wyn;
+  // kafelki wyniku pod polami metody: dziś tylko W′ przy CP (próg stoi w okienku „Moc progowa”, W/kg przy FTP)
+  S.wynik = (metoda, d) => {
+    if (metoda !== 'cp') return [];
+    const r = S.prog(metoda, d), ok = !!(r && r.prog), kj = ok && r.wprim / 1000;
+    // od 100 kJ (fizjologicznie niemożliwe — błąd we wpisie) bez ułamka, żeby liczba mieściła się w kafelku
+    return [{ etykieta: 'W′', wartosc: ok ? kj.toFixed(kj < 100 ? 1 : 0).replace('.', ',') : '—', jednostka: ok ? 'kJ' : '' }];
   };
 
   S.DOMYSLNE = { auto: true, metoda: 'ftp', ftp: null, p20: null, pmin: null, t1: null, w1: null, t2: null, w2: null, wlasne: null, ftpAuto: false };
